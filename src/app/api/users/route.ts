@@ -7,11 +7,13 @@ export async function GET(req: NextRequest) {
   const lng = parseFloat(searchParams.get("lng") || "77.5946");
   const radius = parseFloat(searchParams.get("radius") || "0.05");
 
+  const excludeId = searchParams.get("excludeId") || "";
+
   const users = await prisma.user.findMany({
     where: {
       lat: { gte: lat - radius, lte: lat + radius },
       lng: { gte: lng - radius, lte: lng + radius },
-      online: true,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
     },
   });
 

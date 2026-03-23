@@ -79,15 +79,6 @@ export default function Onboarding() {
   const finishOnboarding = async () => {
     const loc = useStore.getState().userLocation;
 
-    // Relocate all seed data to user's actual location
-    try {
-      await fetch("/api/relocate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lat: loc.lat, lng: loc.lng }),
-      });
-    } catch {}
-
     try {
       const res = await fetch("/api/users", {
         method: "POST",

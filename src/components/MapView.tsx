@@ -30,10 +30,20 @@ export default function MapView() {
 
   const fetchData = useCallback(async () => {
     const { lat, lng } = userLocation;
+    const currentUserId = user?.id || "";
     try {
+      // Ping to keep user online and update location
+      if (currentUserId) {
+        fetch("/api/users/ping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUserId, lat, lng }),
+        }).catch(() => {});
+      }
+
       const [activitiesRes, usersRes] = await Promise.all([
         fetch(`/api/activities?lat=${lat}&lng=${lng}&radius=0.05`),
-        fetch(`/api/users?lat=${lat}&lng=${lng}&radius=0.05`),
+        fetch(`/api/users?lat=${lat}&lng=${lng}&radius=0.05&excludeId=${currentUserId}`),
       ]);
       const acts = await activitiesRes.json();
       const usrs = await usersRes.json();
@@ -48,7 +58,7 @@ export default function MapView() {
     } catch (e) {
       console.error("Fetch error:", e);
     }
-  }, [userLocation, setActivities, setNearbyUsers]);
+  }, [userLocation, user, setActivities, setNearbyUsers]);
 
   // Also fetch notifications count
   const fetchNotifications = useCallback(async () => {
@@ -94,7 +104,7 @@ export default function MapView() {
     const interval = setInterval(() => {
       fetchData();
       fetchNotifications();
-    }, 10000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [fetchData, fetchNotifications]);
 
