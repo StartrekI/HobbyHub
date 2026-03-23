@@ -90,25 +90,34 @@ export default function Onboarding() {
       }
 
       localStorage.setItem("hobbyhub_user", JSON.stringify(data));
-      setName(data.name || googleUser.name || "");
-      setAvatar(data.avatar || googleUser.picture || "");
-      setEmail(data.email || googleUser.email || "");
 
-      // Returning user with interests? Skip to map
+      // Set user and go straight to map
       const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
-      if (interests && interests.length > 0) {
-        setUser({
-          ...data,
-          interests,
-          skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-        });
-        setUserLocation({ lat: data.lat || 0, lng: data.lng || 0 });
-        setOnboarded(true);
-        return;
-      }
+      setUser({
+        ...data,
+        interests: interests || [],
+        skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+      });
 
-      // New user — continue onboarding
-      next();
+      // Get location then finish
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            // Update user location in DB
+            fetch("/api/users/ping", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: data.id, lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            }).catch(() => {});
+            localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat: pos.coords.latitude, lng: pos.coords.longitude }));
+            setOnboarded(true);
+          },
+          () => { setOnboarded(true); }
+        );
+      } else {
+        setOnboarded(true);
+      }
     } catch (e) {
       console.error("Google login error:", e);
       setLoginError("Network error. Please check your connection.");
@@ -169,18 +178,30 @@ export default function Onboarding() {
       const data = await res.json();
       if (res.ok && data.id) {
         localStorage.setItem("hobbyhub_user", JSON.stringify(data));
-        setAvatar(data.avatar || "");
         const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
-        if (interests && interests.length > 0) {
-          setUser({
-            ...data,
-            interests,
-            skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-          });
+        setUser({
+          ...data,
+          interests: interests || [],
+          skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+        });
+        // Get location then go to map
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+              fetch("/api/users/ping", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: data.id, lat: pos.coords.latitude, lng: pos.coords.longitude }),
+              }).catch(() => {});
+              localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat: pos.coords.latitude, lng: pos.coords.longitude }));
+              setOnboarded(true);
+            },
+            () => { setOnboarded(true); }
+          );
+        } else {
           setOnboarded(true);
-          return;
         }
-        next();
       } else {
         setLoginError(data.error || "Failed to sign in");
       }
