@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Briefcase, GraduationCap, Plane, Lightbulb,
@@ -38,35 +38,73 @@ const TYPE_LABELS: Record<string, string> = {
   event: "Event",
 };
 
+/* Skeleton placeholder card */
+function SkeletonCard() {
+  return (
+    <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 animate-pulse">
+      <div className="h-1 bg-gray-100" />
+      <div className="p-5">
+        <div className="flex gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gray-100 shrink-0" />
+          <div className="flex-1 space-y-2.5">
+            <div className="flex gap-2">
+              <div className="w-16 h-4 bg-gray-100 rounded-lg" />
+              <div className="w-10 h-4 bg-gray-50 rounded-lg" />
+            </div>
+            <div className="w-3/4 h-4 bg-gray-100 rounded-lg" />
+            <div className="w-full h-3 bg-gray-50 rounded-lg" />
+          </div>
+        </div>
+        <div className="flex gap-2.5 mt-4 pt-3.5 border-t border-gray-50">
+          <div className="w-16 h-6 bg-gray-50 rounded-lg" />
+          <div className="w-20 h-6 bg-gray-50 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DiscoveryFeed() {
   const { user, userLocation, setScreen } = useStore();
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-
+  const hasFetchedOnce = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const fetchFeed = useCallback(() => {
+
+  const fetchFeed = useCallback((showSkeleton: boolean) => {
     if (!user) return;
-    setLoading(true);
+    if (showSkeleton) setLoading(true);
+    else setRefreshing(true);
+
     fetch(`/api/discover?lat=${userLocation.lat}&lng=${userLocation.lng}&type=${filter}`)
       .then((r) => r.json())
-      .then((data) => { setFeed(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then((data) => { setFeed(data); setLoading(false); setRefreshing(false); })
+      .catch(() => { setLoading(false); setRefreshing(false); });
   }, [user, userLocation, filter]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(fetchFeed, 300);
+    // First load: fetch instantly. Filter changes: short debounce, keep old data visible.
+    if (!hasFetchedOnce.current) {
+      hasFetchedOnce.current = true;
+      fetchFeed(true);
+    } else {
+      debounceRef.current = setTimeout(() => fetchFeed(false), 150);
+    }
     return () => clearTimeout(debounceRef.current);
   }, [fetchFeed]);
 
-  const filtered = search
-    ? feed.filter((item) =>
-        (item.title || "").toLowerCase().includes(search.toLowerCase()) ||
-        (item.description || "").toLowerCase().includes(search.toLowerCase())
-      )
-    : feed;
+  const searchLower = search.toLowerCase();
+  const filtered = useMemo(() => {
+    if (!searchLower) return feed;
+    return feed.filter((item) =>
+      (item.title || "").toLowerCase().includes(searchLower) ||
+      (item.description || "").toLowerCase().includes(searchLower)
+    );
+  }, [feed, searchLower]);
 
   const resultCount = filtered.length;
 
@@ -91,28 +129,36 @@ export default function DiscoveryFeed() {
           <div className="flex-1">
             <h3 className="font-bold text-xl">Discover</h3>
             {!loading && (
-              <p className="text-[10px] text-gray-400 font-medium">{resultCount} {resultCount === 1 ? "opportunity" : "opportunities"} nearby</p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[10px] text-gray-400 font-medium"
+              >
+                {resultCount} {resultCount === 1 ? "opportunity" : "opportunities"} nearby
+                {refreshing && " · updating..."}
+              </motion.p>
             )}
           </div>
         </div>
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search opportunities..."
-            className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all"
+            className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all placeholder:text-gray-400"
           />
           <AnimatePresence>
             {search && (
               <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ duration: 0.15 }}
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
               >
                 <X size={12} className="text-gray-500" />
               </motion.button>
@@ -122,166 +168,172 @@ export default function DiscoveryFeed() {
 
         {/* Filter chips */}
         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {FEED_FILTERS.map((f) => (
-            <motion.button
-              key={f.value}
-              whileTap={{ scale: 0.93 }}
-              onClick={() => setFilter(f.value)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
-                filter === f.value
-                  ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200/50"
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              {f.icon} {f.label}
-            </motion.button>
-          ))}
+          {FEED_FILTERS.map((f) => {
+            const active = filter === f.value;
+            return (
+              <motion.button
+                key={f.value}
+                whileTap={{ scale: 0.93 }}
+                onClick={() => setFilter(f.value)}
+                className={`relative px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
+                  active
+                    ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200/50"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"
+                }`}
+              >
+                {f.icon} {f.label}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
       {/* Feed */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <AnimatePresence mode="wait">
-          {loading ? (
-            <motion.div
-              key="loader"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-20 gap-3"
-            >
-              <div className="w-10 h-10 border-[3px] border-gray-200 border-t-violet-500 rounded-full animate-spin" />
-              <p className="text-xs text-gray-400 font-medium">Finding opportunities...</p>
-            </motion.div>
-          ) : filtered.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-20 text-gray-400"
-            >
-              <div className="w-20 h-20 bg-violet-50 rounded-[28px] flex items-center justify-center mb-4">
-                <Sparkles size={32} className="text-violet-300" />
-              </div>
-              <p className="text-sm font-semibold text-gray-500">No opportunities found</p>
-              <p className="text-xs text-gray-400 mt-1 text-center max-w-[220px]">
-                {search ? "Try a different search term" : "Be the first to create one!"}
-              </p>
-              {search && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSearch("")}
-                  className="mt-4 px-5 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl"
-                >
-                  Clear Search
-                </motion.button>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div key="feed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-              {filtered.map((item, idx) => {
-                const Icon = FEED_ICONS[item.feedType] || Users;
-                const color = FEED_TYPE_COLORS[item.feedType] || "#6C5CE7";
-                const dist = getDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
-                const data = item.data as unknown as Record<string, unknown>;
-
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04, type: "spring", damping: 25, stiffness: 300 }}
-                    whileTap={{ scale: 0.985 }}
-                    className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
-                  >
-                    {/* Colored accent bar */}
-                    <div className="h-1" style={{ background: `linear-gradient(90deg, ${color}, ${color}88)` }} />
-
-                    <div className="p-5">
-                      {/* Top row */}
-                      <div className="flex items-start gap-3.5">
-                        <div
-                          className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
-                          style={{ background: `linear-gradient(135deg, ${color}20, ${color}10)`, color }}
-                        >
-                          <Icon size={20} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <span
-                              className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider"
-                              style={{ background: `${color}15`, color }}
-                            >
-                              {TYPE_LABELS[item.feedType] || item.feedType}
-                            </span>
-                            <span className="flex items-center gap-0.5 text-[10px] text-gray-300">
-                              <Clock size={9} /> {formatRelativeTime(item.createdAt)}
-                            </span>
-                          </div>
-                          <h4 className="font-bold text-[15px] leading-tight text-gray-900">{item.title}</h4>
-                          {item.description && (
-                            <p className="text-[13px] text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">{item.description}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Meta row */}
-                      <div className="flex items-center gap-2.5 mt-4 pt-3.5 border-t border-gray-100">
-                        <span className="flex items-center gap-1 text-[11px] text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
-                          <MapPin size={11} className="text-gray-400" /> {dist}
-                        </span>
-                        {item.creator && (
-                          <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                            <div
-                              className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[9px] font-bold"
-                              style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
-                            >
-                              {item.creator.name?.charAt(0) || "?"}
-                            </div>
-                            <span className="font-medium text-gray-500">{item.creator.name}</span>
-                          </span>
-                        )}
-
-                        <span className="flex-1" />
-
-                        {item.feedType === "gig" && data.budget ? (
-                          <span className="flex items-center gap-0.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg">
-                            <DollarSign size={12} /> {String(data.budget)}
-                          </span>
-                        ) : null}
-                        {item.feedType === "skill" && data.isFree ? (
-                          <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg">Free</span>
-                        ) : item.feedType === "skill" && data.price ? (
-                          <span className="flex items-center gap-0.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg">
-                            <DollarSign size={12} /> {String(data.price)}
-                          </span>
-                        ) : null}
-                        {item.feedType === "idea" ? (
-                          <span className="flex items-center gap-1 text-xs text-rose-500 font-semibold bg-rose-50 px-2.5 py-1 rounded-lg">
-                            <Heart size={12} /> {String(data.likes || 0)}
-                          </span>
-                        ) : null}
-                        {item.feedType === "trip" && data.budget ? (
-                          <span className="flex items-center gap-0.5 text-xs text-cyan-600 font-bold bg-cyan-50 px-2.5 py-1 rounded-lg">
-                            <DollarSign size={12} /> {String(data.budget)}
-                          </span>
-                        ) : null}
-                        {item.feedType === "event" ? (
-                          <span className="flex items-center gap-1 text-xs font-semibold bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg">
-                            <Users size={11} /> Join
-                            <ChevronRight size={12} />
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
+        {loading ? (
+          /* Skeleton loading — feels instant */
+          <div className="space-y-3">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="flex flex-col items-center justify-center py-20 text-gray-400"
+          >
+            <div className="w-20 h-20 bg-violet-50 rounded-[28px] flex items-center justify-center mb-4">
+              <Sparkles size={32} className="text-violet-300" />
+            </div>
+            <p className="text-sm font-semibold text-gray-500">No opportunities found</p>
+            <p className="text-xs text-gray-400 mt-1 text-center max-w-[220px]">
+              {search ? "Try a different search term" : "Be the first to create one!"}
+            </p>
+            {search && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSearch("")}
+                className="mt-4 px-5 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl shadow-sm shadow-violet-200"
+              >
+                Clear Search
+              </motion.button>
+            )}
+          </motion.div>
+        ) : (
+          filtered.map((item, idx) => (
+            <FeedCard
+              key={item.id}
+              item={item}
+              idx={idx}
+              userLocation={userLocation}
+            />
+          ))
+        )}
       </div>
     </motion.div>
   );
 }
+
+/* Extracted card component — avoids re-rendering sibling cards */
+const FeedCard = ({ item, idx, userLocation }: { item: FeedItem; idx: number; userLocation: { lat: number; lng: number } }) => {
+  const Icon = FEED_ICONS[item.feedType] || Users;
+  const color = FEED_TYPE_COLORS[item.feedType] || "#6C5CE7";
+  const dist = getDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
+  const data = item.data as unknown as Record<string, unknown>;
+  // Cap stagger delay so large lists don't feel slow
+  const staggerDelay = Math.min(idx * 0.03, 0.3);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: staggerDelay, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      whileTap={{ scale: 0.98 }}
+      className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm active:shadow-md transition-shadow cursor-pointer"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "auto 180px" }}
+    >
+      {/* Colored accent bar */}
+      <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}66)` }} />
+
+      <div className="p-5">
+        {/* Top row */}
+        <div className="flex items-start gap-3.5">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: `linear-gradient(135deg, ${color}22, ${color}0a)`, color }}
+          >
+            <Icon size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="px-2 py-[3px] rounded-md text-[10px] font-bold uppercase tracking-wider"
+                style={{ background: `${color}14`, color }}
+              >
+                {TYPE_LABELS[item.feedType] || item.feedType}
+              </span>
+              <span className="flex items-center gap-0.5 text-[10px] text-gray-300 font-medium">
+                <Clock size={9} /> {formatRelativeTime(item.createdAt)}
+              </span>
+            </div>
+            <h4 className="font-bold text-[15px] leading-snug text-gray-900">{item.title}</h4>
+            {item.description && (
+              <p className="text-[13px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Meta row */}
+        <div className="flex items-center gap-2 mt-3.5 pt-3 border-t border-gray-100/80">
+          <span className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-lg font-medium">
+            <MapPin size={11} /> {dist}
+          </span>
+
+          {item.creator && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-400">
+              <span
+                className="w-[18px] h-[18px] rounded-md flex items-center justify-center text-white text-[8px] font-bold"
+                style={{ background: `linear-gradient(135deg, ${color}, ${color}aa)` }}
+              >
+                {item.creator.name?.charAt(0) || "?"}
+              </span>
+              <span className="font-medium text-gray-500 max-w-[80px] truncate">{item.creator.name}</span>
+            </span>
+          )}
+
+          <span className="flex-1" />
+
+          {item.feedType === "gig" && data.budget ? (
+            <span className="inline-flex items-center gap-0.5 text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg">
+              <DollarSign size={11} /> {String(data.budget)}
+            </span>
+          ) : null}
+          {item.feedType === "skill" && data.isFree ? (
+            <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg">Free</span>
+          ) : item.feedType === "skill" && data.price ? (
+            <span className="inline-flex items-center gap-0.5 text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg">
+              <DollarSign size={11} /> {String(data.price)}
+            </span>
+          ) : null}
+          {item.feedType === "idea" ? (
+            <span className="inline-flex items-center gap-1 text-[11px] text-rose-500 font-semibold bg-rose-50 px-2 py-1 rounded-lg">
+              <Heart size={11} /> {String(data.likes || 0)}
+            </span>
+          ) : null}
+          {item.feedType === "trip" && data.budget ? (
+            <span className="inline-flex items-center gap-0.5 text-[11px] text-cyan-600 font-bold bg-cyan-50 px-2 py-1 rounded-lg">
+              <DollarSign size={11} /> {String(data.budget)}
+            </span>
+          ) : null}
+          {item.feedType === "event" ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-violet-50 text-violet-500 px-2 py-1 rounded-lg">
+              <Users size={11} /> Join <ChevronRight size={11} />
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
