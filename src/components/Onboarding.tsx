@@ -76,45 +76,56 @@ export default function Onboarding() {
     }
   };
 
+  const [onboardError, setOnboardError] = useState("");
+
   const finishOnboarding = async () => {
     const loc = useStore.getState().userLocation;
+    setOnboardError("");
 
-    try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name || "Explorer",
-          phone: phone || "9999999999",
-          bio,
-          interests: selectedInterests,
-          role,
-          startupStage,
-          company,
-          title,
-          lookingFor,
-          skills,
-          collegeName,
-          graduationYear: parseInt(graduationYear) || 0,
-          lat: loc.lat,
-          lng: loc.lng,
-        }),
-      });
-      const user = await res.json();
-      setUser({
-        ...user,
-        interests: typeof user.interests === "string" ? JSON.parse(user.interests) : user.interests,
-        skills: typeof user.skills === "string" ? JSON.parse(user.skills) : user.skills,
-      });
-    } catch {
-      setUser({
-        id: "demo", name: name || "Explorer", phone: phone || "9999999999", bio, avatar: "",
-        interests: selectedInterests, lat: loc.lat, lng: loc.lng, online: true, rating: 4.8, verified: false,
-        role, startupStage, company, title, lookingFor, skills, collegeId: "", collegeName,
-        graduationYear: parseInt(graduationYear) || 0, connectionsCount: 0, activitiesJoined: 0,
-      });
+    // Retry up to 3 times
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name || "Explorer",
+            phone: phone || "9999999999",
+            bio,
+            interests: selectedInterests,
+            role,
+            startupStage,
+            company,
+            title,
+            lookingFor,
+            skills,
+            collegeName,
+            graduationYear: parseInt(graduationYear) || 0,
+            lat: loc.lat,
+            lng: loc.lng,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.id) {
+          setUser({
+            ...data,
+            interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests,
+            skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills,
+          });
+          setOnboarded(true);
+          return;
+        }
+        // If response not ok, try again
+        console.error("User creation failed:", data);
+      } catch (e) {
+        console.error("User creation attempt failed:", e);
+      }
+      // Wait before retrying
+      await new Promise(r => setTimeout(r, 1000));
     }
-    setOnboarded(true);
+
+    // All retries failed — show error instead of creating fake user
+    setOnboardError("Could not connect to server. Please check your internet and try again.");
   };
 
   const slideVariants = {
@@ -320,6 +331,11 @@ export default function Onboarding() {
               </motion.div>
               <h2 className="text-3xl font-bold mb-2">Enable Location</h2>
               <p className="text-white/80 mb-8">HobbyHub needs your location to show nearby activities and people</p>
+              {onboardError && (
+                <div className="mb-4 p-3 bg-red-500/20 border border-red-300/50 rounded-xl text-sm text-white">
+                  {onboardError}
+                </div>
+              )}
               <button onClick={requestLocation} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform mb-3">
                 Allow Location Access
               </button>
