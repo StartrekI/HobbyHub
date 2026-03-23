@@ -84,7 +84,8 @@ export default function Onboarding() {
       const data = await userRes.json();
 
       if (!userRes.ok || !data.id) {
-        setLoginError(data.error || "Login failed. Please try again.");
+        setLoginError(data.error || data.details || "Login failed. Please try again.");
+        console.error("User creation failed:", data);
         return;
       }
 

@@ -44,21 +44,28 @@ export async function POST(req: NextRequest) {
 
     let user = await prisma.user.findUnique({ where: { email } });
     if (user) {
+      // Only update fields that are actually provided (don't overwrite with defaults)
+      const updateData: Record<string, unknown> = {
+        name: name || user.name,
+        avatar: avatar || user.avatar,
+        online: true,
+      };
+      if (bio !== undefined) updateData.bio = bio;
+      if (interests !== undefined) updateData.interests = JSON.stringify(interests);
+      if (lat) updateData.lat = lat;
+      if (lng) updateData.lng = lng;
+      if (role !== undefined) updateData.role = role;
+      if (startupStage !== undefined) updateData.startupStage = startupStage;
+      if (company !== undefined) updateData.company = company;
+      if (title !== undefined) updateData.title = title;
+      if (lookingFor !== undefined) updateData.lookingFor = lookingFor;
+      if (skills !== undefined) updateData.skills = JSON.stringify(skills);
+      if (collegeName !== undefined) updateData.collegeName = collegeName;
+      if (graduationYear) updateData.graduationYear = graduationYear;
+
       user = await prisma.user.update({
         where: { email },
-        data: {
-          name: name || user.name,
-          bio: bio ?? user.bio,
-          avatar: avatar || user.avatar,
-          interests: JSON.stringify(interests || []),
-          lat: lat || user.lat, lng: lng || user.lng, online: true,
-          role: role ?? "", startupStage: startupStage ?? "",
-          company: company ?? "", title: title ?? "",
-          lookingFor: lookingFor ?? "",
-          skills: JSON.stringify(skills || []),
-          collegeName: collegeName ?? "",
-          graduationYear: graduationYear || 0,
-        },
+        data: updateData,
       });
     } else {
       user = await prisma.user.create({
@@ -80,6 +87,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
     console.error("POST /api/users error:", error);
-    return NextResponse.json({ error: "Failed to create/update user", details: String(error) }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: `Failed to create/update user: ${msg}` }, { status: 500 });
   }
 }
