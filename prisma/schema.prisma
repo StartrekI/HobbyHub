@@ -1,0 +1,317 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  phone           String   @unique
+  bio             String   @default("")
+  avatar          String   @default("")
+  interests       String   @default("[]")
+  skillLevel      String   @default("intermediate")
+  lat             Float    @default(0)
+  lng             Float    @default(0)
+  online          Boolean  @default(false)
+  rating          Float    @default(5.0)
+  ratingCount     Int      @default(0)
+  verified        Boolean  @default(false)
+  // Professional fields
+  role            String   @default("")
+  startupStage    String   @default("")
+  company         String   @default("")
+  title           String   @default("")
+  lookingFor      String   @default("")
+  skills          String   @default("[]")
+  // College fields
+  collegeId       String   @default("")
+  collegeName     String   @default("")
+  graduationYear  Int      @default(0)
+  // Stats
+  connectionsCount Int     @default(0)
+  activitiesJoined Int     @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  activitiesCreated Activity[]       @relation("CreatedBy")
+  participants      Participant[]
+  messagesSent      Message[]
+  notifications     Notification[]
+  reportsCreated    Report[]         @relation("ReportedBy")
+  reportsReceived   Report[]         @relation("ReportedUser")
+  blockedUsers      Block[]          @relation("Blocker")
+  blockedBy         Block[]          @relation("Blocked")
+  dmsSent           DirectMessage[]  @relation("DmSender")
+  dmsReceived       DirectMessage[]  @relation("DmReceiver")
+  profileRequests   ProfileRequest[] @relation("Requester")
+  profileRequested  ProfileRequest[] @relation("Requested")
+  skillSessionsTeaching SkillSession[] @relation("Teacher")
+  skillSessionsLearning SkillSession[] @relation("Learner")
+  gigsCreated       Gig[]            @relation("GigCreator")
+  gigApplications   GigApplication[]
+  tripsCreated      Trip[]           @relation("TripCreator")
+  tripParticipants  TripParticipant[]
+  ideasCreated      Idea[]           @relation("IdeaCreator")
+  ideaComments      IdeaComment[]
+  connectionsFrom   Connection[]     @relation("ConnectionFrom")
+  connectionsTo     Connection[]     @relation("ConnectionTo")
+  businessesOwned   Business[]       @relation("BusinessOwner")
+}
+
+model Activity {
+  id               String   @id @default(cuid())
+  type             String
+  title            String
+  description      String   @default("")
+  lat              Float
+  lng              Float
+  time             DateTime
+  playersNeeded    Int      @default(2)
+  status           String   @default("active")
+  // New fields
+  category         String   @default("social")
+  isEvent          Boolean  @default(false)
+  ticketPrice      Float    @default(0)
+  isFree           Boolean  @default(true)
+  eventUrl         String   @default("")
+  isRecurring      Boolean  @default(false)
+  recurrencePattern String  @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  creatorId        String
+  creator          User          @relation("CreatedBy", fields: [creatorId], references: [id])
+  participants     Participant[]
+  messages         Message[]
+}
+
+model Participant {
+  id         String   @id @default(cuid())
+  joinedAt   DateTime @default(now())
+  userId     String
+  activityId String
+  user       User     @relation(fields: [userId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
+
+  @@unique([userId, activityId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  text       String
+  createdAt  DateTime @default(now())
+  seen       Boolean  @default(false)
+  senderId   String
+  activityId String
+  sender     User     @relation(fields: [senderId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  data      String   @default("{}")
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reason      String
+  description String   @default("")
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  reporterId  String
+  reportedId  String
+  reporter    User     @relation("ReportedBy", fields: [reporterId], references: [id])
+  reported    User     @relation("ReportedUser", fields: [reportedId], references: [id])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  blockerId String
+  blockedId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id])
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+}
+
+model DirectMessage {
+  id         String   @id @default(cuid())
+  text       String
+  seen       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  senderId   String
+  receiverId String
+  sender     User     @relation("DmSender", fields: [senderId], references: [id])
+  receiver   User     @relation("DmReceiver", fields: [receiverId], references: [id])
+}
+
+model ProfileRequest {
+  id          String   @id @default(cuid())
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  requesterId String
+  requestedId String
+  requester   User     @relation("Requester", fields: [requesterId], references: [id])
+  requested   User     @relation("Requested", fields: [requestedId], references: [id])
+
+  @@unique([requesterId, requestedId])
+}
+
+model SkillSession {
+  id          String   @id @default(cuid())
+  skill       String
+  description String   @default("")
+  sessionType String   @default("teaching")
+  isFree      Boolean  @default(true)
+  price       Float    @default(0)
+  schedule    String   @default("")
+  lat         Float    @default(0)
+  lng         Float    @default(0)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teacherId   String
+  teacher     User     @relation("Teacher", fields: [teacherId], references: [id])
+  learnerId   String?
+  learner     User?    @relation("Learner", fields: [learnerId], references: [id])
+}
+
+model Gig {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  budget      Float    @default(0)
+  skills      String   @default("[]")
+  deadline    String   @default("")
+  location    String   @default("")
+  lat         Float    @default(0)
+  lng         Float    @default(0)
+  status      String   @default("open")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creatorId   String
+  creator     User           @relation("GigCreator", fields: [creatorId], references: [id])
+  applications GigApplication[]
+}
+
+model GigApplication {
+  id        String   @id @default(cuid())
+  message   String   @default("")
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  gigId     String
+  gig       Gig      @relation(fields: [gigId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([gigId, userId])
+}
+
+model Trip {
+  id          String   @id @default(cuid())
+  destination String
+  description String   @default("")
+  startDate   String   @default("")
+  endDate     String   @default("")
+  tripType    String   @default("adventure")
+  budget      String   @default("")
+  maxBuddies  Int      @default(4)
+  lat         Float    @default(0)
+  lng         Float    @default(0)
+  status      String   @default("planning")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creatorId   String
+  creator     User              @relation("TripCreator", fields: [creatorId], references: [id])
+  participants TripParticipant[]
+}
+
+model TripParticipant {
+  id       String   @id @default(cuid())
+  joinedAt DateTime @default(now())
+  tripId   String
+  userId   String
+  trip     Trip     @relation(fields: [tripId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([tripId, userId])
+}
+
+model Idea {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  category    String   @default("general")
+  stage       String   @default("concept")
+  lookingFor  String   @default("")
+  likes       Int      @default(0)
+  lat         Float    @default(0)
+  lng         Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creatorId   String
+  creator     User          @relation("IdeaCreator", fields: [creatorId], references: [id])
+  comments    IdeaComment[]
+}
+
+model IdeaComment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  ideaId    String
+  userId    String
+  idea      Idea     @relation(fields: [ideaId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Connection {
+  id               String   @id @default(cuid())
+  status           String   @default("connected")
+  interactionCount Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  fromUserId       String
+  toUserId         String
+  fromUser         User     @relation("ConnectionFrom", fields: [fromUserId], references: [id])
+  toUser           User     @relation("ConnectionTo", fields: [toUserId], references: [id])
+
+  @@unique([fromUserId, toUserId])
+}
+
+model Business {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  category    String   @default("")
+  address     String   @default("")
+  lat         Float    @default(0)
+  lng         Float    @default(0)
+  phone       String   @default("")
+  website     String   @default("")
+  hours       String   @default("")
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId     String
+  owner       User     @relation("BusinessOwner", fields: [ownerId], references: [id])
+}
