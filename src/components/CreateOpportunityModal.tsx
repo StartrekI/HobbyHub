@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { X, Briefcase, GraduationCap, Plane, Lightbulb } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Briefcase, GraduationCap, Plane, Lightbulb, MapPin, ChevronLeft } from "lucide-react";
 import { useStore } from "@/store";
 import { TRIP_TYPES, IDEA_CATEGORIES, IDEA_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
 
 const TABS = [
-  { value: "gig" as const, label: "Gig", icon: Briefcase, color: "#00B894" },
-  { value: "trip" as const, label: "Trip", icon: Plane, color: "#00CED1" },
-  { value: "skill" as const, label: "Skill", icon: GraduationCap, color: "#0984E3" },
-  { value: "idea" as const, label: "Idea", icon: Lightbulb, color: "#FDCB6E" },
+  { value: "gig" as const, label: "Gig", icon: Briefcase, color: "#00B894", gradient: "from-emerald-500 to-green-600" },
+  { value: "trip" as const, label: "Trip", icon: Plane, color: "#00CED1", gradient: "from-cyan-500 to-teal-600" },
+  { value: "skill" as const, label: "Skill", icon: GraduationCap, color: "#0984E3", gradient: "from-blue-500 to-indigo-600" },
+  { value: "idea" as const, label: "Idea", icon: Lightbulb, color: "#F59E0B", gradient: "from-amber-500 to-orange-600" },
 ];
 
 export default function CreateOpportunityModal() {
@@ -116,7 +116,8 @@ export default function CreateOpportunityModal() {
     return false;
   };
 
-  const inputCls = "w-full p-3 border-2 border-gray-200 rounded-xl text-sm focus:border-violet-600 outline-none transition-colors";
+  const activeTab = TABS.find(t => t.value === opportunityType) || TABS[0];
+  const inputCls = "w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all";
 
   return (
     <motion.div
@@ -124,226 +125,298 @@ export default function CreateOpportunityModal() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[70px] bg-gray-50 z-[900] flex flex-col"
+      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200">
-        <button onClick={() => setScreen("map")}><X size={20} /></button>
+      <div className="flex items-center gap-3 px-5 py-3.5 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <button onClick={() => setScreen("create")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+          <ChevronLeft size={20} />
+        </button>
         <h3 className="flex-1 font-bold text-lg">Create Opportunity</h3>
-        <button
-          onClick={publish}
-          disabled={!canPublish() || publishing}
-          className="text-violet-600 font-semibold text-sm disabled:opacity-50"
-        >
-          {publishing ? "Publishing..." : "Publish"}
+        <button onClick={() => setScreen("map")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+          <X size={18} className="text-gray-400" />
         </button>
       </div>
 
       {/* Tab selector */}
-      <div className="flex gap-2 p-4 pb-0">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const active = opportunityType === tab.value;
-          return (
-            <button
-              key={tab.value}
-              onClick={() => setOpportunityType(tab.value)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-semibold transition-all ${
-                active ? "text-white shadow-lg" : "bg-gray-100 text-gray-500"
-              }`}
-              style={active ? { background: tab.color } : {}}
-            >
-              <Icon size={18} />
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className="px-4 pt-4 pb-2">
+        <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-gray-100">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = opportunityType === tab.value;
+            return (
+              <motion.button
+                key={tab.value}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setOpportunityType(tab.value)}
+                className={`flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-semibold transition-all ${
+                  active ? "text-white shadow-md" : "text-gray-400"
+                }`}
+                style={active ? { background: `linear-gradient(135deg, ${tab.color}, ${tab.color}cc)` } : {}}
+              >
+                <Icon size={17} />
+                {tab.label}
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Error */}
-      {error && (
-        <div className="mx-4 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-          {error}
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mx-4 mt-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm font-medium"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {opportunityType === "gig" && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Gig Title</label>
-              <input value={gigTitle} onChange={(e) => setGigTitle(e.target.value)} placeholder="e.g., Need photographer today" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Description</label>
-              <textarea value={gigDesc} onChange={(e) => setGigDesc(e.target.value)} placeholder="What do you need?" rows={3} className={`${inputCls} resize-none`} />
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-500 mb-1">Budget (INR)</label>
-                <input type="number" value={gigBudget} onChange={(e) => setGigBudget(e.target.value)} placeholder="0" className={inputCls} />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Gig Title</label>
+                <input value={gigTitle} onChange={(e) => setGigTitle(e.target.value)} placeholder="e.g., Need photographer today" className={`${inputCls} mt-2`} />
               </div>
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-500 mb-1">Deadline</label>
-                <input type="date" value={gigDeadline} onChange={(e) => setGigDeadline(e.target.value)} className={inputCls} />
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Description</label>
+                <textarea value={gigDesc} onChange={(e) => setGigDesc(e.target.value)} placeholder="What do you need?" rows={3} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Required Skills</label>
-              <div className="flex flex-wrap gap-1.5">
-                {PROFESSIONAL_SKILLS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setGigSkills((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])}
-                    className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-                      gigSkills.includes(s) ? "bg-emerald-500 text-white font-semibold" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >{s}</button>
-                ))}
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Budget (INR)</label>
+                  <input type="number" value={gigBudget} onChange={(e) => setGigBudget(e.target.value)} placeholder="0" className={`${inputCls} mt-2`} />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Deadline</label>
+                  <input type="date" value={gigDeadline} onChange={(e) => setGigDeadline(e.target.value)} className={`${inputCls} mt-2`} />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Required Skills</label>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {PROFESSIONAL_SKILLS.map((s) => (
+                    <motion.button
+                      key={s}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setGigSkills((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                        gigSkills.includes(s) ? "bg-emerald-500 text-white border-emerald-500" : "bg-white text-gray-500 border-gray-200"
+                      }`}
+                    >{s}</motion.button>
+                  ))}
+                </div>
               </div>
             </div>
-          </>
+          </motion.div>
         )}
 
         {opportunityType === "trip" && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Destination</label>
-              <input value={tripDest} onChange={(e) => setTripDest(e.target.value)} placeholder="e.g., Goa" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Description</label>
-              <textarea value={tripDesc} onChange={(e) => setTripDesc(e.target.value)} placeholder="What's the plan?" rows={2} className={`${inputCls} resize-none`} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Trip Type</label>
-              <div className="flex flex-wrap gap-1.5">
-                {TRIP_TYPES.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setTripType(t.value)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
-                      tripType === t.value ? "bg-cyan-500 text-white font-semibold" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >{t.icon} {t.label}</button>
-                ))}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Destination</label>
+                <input value={tripDest} onChange={(e) => setTripDest(e.target.value)} placeholder="e.g., Goa" className={`${inputCls} mt-2`} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Description</label>
+                <textarea value={tripDesc} onChange={(e) => setTripDesc(e.target.value)} placeholder="What's the plan?" rows={2} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-500 mb-1">Start Date</label>
-                <input type="date" value={tripStart} onChange={(e) => setTripStart(e.target.value)} className={inputCls} />
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Trip Type</label>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {TRIP_TYPES.map((t) => (
+                    <motion.button
+                      key={t.value}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setTripType(t.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                        tripType === t.value ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-gray-500 border-gray-200"
+                      }`}
+                    >{t.icon} {t.label}</motion.button>
+                  ))}
+                </div>
               </div>
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-500 mb-1">End Date</label>
-                <input type="date" value={tripEnd} onChange={(e) => setTripEnd(e.target.value)} className={inputCls} />
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Start Date</label>
+                  <input type="date" value={tripStart} onChange={(e) => setTripStart(e.target.value)} className={`${inputCls} mt-2`} />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">End Date</label>
+                  <input type="date" value={tripEnd} onChange={(e) => setTripEnd(e.target.value)} className={`${inputCls} mt-2`} />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Budget</label>
+                  <input value={tripBudget} onChange={(e) => setTripBudget(e.target.value)} placeholder="e.g., 5000-10000" className={`${inputCls} mt-2`} />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Max Buddies</label>
+                  <input type="number" value={tripMax} onChange={(e) => setTripMax(parseInt(e.target.value) || 4)} min={1} max={20} className={`${inputCls} mt-2`} />
+                </div>
               </div>
             </div>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-500 mb-1">Budget</label>
-                <input value={tripBudget} onChange={(e) => setTripBudget(e.target.value)} placeholder="e.g., 5000-10000" className={inputCls} />
-              </div>
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-500 mb-1">Max Buddies</label>
-                <input type="number" value={tripMax} onChange={(e) => setTripMax(parseInt(e.target.value) || 4)} min={1} max={20} className={inputCls} />
-              </div>
-            </div>
-          </>
+          </motion.div>
         )}
 
         {opportunityType === "skill" && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Skill Name</label>
-              <input value={skillName} onChange={(e) => setSkillName(e.target.value)} placeholder="e.g., Learn React" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Description</label>
-              <textarea value={skillDesc} onChange={(e) => setSkillDesc(e.target.value)} placeholder="What will you teach/learn?" rows={2} className={`${inputCls} resize-none`} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">I want to</label>
-              <div className="flex gap-2">
-                {["teaching", "learning"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setSkillType(t)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      skillType === t ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >{t === "teaching" ? "Teach" : "Learn"}</button>
-                ))}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Skill Name</label>
+                <input value={skillName} onChange={(e) => setSkillName(e.target.value)} placeholder="e.g., Learn React" className={`${inputCls} mt-2`} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Description</label>
+                <textarea value={skillDesc} onChange={(e) => setSkillDesc(e.target.value)} placeholder="What will you teach/learn?" rows={2} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Pricing</label>
-              <div className="flex gap-2 mb-2">
-                <button
-                  onClick={() => setSkillFree(true)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${skillFree ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500"}`}
-                >Free</button>
-                <button
-                  onClick={() => setSkillFree(false)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${!skillFree ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500"}`}
-                >Paid</button>
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">I want to</label>
+                <div className="flex gap-2 mt-2">
+                  {["teaching", "learning"].map((t) => (
+                    <motion.button
+                      key={t}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSkillType(t)}
+                      className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-all border ${
+                        skillType === t ? "bg-blue-500 text-white border-blue-500 shadow-sm shadow-blue-200" : "bg-white text-gray-500 border-gray-200"
+                      }`}
+                    >{t === "teaching" ? "Teach" : "Learn"}</motion.button>
+                  ))}
+                </div>
               </div>
-              {!skillFree && (
-                <input type="number" value={skillPrice} onChange={(e) => setSkillPrice(e.target.value)} placeholder="Price (INR)" className={inputCls} />
-              )}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Pricing</label>
+                <div className="flex gap-2 mt-2">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSkillFree(true)}
+                    className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-all border ${skillFree ? "bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-200" : "bg-white text-gray-500 border-gray-200"}`}
+                  >Free</motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSkillFree(false)}
+                    className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-all border ${!skillFree ? "bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-200" : "bg-white text-gray-500 border-gray-200"}`}
+                  >Paid</motion.button>
+                </div>
+                <AnimatePresence>
+                  {!skillFree && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                      <input type="number" value={skillPrice} onChange={(e) => setSkillPrice(e.target.value)} placeholder="Price (INR)" className={`${inputCls} mt-3`} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Schedule</label>
+                <input value={skillSchedule} onChange={(e) => setSkillSchedule(e.target.value)} placeholder="e.g., Weekends 10AM" className={`${inputCls} mt-2`} />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Schedule</label>
-              <input value={skillSchedule} onChange={(e) => setSkillSchedule(e.target.value)} placeholder="e.g., Weekends 10AM" className={inputCls} />
-            </div>
-          </>
+          </motion.div>
         )}
 
         {opportunityType === "idea" && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Idea Title</label>
-              <input value={ideaTitle} onChange={(e) => setIdeaTitle(e.target.value)} placeholder="e.g., AI-powered recipe app" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Description</label>
-              <textarea value={ideaDesc} onChange={(e) => setIdeaDesc(e.target.value)} placeholder="Describe your idea..." rows={3} className={`${inputCls} resize-none`} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Category</label>
-              <div className="flex flex-wrap gap-1.5">
-                {IDEA_CATEGORIES.map((c) => (
-                  <button
-                    key={c.value}
-                    onClick={() => setIdeaCategory(c.value)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
-                      ideaCategory === c.value ? "bg-amber-500 text-white font-semibold" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >{c.icon} {c.label}</button>
-                ))}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Idea Title</label>
+                <input value={ideaTitle} onChange={(e) => setIdeaTitle(e.target.value)} placeholder="e.g., AI-powered recipe app" className={`${inputCls} mt-2`} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Description</label>
+                <textarea value={ideaDesc} onChange={(e) => setIdeaDesc(e.target.value)} placeholder="Describe your idea..." rows={3} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Stage</label>
-              <div className="flex flex-wrap gap-1.5">
-                {IDEA_STAGES.map((s) => (
-                  <button
-                    key={s.value}
-                    onClick={() => setIdeaStage(s.value)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
-                      ideaStage === s.value ? "bg-amber-500 text-white font-semibold" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >{s.label}</button>
-                ))}
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Category</label>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {IDEA_CATEGORIES.map((c) => (
+                    <motion.button
+                      key={c.value}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIdeaCategory(c.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                        ideaCategory === c.value ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-500 border-gray-200"
+                      }`}
+                    >{c.icon} {c.label}</motion.button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Stage</label>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {IDEA_STAGES.map((s) => (
+                    <motion.button
+                      key={s.value}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIdeaStage(s.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                        ideaStage === s.value ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-500 border-gray-200"
+                      }`}
+                    >{s.label}</motion.button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Looking For</label>
+                <input value={ideaLookingFor} onChange={(e) => setIdeaLookingFor(e.target.value)} placeholder="e.g., Co-founder, Developer" className={`${inputCls} mt-2`} />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-500 mb-1">Looking For</label>
-              <input value={ideaLookingFor} onChange={(e) => setIdeaLookingFor(e.target.value)} placeholder="e.g., Co-founder, Developer" className={inputCls} />
-            </div>
-          </>
+          </motion.div>
         )}
+
+        {/* Location info */}
+        <div className="bg-white rounded-3xl p-5 border border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center">
+              <MapPin size={16} className="text-red-500" />
+            </div>
+            <span className="text-sm text-gray-500">
+              {userLocation.lat !== 0 || userLocation.lng !== 0
+                ? `Location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`
+                : "Location not available"}
+            </span>
+          </div>
+        </div>
+
+        {/* Publish Button */}
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={publish}
+          disabled={!canPublish() || publishing}
+          className={`w-full py-4 rounded-2xl font-bold text-[15px] transition-all ${
+            canPublish() && !publishing
+              ? `bg-gradient-to-r ${activeTab.gradient} text-white shadow-lg`
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          {publishing ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Publishing...
+            </span>
+          ) : (
+            "Publish"
+          )}
+        </motion.button>
+
+        <div className="h-4" />
       </div>
     </motion.div>
   );

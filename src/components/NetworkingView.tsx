@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Search, Filter, MessageCircle, UserPlus, Briefcase } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Search, Filter, MessageCircle, UserPlus, Briefcase, X } from "lucide-react";
 import { useStore } from "@/store";
 import { getDistance, USER_ROLES, STARTUP_STAGES, LOOKING_FOR_OPTIONS } from "@/lib/utils";
 import type { UserType } from "@/types";
@@ -17,7 +17,6 @@ export default function NetworkingView() {
   const [lookingForFilter, setLookingForFilter] = useState("");
   const [search, setSearch] = useState("");
 
-  // Debounce fetch when location/filters change
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const fetchPeople = useCallback(() => {
     if (!user) return;
@@ -65,6 +64,7 @@ export default function NetworkingView() {
 
   const roleInfo = (r: string) => USER_ROLES.find((x) => x.value === r);
   const stageInfo = (s: string) => STARTUP_STAGES.find((x) => x.value === s);
+  const activeFilters = [roleFilter, stageFilter, lookingForFilter].filter(Boolean).length;
 
   return (
     <motion.div
@@ -72,95 +72,103 @@ export default function NetworkingView() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[70px] bg-gray-50 z-[900] flex flex-col"
+      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
     >
       {/* Header */}
-      <div className="px-4 py-3 bg-white border-b border-gray-200">
+      <div className="px-5 pt-4 pb-3 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => setScreen("map")}><ArrowLeft size={20} /></button>
-          <h3 className="flex-1 font-bold text-lg">Networking</h3>
-          <button
+          <button onClick={() => setScreen("map")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <h3 className="flex-1 font-bold text-xl">Networking</h3>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-lg transition-colors ${showFilters ? "bg-violet-100 text-violet-600" : "text-gray-400"}`}
+            className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${showFilters ? "bg-violet-100 text-violet-600" : "bg-gray-100 text-gray-400"}`}
           >
             <Filter size={18} />
-          </button>
+            {activeFilters > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-violet-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{activeFilters}</span>
+            )}
+          </motion.button>
         </div>
         {/* Search */}
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people, roles, companies..."
-            className="w-full pl-9 pr-4 py-2.5 bg-gray-100 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-violet-200 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all"
           />
         </div>
 
         {/* Filters */}
-        {showFilters && (
-          <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} className="mt-3 space-y-2 overflow-hidden">
-            <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase">Role</label>
-              <div className="flex gap-1.5 flex-wrap mt-1">
-                <button
-                  onClick={() => setRoleFilter("")}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${!roleFilter ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}
-                >All</button>
-                {USER_ROLES.map((r) => (
-                  <button
-                    key={r.value}
-                    onClick={() => setRoleFilter(r.value)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${roleFilter === r.value ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}
-                  >{r.icon} {r.label}</button>
-                ))}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-3 space-y-3 overflow-hidden"
+            >
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Role</label>
+                <div className="flex gap-1.5 flex-wrap mt-1.5">
+                  <button onClick={() => setRoleFilter("")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${!roleFilter ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-500 border-gray-200"}`}>All</button>
+                  {USER_ROLES.map((r) => (
+                    <button key={r.value} onClick={() => setRoleFilter(r.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${roleFilter === r.value ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-500 border-gray-200"}`}>
+                      {r.icon} {r.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase">Startup Stage</label>
-              <div className="flex gap-1.5 flex-wrap mt-1">
-                <button
-                  onClick={() => setStageFilter("")}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${!stageFilter ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}
-                >All</button>
-                {STARTUP_STAGES.map((s) => (
-                  <button
-                    key={s.value}
-                    onClick={() => setStageFilter(s.value)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${stageFilter === s.value ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}
-                  >{s.icon} {s.label}</button>
-                ))}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Stage</label>
+                <div className="flex gap-1.5 flex-wrap mt-1.5">
+                  <button onClick={() => setStageFilter("")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${!stageFilter ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-500 border-gray-200"}`}>All</button>
+                  {STARTUP_STAGES.map((s) => (
+                    <button key={s.value} onClick={() => setStageFilter(s.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${stageFilter === s.value ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-500 border-gray-200"}`}>
+                      {s.icon} {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase">Looking For</label>
-              <div className="flex gap-1.5 flex-wrap mt-1">
-                <button
-                  onClick={() => setLookingForFilter("")}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${!lookingForFilter ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}
-                >All</button>
-                {LOOKING_FOR_OPTIONS.map((l) => (
-                  <button
-                    key={l.value}
-                    onClick={() => setLookingForFilter(l.value)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${lookingForFilter === l.value ? "bg-violet-600 text-white" : "bg-gray-100 text-gray-500"}`}
-                  >{l.label}</button>
-                ))}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Looking For</label>
+                <div className="flex gap-1.5 flex-wrap mt-1.5">
+                  <button onClick={() => setLookingForFilter("")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${!lookingForFilter ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-500 border-gray-200"}`}>All</button>
+                  {LOOKING_FOR_OPTIONS.map((l) => (
+                    <button key={l.value} onClick={() => setLookingForFilter(l.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${lookingForFilter === l.value ? "bg-violet-600 text-white border-violet-600" : "bg-white text-gray-500 border-gray-200"}`}>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* People list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {loading ? (
-          <p className="text-center text-gray-400 text-sm py-10">Finding people nearby...</p>
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-3 border-gray-200 border-t-violet-500 rounded-full animate-spin" />
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <Briefcase size={48} className="mx-auto mb-4 opacity-40" />
-            <p className="text-sm">No professionals found nearby</p>
-            <p className="text-xs mt-1">Try expanding your filters</p>
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+            <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center mb-4">
+              <Briefcase size={28} className="text-emerald-300" />
+            </div>
+            <p className="text-sm font-medium">No professionals nearby</p>
+            <p className="text-xs text-gray-300 mt-1">Try expanding your filters</p>
           </div>
         ) : (
           filtered.map((person, idx) => {
@@ -180,11 +188,11 @@ export default function NetworkingView() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.03 }}
-                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+                className="bg-white rounded-3xl p-5 border border-gray-100"
               >
-                <div className="flex items-start gap-3">
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-600 to-indigo-400 flex items-center justify-center text-white font-bold text-lg overflow-hidden">
+                <div className="flex items-start gap-3.5">
+                  <div className="relative shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg overflow-hidden">
                       {person.avatar ? (
                         <img src={person.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -192,7 +200,7 @@ export default function NetworkingView() {
                       )}
                     </div>
                     {person.online && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -201,49 +209,51 @@ export default function NetworkingView() {
                       {person.online && <span className="text-[10px] text-emerald-500 font-semibold">Online</span>}
                     </div>
                     {(person.title || person.company) && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-400 mt-0.5">
                         {person.title}{person.title && person.company ? " at " : ""}{person.company}
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {role && (
-                        <span className="px-2 py-0.5 bg-violet-50 text-violet-600 text-[10px] font-semibold rounded-full">
+                        <span className="px-2.5 py-0.5 bg-violet-50 text-violet-600 text-[10px] font-semibold rounded-lg">
                           {role.icon} {role.label}
                         </span>
                       )}
                       {stage && (
-                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-semibold rounded-full">
+                        <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-semibold rounded-lg">
                           {stage.icon} {stage.label}
                         </span>
                       )}
-                      <span className="text-[10px] text-gray-400">{dist}</span>
+                      <span className="text-[10px] text-gray-300 font-medium">{dist}</span>
                     </div>
                     {person.lookingFor && (
-                      <p className="text-[11px] text-emerald-600 font-semibold mt-1">
+                      <p className="text-[11px] text-emerald-600 font-semibold mt-1.5">
                         Looking for: {person.lookingFor}
                       </p>
                     )}
                     {personSkills.length > 0 && (
-                      <div className="flex gap-1 flex-wrap mt-1.5">
+                      <div className="flex gap-1.5 flex-wrap mt-2">
                         {personSkills.slice(0, 4).map((s) => (
-                          <span key={s} className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full">{s}</span>
+                          <span key={s} className="px-2 py-0.5 bg-gray-50 text-gray-500 text-[10px] rounded-lg border border-gray-100">{s}</span>
                         ))}
                         {personSkills.length > 4 && (
-                          <span className="text-[10px] text-gray-400">+{personSkills.length - 4}</span>
+                          <span className="text-[10px] text-gray-300">+{personSkills.length - 4}</span>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
                 {/* Actions */}
-                <div className="flex gap-2 mt-3">
-                  <button
+                <div className="flex gap-2.5 mt-4">
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => sendHi(person.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-violet-600 text-white text-xs font-semibold rounded-xl hover:bg-violet-700 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-2xl shadow-sm shadow-violet-200"
                   >
                     <MessageCircle size={14} /> Say Hi
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => {
                       fetch("/api/connections", {
                         method: "POST",
@@ -251,10 +261,10 @@ export default function NetworkingView() {
                         body: JSON.stringify({ fromUserId: user?.id, toUserId: person.id }),
                       });
                     }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-100 text-gray-600 text-xs font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-50 text-gray-600 text-xs font-bold rounded-2xl border border-gray-200"
                   >
                     <UserPlus size={14} /> Connect
-                  </button>
+                  </motion.button>
                 </div>
               </motion.div>
             );

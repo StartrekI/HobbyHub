@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, CheckCheck } from "lucide-react";
+import { ArrowLeft, Send, CheckCheck, Phone, MoreVertical } from "lucide-react";
 import { useStore } from "@/store";
 import { formatTime } from "@/lib/utils";
 import type { MessageType } from "@/types";
@@ -14,8 +14,8 @@ interface DmMessage {
   seen: boolean;
   senderId: string;
   receiverId: string;
-  sender: { id: string; name: string };
-  receiver: { id: string; name: string };
+  sender: { id: string; name: string; avatar?: string };
+  receiver: { id: string; name: string; avatar?: string };
 }
 
 export default function ChatScreen() {
@@ -29,11 +29,9 @@ export default function ChatScreen() {
   const dmPartnerId = isDm ? currentChatId!.replace("dm:", "") : null;
   const groupMessages = chatMessages[currentChatId || ""] || [];
 
-  // Fetch messages
   useEffect(() => {
     if (!currentChatId || !user) return;
     setLoading(true);
-
     if (isDm && dmPartnerId) {
       fetch(`/api/dm?userId=${user.id}&otherId=${dmPartnerId}`)
         .then((r) => r.json())
@@ -51,7 +49,6 @@ export default function ChatScreen() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [groupMessages, dmMessages]);
 
-  // Poll for new messages (5s interval, only fetch new ones)
   const lastFetchRef = useRef<string>("");
   useEffect(() => {
     if (!currentChatId || !user) return;
@@ -99,7 +96,6 @@ export default function ChatScreen() {
     if (!input.trim() || !currentChatId || !user) return;
     const text = input.trim();
     setInput("");
-
     try {
       if (isDm && dmPartnerId) {
         const res = await fetch("/api/dm", {
@@ -131,9 +127,25 @@ export default function ChatScreen() {
 
   const chatSubtitle = isDm
     ? "Direct message"
-    : `${selectedActivity?.participants?.length || 0} participants`;
+    : `${selectedActivity?.participants?.length || 0} members`;
+
+  const partnerAvatar = isDm && dmMessages.length > 0
+    ? (dmMessages[0].senderId === user?.id ? dmMessages[0].receiver?.avatar : dmMessages[0].sender?.avatar)
+    : null;
 
   const allMessages = isDm ? dmMessages : groupMessages;
+
+  // Group messages by date
+  const groupedByDate: { date: string; messages: (MessageType | DmMessage)[] }[] = [];
+  let lastDate = "";
+  allMessages.forEach((msg) => {
+    const d = new Date(msg.createdAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    if (d !== lastDate) {
+      groupedByDate.push({ date: d, messages: [] });
+      lastDate = d;
+    }
+    groupedByDate[groupedByDate.length - 1].messages.push(msg);
+  });
 
   return (
     <motion.div
@@ -141,76 +153,117 @@ export default function ChatScreen() {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[70px] bg-gray-50 z-[900] flex flex-col"
+      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200">
-        <button onClick={() => setScreen("chat-list")}><ArrowLeft size={20} /></button>
-        <div className="flex-1">
+      <div className="flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <button onClick={() => setScreen("chat-list")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+          <ArrowLeft size={20} />
+        </button>
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden shrink-0">
+          {partnerAvatar ? <img src={partnerAvatar} alt="" className="w-full h-full object-cover" /> : chatTitle.charAt(0)}
+        </div>
+        <div className="flex-1 min-w-0">
           <h3 className="font-bold text-sm truncate">{chatTitle}</h3>
           <p className="text-xs text-gray-400">{chatSubtitle}</p>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 py-3">
         {loading ? (
-          <p className="text-center text-gray-400 text-sm py-10">Loading messages...</p>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-10 h-10 mx-auto mb-3 border-3 border-gray-200 border-t-violet-500 rounded-full animate-spin" />
+              <p className="text-gray-400 text-sm">Loading messages...</p>
+            </div>
+          </div>
         ) : allMessages.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm py-10">No messages yet. Say something!</p>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-violet-50 rounded-3xl flex items-center justify-center">
+                <Send size={24} className="text-violet-300" />
+              </div>
+              <p className="text-gray-400 text-sm font-medium">No messages yet</p>
+              <p className="text-gray-300 text-xs mt-1">Say something to start the conversation</p>
+            </div>
+          </div>
         ) : (
-          allMessages.map((msg: MessageType | DmMessage) => {
-            const isSelf = msg.senderId === user?.id;
-            const seen = "seen" in msg ? msg.seen : false;
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`max-w-[80%] ${isSelf ? "ml-auto" : "mr-auto"}`}
-              >
-                <div
-                  className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    isSelf
-                      ? "bg-violet-600 text-white rounded-br-sm"
-                      : "bg-white shadow-sm rounded-bl-sm"
-                  }`}
-                >
-                  {!isSelf && !isDm && (
-                    <p className="text-[11px] font-bold mb-0.5 text-violet-600">
-                      {msg.sender?.name}
-                    </p>
-                  )}
-                  {msg.text}
-                  <div className={`flex items-center gap-1 mt-1 justify-end ${isSelf ? "text-white/60" : "text-gray-400"}`}>
-                    <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                    {isSelf && (
-                      <CheckCheck size={12} className={seen ? "text-blue-300" : "opacity-50"} />
-                    )}
-                  </div>
+          <div className="space-y-1">
+            {groupedByDate.map((group) => (
+              <div key={group.date}>
+                <div className="flex justify-center my-3">
+                  <span className="px-3 py-1 bg-gray-100 text-gray-400 text-[10px] font-semibold rounded-full">{group.date}</span>
                 </div>
-              </motion.div>
-            );
-          })
+                {group.messages.map((msg: MessageType | DmMessage, idx) => {
+                  const isSelf = msg.senderId === user?.id;
+                  const seen = "seen" in msg ? msg.seen : false;
+                  const prevMsg = idx > 0 ? group.messages[idx - 1] : null;
+                  const isConsecutive = prevMsg && prevMsg.senderId === msg.senderId;
+
+                  return (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.15 }}
+                      className={`flex ${isSelf ? "justify-end" : "justify-start"} ${isConsecutive ? "mt-0.5" : "mt-2.5"}`}
+                    >
+                      <div className={`max-w-[78%] ${isSelf ? "order-1" : "order-1"}`}>
+                        {!isSelf && !isDm && !isConsecutive && (
+                          <p className="text-[11px] font-semibold mb-1 ml-1 text-violet-500">
+                            {msg.sender?.name}
+                          </p>
+                        )}
+                        <div
+                          className={`px-4 py-2.5 text-[14px] leading-relaxed ${
+                            isSelf
+                              ? `bg-violet-600 text-white ${isConsecutive ? "rounded-2xl rounded-tr-lg" : "rounded-2xl rounded-br-lg"}`
+                              : `bg-white text-gray-800 shadow-sm border border-gray-100 ${isConsecutive ? "rounded-2xl rounded-tl-lg" : "rounded-2xl rounded-bl-lg"}`
+                          }`}
+                        >
+                          {msg.text}
+                          <div className={`flex items-center gap-1 mt-1 ${isSelf ? "justify-end" : "justify-end"}`}>
+                            <span className={`text-[10px] ${isSelf ? "text-white/50" : "text-gray-300"}`}>
+                              {formatTime(msg.createdAt)}
+                            </span>
+                            {isSelf && (
+                              <CheckCheck size={12} className={seen ? "text-sky-300" : "text-white/30"} />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <div className="flex items-center gap-2 p-3 bg-white border-t border-gray-200">
+      <div className="flex items-center gap-2.5 p-3 bg-white/80 backdrop-blur-xl border-t border-gray-100">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-full text-sm outline-none focus:border-violet-600 bg-gray-50 transition-colors"
+          className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100 transition-all"
         />
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={sendMessage}
-          className="w-11 h-11 bg-violet-600 text-white rounded-full flex items-center justify-center hover:bg-violet-700 transition-colors"
+          disabled={!input.trim()}
+          className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+            input.trim()
+              ? "bg-violet-600 text-white shadow-md shadow-violet-200"
+              : "bg-gray-100 text-gray-300"
+          }`}
         >
-          <Send size={16} />
-        </button>
+          <Send size={18} />
+        </motion.button>
       </div>
     </motion.div>
   );
