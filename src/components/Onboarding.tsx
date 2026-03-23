@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Users, Zap, Locate, Briefcase } from "lucide-react";
 import { useStore } from "@/store";
@@ -17,8 +17,10 @@ declare global {
       accounts: {
         id: {
           initialize: (config: Record<string, unknown>) => void;
-          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
-          prompt: () => void;
+          prompt: (cb?: (notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean }) => void) => void;
+        };
+        oauth2: {
+          initTokenClient: (config: Record<string, unknown>) => { requestAccessToken: () => void };
         };
       };
     };
@@ -43,8 +45,8 @@ export default function Onboarding() {
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [onboardError, setOnboardError] = useState("");
+  const [googleReady, setGoogleReady] = useState(false);
 
-  const googleBtnRef = useRef<HTMLDivElement>(null);
   const { setUser, setUserLocation, setOnboarded } = useStore();
 
   const next = () => {
@@ -52,33 +54,46 @@ export default function Onboarding() {
     if (idx < steps.length - 1) setStep(steps[idx + 1]);
   };
 
-  const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
+  // Process Google user info from access token
+  const processGoogleLogin = useCallback(async (accessToken: string) => {
     setLoginLoading(true);
     setLoginError("");
 
     try {
-      const res = await fetch("/api/auth/google", {
+      // Fetch user info from Google using access token
+      const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const googleUser = await res.json();
+
+      if (!googleUser.email) {
+        setLoginError("Could not get email from Google. Please try again.");
+        return;
+      }
+
+      // Create/update user in our DB
+      const userRes = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: response.credential }),
+        body: JSON.stringify({
+          email: googleUser.email,
+          name: googleUser.name || "Explorer",
+          avatar: googleUser.picture || "",
+        }),
       });
-      const data = await res.json();
+      const data = await userRes.json();
 
-      if (!res.ok || !data.id) {
+      if (!userRes.ok || !data.id) {
         setLoginError(data.error || "Login failed. Please try again.");
         return;
       }
 
-      // Save credential for session persistence
-      localStorage.setItem("hobbyhub_token", response.credential);
       localStorage.setItem("hobbyhub_user", JSON.stringify(data));
+      setName(data.name || googleUser.name || "");
+      setAvatar(data.avatar || googleUser.picture || "");
+      setEmail(data.email || googleUser.email || "");
 
-      // Set user data from Google
-      setName(data.name || "");
-      setAvatar(data.avatar || "");
-      setEmail(data.email || "");
-
-      // If returning user with interests already set, skip to map
+      // Returning user with interests? Skip to map
       const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
       if (interests && interests.length > 0) {
         setUser({
@@ -94,49 +109,86 @@ export default function Onboarding() {
       // New user — continue onboarding
       next();
     } catch (e) {
-      console.error("Google auth error:", e);
+      console.error("Google login error:", e);
       setLoginError("Network error. Please check your connection.");
     } finally {
       setLoginLoading(false);
     }
   }, [setUser, setUserLocation, setOnboarded]);
 
-  // Initialize Google Sign-In
+  // Wait for Google script to load
   useEffect(() => {
-    if (step !== "google-login") return;
     if (!GOOGLE_CLIENT_ID) return;
 
-    const initGoogle = () => {
-      if (window.google && googleBtnRef.current) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleResponse,
-        });
-        window.google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: "outline",
-          size: "large",
-          width: 320,
-          text: "continue_with",
-          shape: "pill",
-          logo_alignment: "center",
-        });
+    const checkGoogle = setInterval(() => {
+      if (window.google?.accounts?.oauth2) {
+        setGoogleReady(true);
+        clearInterval(checkGoogle);
       }
-    };
+    }, 200);
 
-    // Google script might already be loaded
-    if (window.google) {
-      initGoogle();
-    } else {
-      // Wait for script to load
-      const interval = setInterval(() => {
-        if (window.google) {
-          clearInterval(interval);
-          initGoogle();
-        }
-      }, 100);
-      return () => clearInterval(interval);
+    return () => clearInterval(checkGoogle);
+  }, []);
+
+  const handleGoogleClick = () => {
+    if (!window.google?.accounts?.oauth2) {
+      setLoginError("Google Sign-In is loading... Please try again in a moment.");
+      return;
     }
-  }, [step, handleGoogleResponse]);
+
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "email profile",
+      callback: (response: { access_token?: string; error?: string }) => {
+        if (response.error) {
+          setLoginError("Google sign-in was cancelled or failed.");
+          return;
+        }
+        if (response.access_token) {
+          processGoogleLogin(response.access_token);
+        }
+      },
+    });
+
+    client.requestAccessToken();
+  };
+
+  // Email login handler
+  const handleEmailLogin = async () => {
+    if (!email) { setLoginError("Please enter your email"); return; }
+    if (!name) { setLoginError("Please enter your name"); return; }
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name }),
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        localStorage.setItem("hobbyhub_user", JSON.stringify(data));
+        setAvatar(data.avatar || "");
+        const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
+        if (interests && interests.length > 0) {
+          setUser({
+            ...data,
+            interests,
+            skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+          });
+          setOnboarded(true);
+          return;
+        }
+        next();
+      } else {
+        setLoginError(data.error || "Failed to sign in");
+      }
+    } catch {
+      setLoginError("Network error. Please try again.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   // Check for existing session on mount
   useEffect(() => {
@@ -145,7 +197,6 @@ export default function Onboarding() {
       try {
         const data = JSON.parse(savedUser);
         if (data.id && data.email) {
-          // Verify session is still valid by pinging the server
           fetch("/api/users/ping", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -164,7 +215,6 @@ export default function Onboarding() {
               localStorage.removeItem("hobbyhub_token");
             }
           }).catch(() => {
-            // Offline — still load cached user
             setUser({
               ...data,
               interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests || [],
@@ -311,21 +361,37 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {/* Google Sign-In Button */}
+              {/* Google Sign-In - Custom Button */}
               {GOOGLE_CLIENT_ID && (
-                <div className="flex justify-center mb-4">
-                  <div ref={googleBtnRef} />
+                <button
+                  onClick={handleGoogleClick}
+                  disabled={loginLoading}
+                  className="w-full flex items-center justify-center gap-3 py-3.5 bg-white text-gray-700 rounded-xl font-semibold text-base hover:scale-[1.02] transition-transform shadow-lg disabled:opacity-50 mb-2"
+                >
+                  <svg width="20" height="20" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  </svg>
+                  Continue with Google
+                </button>
+              )}
+
+              {!GOOGLE_CLIENT_ID && !googleReady && (
+                <div className="mb-2 p-3 bg-yellow-500/20 border border-yellow-300/50 rounded-xl text-xs text-white/70">
+                  Google Sign-In not configured. Use email below.
                 </div>
               )}
 
               {/* Divider */}
-              <div className="flex items-center gap-3 my-5">
+              <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-white/30" />
-                <span className="text-white/50 text-xs">{GOOGLE_CLIENT_ID ? "or continue with email" : "Sign in with email"}</span>
+                <span className="text-white/50 text-xs">or continue with email</span>
                 <div className="flex-1 h-px bg-white/30" />
               </div>
 
-              {/* Email login - always available */}
+              {/* Email login */}
               <div className="space-y-3">
                 <input
                   type="email"
@@ -342,45 +408,11 @@ export default function Onboarding() {
                   className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
                 />
                 <button
-                  onClick={async () => {
-                    if (!email) { setLoginError("Please enter your email"); return; }
-                    if (!name) { setLoginError("Please enter your name"); return; }
-                    setLoginLoading(true);
-                    setLoginError("");
-                    try {
-                      const res = await fetch("/api/users", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, name }),
-                      });
-                      const data = await res.json();
-                      if (res.ok && data.id) {
-                        localStorage.setItem("hobbyhub_user", JSON.stringify(data));
-                        setAvatar(data.avatar || "");
-                        const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
-                        if (interests && interests.length > 0) {
-                          setUser({
-                            ...data,
-                            interests,
-                            skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-                          });
-                          setOnboarded(true);
-                          return;
-                        }
-                        next();
-                      } else {
-                        setLoginError(data.error || "Failed to sign in");
-                      }
-                    } catch {
-                      setLoginError("Network error. Please try again.");
-                    } finally {
-                      setLoginLoading(false);
-                    }
-                  }}
+                  onClick={handleEmailLogin}
                   disabled={loginLoading}
-                  className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50"
+                  className="w-full py-4 bg-white/20 border-2 border-white/40 text-white rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50"
                 >
-                  Continue
+                  Continue with Email
                 </button>
               </div>
 
