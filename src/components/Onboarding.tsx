@@ -191,45 +191,7 @@ export default function Onboarding() {
     }
   };
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const savedUser = localStorage.getItem("hobbyhub_user");
-    if (savedUser) {
-      try {
-        const data = JSON.parse(savedUser);
-        if (data.id && data.email) {
-          fetch("/api/users/ping", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: data.id, lat: data.lat || 0, lng: data.lng || 0 }),
-          }).then(res => {
-            if (res.ok) {
-              setUser({
-                ...data,
-                interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests || [],
-                skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-              });
-              setUserLocation({ lat: data.lat || 0, lng: data.lng || 0 });
-              setOnboarded(true);
-            } else {
-              localStorage.removeItem("hobbyhub_user");
-              localStorage.removeItem("hobbyhub_token");
-            }
-          }).catch(() => {
-            setUser({
-              ...data,
-              interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests || [],
-              skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-            });
-            setUserLocation({ lat: data.lat || 0, lng: data.lng || 0 });
-            setOnboarded(true);
-          });
-        }
-      } catch {
-        localStorage.removeItem("hobbyhub_user");
-      }
-    }
-  }, [setUser, setUserLocation, setOnboarded]);
+  // Session restore is handled in page.tsx
 
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
