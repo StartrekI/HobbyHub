@@ -92,12 +92,11 @@ export default function Onboarding() {
       localStorage.setItem("hobbyhub_user", JSON.stringify(data));
 
       // Set user and go straight to map
-      const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
-      setUser({
-        ...data,
-        interests: interests || [],
-        skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-      });
+      let interests = data.interests || [];
+      let skills = data.skills || [];
+      try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
+      try { if (typeof skills === "string") skills = JSON.parse(skills); } catch { skills = []; }
+      setUser({ ...data, interests, skills });
 
       // Get location then finish
       if (navigator.geolocation) {
@@ -166,6 +165,7 @@ export default function Onboarding() {
   // Email login handler
   const handleEmailLogin = async () => {
     if (!email) { setLoginError("Please enter your email"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setLoginError("Please enter a valid email address"); return; }
     if (!name) { setLoginError("Please enter your name"); return; }
     setLoginLoading(true);
     setLoginError("");
@@ -178,12 +178,11 @@ export default function Onboarding() {
       const data = await res.json();
       if (res.ok && data.id) {
         localStorage.setItem("hobbyhub_user", JSON.stringify(data));
-        const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
-        setUser({
-          ...data,
-          interests: interests || [],
-          skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-        });
+        let interests = data.interests || [];
+        let skills = data.skills || [];
+        try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
+        try { if (typeof skills === "string") skills = JSON.parse(skills); } catch { skills = []; }
+        setUser({ ...data, interests, skills });
         // Get location then go to map
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
@@ -266,11 +265,11 @@ export default function Onboarding() {
       });
       const data = await res.json();
       if (res.ok && data.id) {
-        const userData = {
-          ...data,
-          interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests,
-          skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills,
-        };
+        let parsedInterests = data.interests || [];
+        let parsedSkills = data.skills || [];
+        try { if (typeof parsedInterests === "string") parsedInterests = JSON.parse(parsedInterests); } catch { parsedInterests = []; }
+        try { if (typeof parsedSkills === "string") parsedSkills = JSON.parse(parsedSkills); } catch { parsedSkills = []; }
+        const userData = { ...data, interests: parsedInterests, skills: parsedSkills };
         setUser(userData);
         localStorage.setItem("hobbyhub_user", JSON.stringify(data));
         setOnboarded(true);

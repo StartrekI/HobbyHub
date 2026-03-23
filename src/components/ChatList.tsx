@@ -26,6 +26,7 @@ export default function ChatList() {
   const [chats, setChats] = useState<ChatItem[]>([]);
   const [dms, setDms] = useState<DmConversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [tab, setTab] = useState<"groups" | "direct">("groups");
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function ChatList() {
         setDms(dmData);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { setLoading(false); setError(true); });
   }, [user]);
 
   const openGroupChat = (chat: ChatItem) => {
@@ -86,7 +87,13 @@ export default function ChatList() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        {loading ? (
+        {error ? (
+          <div className="text-center py-16 text-gray-400">
+            <MessageCircle size={48} className="mx-auto mb-4 opacity-40" />
+            <p className="text-sm">Failed to load chats</p>
+            <button onClick={() => { setError(false); setLoading(true); window.location.reload(); }} className="mt-2 text-violet-600 text-sm font-semibold">Retry</button>
+          </div>
+        ) : loading ? (
           <div className="text-center text-gray-400 py-10 text-sm">Loading chats...</div>
         ) : tab === "groups" ? (
           chats.length === 0 ? (

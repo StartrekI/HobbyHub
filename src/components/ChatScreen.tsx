@@ -56,6 +56,7 @@ export default function ChatScreen() {
   useEffect(() => {
     if (!currentChatId || !user) return;
     const interval = setInterval(async () => {
+      if (document.hidden) return;
       try {
         if (isDm && dmPartnerId) {
           const since = dmMessages.length > 0 ? dmMessages[dmMessages.length - 1].createdAt : "";
@@ -123,7 +124,9 @@ export default function ChatScreen() {
   };
 
   const chatTitle = isDm
-    ? (dmMessages[0]?.senderId === user?.id ? dmMessages[0]?.receiver?.name : dmMessages[0]?.sender?.name) || "Direct Message"
+    ? (dmMessages.length > 0
+        ? (dmMessages[0].senderId === user?.id ? dmMessages[0].receiver?.name : dmMessages[0].sender?.name) || "Direct Message"
+        : "Direct Message")
     : selectedActivity?.title || "Chat";
 
   const chatSubtitle = isDm

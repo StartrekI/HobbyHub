@@ -16,6 +16,7 @@ const TABS = [
 export default function CreateOpportunityModal() {
   const { user, userLocation, setScreen, opportunityType, setOpportunityType } = useStore();
   const [publishing, setPublishing] = useState(false);
+  const [error, setError] = useState("");
 
   // Gig fields
   const [gigTitle, setGigTitle] = useState("");
@@ -51,10 +52,12 @@ export default function CreateOpportunityModal() {
   const publish = async () => {
     if (!user) return;
     setPublishing(true);
+    setError("");
 
     try {
+      let res: Response | undefined;
       if (opportunityType === "gig") {
-        await fetch("/api/gigs", {
+        res = await fetch("/api/gigs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -63,7 +66,7 @@ export default function CreateOpportunityModal() {
           }),
         });
       } else if (opportunityType === "trip") {
-        await fetch("/api/trips", {
+        res = await fetch("/api/trips", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -72,7 +75,7 @@ export default function CreateOpportunityModal() {
           }),
         });
       } else if (opportunityType === "skill") {
-        await fetch("/api/skills", {
+        res = await fetch("/api/skills", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -82,7 +85,7 @@ export default function CreateOpportunityModal() {
           }),
         });
       } else if (opportunityType === "idea") {
-        await fetch("/api/ideas", {
+        res = await fetch("/api/ideas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -91,9 +94,15 @@ export default function CreateOpportunityModal() {
           }),
         });
       }
+      if (res && !res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to publish. Please try again.");
+        return;
+      }
       setScreen("discover");
     } catch (e) {
       console.error("Publish error:", e);
+      setError("Network error. Please check your connection.");
     } finally {
       setPublishing(false);
     }
@@ -150,6 +159,13 @@ export default function CreateOpportunityModal() {
           );
         })}
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mx-4 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+          {error}
+        </div>
+      )}
 
       {/* Form */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

@@ -39,6 +39,7 @@ export default function ProfileScreen() {
   const [requests, setRequests] = useState<ProfileReq[]>([]);
   const [connections, setConnections] = useState<{ partner: { name: string } }[]>([]);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function ProfileScreen() {
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
+    setSaveError("");
     try {
       const res = await fetch(`/api/users/${user.id}`, {
         method: "PATCH",
@@ -92,16 +94,23 @@ export default function ProfileScreen() {
           collegeName: editCollege, graduationYear: parseInt(editGradYear) || 0,
         }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setSaveError(err.error || "Failed to save profile. Please try again.");
+        return;
+      }
       const updated = await res.json();
-      const userData = {
-        ...user, ...updated,
-        interests: typeof updated.interests === "string" ? JSON.parse(updated.interests) : updated.interests,
-        skills: typeof updated.skills === "string" ? JSON.parse(updated.skills) : updated.skills,
-      };
+      let interests = updated.interests || [];
+      let skills = updated.skills || [];
+      try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
+      try { if (typeof skills === "string") skills = JSON.parse(skills); } catch { skills = []; }
+      const userData = { ...user, ...updated, interests, skills };
       setUser(userData);
       localStorage.setItem("hobbyhub_user", JSON.stringify(updated));
       setEditing(false);
-    } catch {} finally { setSaving(false); }
+    } catch {
+      setSaveError("Network error. Please check your connection.");
+    } finally { setSaving(false); }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +166,11 @@ export default function ProfileScreen() {
         )}
       </div>
 
+      {saveError && (
+        <div className="mx-4 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+          {saveError}
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-4">
         <AnimatePresence mode="wait">
           {editing ? (

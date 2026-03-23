@@ -103,8 +103,9 @@ export default function ActivityDetail() {
       <div className="flex gap-2 p-4 bg-gray-50">
         <button
           onClick={handleJoin}
+          disabled={isJoined}
           className={`flex-[2] py-3.5 rounded-xl font-bold text-sm transition-all ${
-            isJoined ? "bg-emerald-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700"
+            isJoined ? "bg-emerald-500 text-white cursor-default" : "bg-violet-600 text-white hover:bg-violet-700"
           }`}
         >
           {isJoined ? "Joined" : "Join Activity"}

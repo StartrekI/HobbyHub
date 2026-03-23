@@ -19,7 +19,7 @@ export default function MapView() {
     userLocation, activities, setActivities, nearbyUsers, setNearbyUsers,
     hotspots, setHotspots, mapFilter, setMapFilter, selectedActivity,
     setSelectedActivity, setScreen, sheetOpen, setSheetOpen, user,
-    unreadCount, setCurrentChatId,
+    unreadCount, setUnreadCount, setCurrentChatId, setOpportunityType,
   } = useStore();
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -43,19 +43,20 @@ export default function MapView() {
       }
       if (data.users && Array.isArray(data.users)) {
         setNearbyUsers(
-          data.users.map((u: UserType & { interests: string }) => ({
-            ...u,
-            interests: typeof u.interests === "string" ? JSON.parse(u.interests) : u.interests,
-          }))
+          data.users.map((u: UserType & { interests: string }) => {
+            let interests = u.interests || [];
+            try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
+            return { ...u, interests };
+          })
         );
       }
       if (typeof data.unreadCount === "number") {
-        useStore.getState().setUnreadCount(data.unreadCount);
+        setUnreadCount(data.unreadCount);
       }
     } catch (e) {
       console.error("Fetch error:", e);
     }
-  }, [userLocation, user, setActivities, setNearbyUsers]);
+  }, [userLocation, user, setActivities, setNearbyUsers, setUnreadCount]);
 
   const detectHotspots = (acts: ActivityType[]) => {
     const clusters: Record<string, { activities: ActivityType[]; lat: number; lng: number }> = {};
@@ -86,7 +87,9 @@ export default function MapView() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // 10s polling
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchData();
+    }, 10000);
     return () => clearInterval(interval);
   }, [fetchData]);
 
@@ -298,7 +301,7 @@ export default function MapView() {
           <Briefcase size={18} />
         </button>
         <button
-          onClick={() => { useStore.getState().setOpportunityType("gig"); setScreen("create-opportunity"); }}
+          onClick={() => { setOpportunityType("gig"); setScreen("create-opportunity"); }}
           className="w-12 h-12 bg-amber-500 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform"
           title="Create Opportunity"
         >

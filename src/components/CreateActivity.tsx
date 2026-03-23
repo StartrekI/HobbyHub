@@ -110,7 +110,9 @@ export default function CreateActivity() {
     },
   ];
 
-  const canPublish = type && title && user && !publishing;
+  const selectedDateTime = new Date(`${date}T${time}`);
+  const isPastDate = selectedDateTime < new Date();
+  const canPublish = type && title && user && !publishing && !isPastDate;
   const formTitle = mode === "event" ? "Create Event" : mode === "group" ? "Create Group" : "Create Activity";
 
   return (
@@ -259,6 +261,10 @@ export default function CreateActivity() {
             </div>
           </div>
 
+          {isPastDate && (
+            <p className="text-xs text-amber-600 font-semibold -mt-2">Date/time is in the past — please select a future time</p>
+          )}
+
           <div>
             <label className="block text-sm font-semibold text-gray-500 mb-2">
               {mode === "group" ? "Max Members" : mode === "event" ? "Capacity" : "Players Needed"}
@@ -342,9 +348,13 @@ export default function CreateActivity() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-500 mb-2">Location</label>
-            <div className="flex items-center gap-2 p-3.5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-violet-600 transition-colors">
+            <div className="flex items-center gap-2 p-3.5 border-2 border-gray-200 rounded-xl bg-gray-50">
               <MapPin size={18} className="text-red-500" />
-              <span className="text-sm text-gray-600">Use current location</span>
+              <span className="text-sm text-gray-600">
+                {userLocation.lat !== 0 || userLocation.lng !== 0
+                  ? `Using your location (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})`
+                  : "Location not available — enable GPS"}
+              </span>
             </div>
           </div>
 

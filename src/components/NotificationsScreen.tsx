@@ -40,10 +40,11 @@ export default function NotificationsScreen() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ notificationId: id }),
     });
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-    setUnreadCount(notifications.filter((n) => !n.read && n.id !== id).length);
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      setUnreadCount(updated.filter((n) => !n.read).length);
+      return updated;
+    });
   };
 
   return (

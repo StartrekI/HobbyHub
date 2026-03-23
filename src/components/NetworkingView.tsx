@@ -45,9 +45,9 @@ export default function NetworkingView() {
 
   const filtered = search
     ? people.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.role.toLowerCase().includes(search.toLowerCase()) ||
-        p.company.toLowerCase().includes(search.toLowerCase())
+        (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.role || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.company || "").toLowerCase().includes(search.toLowerCase())
       )
     : people;
 
@@ -167,9 +167,12 @@ export default function NetworkingView() {
             const dist = getDistance(userLocation.lat, userLocation.lng, person.lat, person.lng);
             const role = roleInfo(person.role);
             const stage = stageInfo(person.startupStage);
-            const personSkills: string[] = typeof person.skills === "string"
-              ? JSON.parse(person.skills || "[]")
-              : (person.skills || []);
+            let personSkills: string[] = [];
+            try {
+              personSkills = typeof person.skills === "string"
+                ? JSON.parse(person.skills || "[]")
+                : (person.skills || []);
+            } catch { personSkills = []; }
 
             return (
               <motion.div

@@ -161,8 +161,11 @@ export default function LeafletMap({
       else if (u.role === "investor") bgColor = "#FDCB6E";
       else if (u.role === "freelancer") bgColor = "#E17055";
 
-      const avatarHtml = u.avatar
-        ? `<img src="${u.avatar}" class="user-avatar-img" />`
+      const safeAvatar = u.avatar && /^https?:\/\//.test(u.avatar)
+        ? u.avatar.replace(/"/g, "&quot;")
+        : "";
+      const avatarHtml = safeAvatar
+        ? `<img src="${safeAvatar}" class="user-avatar-img" />`
         : `<span class="user-initial">${initial}</span>`;
 
       const icon = L.divIcon({
