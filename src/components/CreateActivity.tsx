@@ -30,9 +30,12 @@ export default function CreateActivity() {
     if (m === "event") {
       setIsEvent(true);
       setCategory("event");
+      setType("event"); // auto-set type
     } else if (m === "group") {
       setCategory("social");
       setPlayersNeeded(10);
+      setType("hangout"); // auto-set type
+      setIsRecurring(true);
     } else {
       setIsEvent(false);
     }
@@ -41,7 +44,9 @@ export default function CreateActivity() {
   const [error, setError] = useState("");
 
   const publish = async () => {
-    if (!type || !title || !user) return;
+    if (!user) { setError("Please log in first"); return; }
+    if (!type) { setError("Please select an activity type"); return; }
+    if (!title) { setError("Please enter a title"); return; }
     setPublishing(true);
     setError("");
 
