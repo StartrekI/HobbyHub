@@ -93,6 +93,15 @@ export default function LeafletMap({
     }
   }, [centerTrigger, userLocation]);
 
+  // Fly to real location when GPS updates from 0,0
+  const hasFlownRef = useRef(false);
+  useEffect(() => {
+    if (mapRef.current && userLocation.lat !== 0 && userLocation.lng !== 0 && !hasFlownRef.current) {
+      mapRef.current.flyTo([userLocation.lat, userLocation.lng], 15, { duration: 1.2 });
+      hasFlownRef.current = true;
+    }
+  }, [userLocation]);
+
   // Update self marker + radius
   useEffect(() => {
     if (selfMarkerRef.current) {

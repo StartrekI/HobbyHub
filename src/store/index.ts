@@ -77,7 +77,7 @@ export const useStore = create<AppState>((set) => ({
   user: null,
   setUser: (user) => set({ user }),
 
-  userLocation: { lat: 12.9716, lng: 77.5946 },
+  userLocation: { lat: 0, lng: 0 },
   setUserLocation: (userLocation) => set({ userLocation }),
 
   currentScreen: "map",

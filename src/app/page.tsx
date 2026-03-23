@@ -17,7 +17,7 @@ import CreateOpportunityModal from "@/components/CreateOpportunityModal";
 import BottomNav from "@/components/BottomNav";
 
 export default function Home() {
-  const { onboarded, currentScreen, setUser, setUserLocation, setOnboarded } = useStore();
+  const { onboarded, currentScreen, user, setUser, setUserLocation, setOnboarded } = useStore();
   const [loading, setLoading] = useState(true);
 
   // Restore session from localStorage on mount
@@ -32,24 +32,69 @@ export default function Home() {
             interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests || [],
             skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
           });
-          if (data.lat || data.lng) {
-            setUserLocation({ lat: data.lat, lng: data.lng });
-          }
           setOnboarded(true);
-
-          // Ping server in background (non-blocking)
-          fetch("/api/users/ping", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: data.id, lat: data.lat || 0, lng: data.lng || 0 }),
-          }).catch(() => {});
         }
       }
     } catch {
       localStorage.removeItem("hobbyhub_user");
     }
     setLoading(false);
-  }, [setUser, setUserLocation, setOnboarded]);
+  }, [setUser, setOnboarded]);
+
+  // Always get real GPS location
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        setUserLocation({ lat, lng });
+
+        // Update user location in DB + localStorage
+        const currentUser = useStore.getState().user;
+        if (currentUser?.id) {
+          fetch("/api/users/ping", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: currentUser.id, lat, lng }),
+          }).catch(() => {});
+
+          const saved = localStorage.getItem("hobbyhub_user");
+          if (saved) {
+            try {
+              const data = JSON.parse(saved);
+              localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat, lng }));
+            } catch {}
+          }
+        }
+      },
+      (err) => {
+        console.warn("Geolocation error:", err.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+
+    // Keep updating location every 30 seconds
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        setUserLocation({ lat, lng });
+
+        const currentUser = useStore.getState().user;
+        if (currentUser?.id) {
+          fetch("/api/users/ping", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: currentUser.id, lat, lng }),
+          }).catch(() => {});
+        }
+      },
+      () => {},
+      { enableHighAccuracy: true }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [setUserLocation]);
 
   if (loading) {
     return (
