@@ -296,7 +296,7 @@ export default function Onboarding() {
           {step === "google-login" && (
             <div>
               <h2 className="text-3xl font-bold mb-2">Welcome!</h2>
-              <p className="text-white/80 mb-8">Sign in with Google to continue</p>
+              <p className="text-white/80 mb-6">Sign in to continue</p>
 
               {loginError && (
                 <div className="mb-4 p-3 bg-red-500/20 border border-red-300/50 rounded-xl text-sm">
@@ -312,70 +312,77 @@ export default function Onboarding() {
               )}
 
               {/* Google Sign-In Button */}
-              {GOOGLE_CLIENT_ID ? (
-                <div className="flex justify-center mb-6">
+              {GOOGLE_CLIENT_ID && (
+                <div className="flex justify-center mb-4">
                   <div ref={googleBtnRef} />
                 </div>
-              ) : (
-                <div className="mb-6 space-y-3">
-                  <p className="text-white/60 text-xs">Google Sign-In not configured yet</p>
-                  {/* Fallback: simple email login for development */}
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
-                  />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
-                    className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!email) { setLoginError("Please enter your email"); return; }
-                      setLoginLoading(true);
-                      setLoginError("");
-                      try {
-                        const res = await fetch("/api/users", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email, name: name || "Explorer" }),
-                        });
-                        const data = await res.json();
-                        if (res.ok && data.id) {
-                          localStorage.setItem("hobbyhub_user", JSON.stringify(data));
-                          setAvatar(data.avatar || "");
-                          const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
-                          if (interests && interests.length > 0) {
-                            setUser({
-                              ...data,
-                              interests,
-                              skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
-                            });
-                            setOnboarded(true);
-                            return;
-                          }
-                          next();
-                        } else {
-                          setLoginError(data.error || "Failed to sign in");
-                        }
-                      } catch {
-                        setLoginError("Network error. Please try again.");
-                      } finally {
-                        setLoginLoading(false);
-                      }
-                    }}
-                    disabled={loginLoading}
-                    className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50"
-                  >
-                    Continue
-                  </button>
-                </div>
               )}
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-5">
+                <div className="flex-1 h-px bg-white/30" />
+                <span className="text-white/50 text-xs">{GOOGLE_CLIENT_ID ? "or continue with email" : "Sign in with email"}</span>
+                <div className="flex-1 h-px bg-white/30" />
+              </div>
+
+              {/* Email login - always available */}
+              <div className="space-y-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
+                />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
+                />
+                <button
+                  onClick={async () => {
+                    if (!email) { setLoginError("Please enter your email"); return; }
+                    if (!name) { setLoginError("Please enter your name"); return; }
+                    setLoginLoading(true);
+                    setLoginError("");
+                    try {
+                      const res = await fetch("/api/users", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, name }),
+                      });
+                      const data = await res.json();
+                      if (res.ok && data.id) {
+                        localStorage.setItem("hobbyhub_user", JSON.stringify(data));
+                        setAvatar(data.avatar || "");
+                        const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
+                        if (interests && interests.length > 0) {
+                          setUser({
+                            ...data,
+                            interests,
+                            skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+                          });
+                          setOnboarded(true);
+                          return;
+                        }
+                        next();
+                      } else {
+                        setLoginError(data.error || "Failed to sign in");
+                      }
+                    } catch {
+                      setLoginError("Network error. Please try again.");
+                    } finally {
+                      setLoginLoading(false);
+                    }
+                  }}
+                  disabled={loginLoading}
+                  className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50"
+                >
+                  Continue
+                </button>
+              </div>
 
               <p className="text-white/50 text-xs mt-4">
                 By continuing, you agree to our Terms of Service
