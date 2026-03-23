@@ -97,7 +97,7 @@ async function main() {
   const demoUser = await prisma.user.create({
     data: {
       name: "You",
-      phone: "9999999999",
+      email: "demo@hobbyhub.app",
       bio: "Explorer, builder, and hobby enthusiast",
       interests: JSON.stringify(["badminton", "photography", "coding", "travel", "music", "gaming"]),
       lat: CENTER.lat,
@@ -124,7 +124,7 @@ async function main() {
     const user = await prisma.user.create({
       data: {
         name: NAMES[i % NAMES.length],
-        phone: `98${String(i).padStart(8, "0")}`,
+        email: `${NAMES[i % NAMES.length].toLowerCase()}${i}@hobbyhub.app`,
         bio: BIOS[i % BIOS.length],
         interests: JSON.stringify(pickN(INTEREST_POOL, 3 + Math.floor(Math.random() * 4))),
         lat: loc.lat,

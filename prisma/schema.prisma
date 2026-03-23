@@ -10,7 +10,9 @@ datasource db {
 model User {
   id              String   @id @default(cuid())
   name            String
-  phone           String   @unique
+  email           String   @unique
+  googleId        String?  @unique
+  phone           String   @default("")
   bio             String   @default("")
   avatar          String   @default("")
   interests       String   @default("[]")

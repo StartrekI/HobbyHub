@@ -1,23 +1,37 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Users, Zap, Camera, Locate, Briefcase } from "lucide-react";
+import { MapPin, Users, Zap, Locate, Briefcase } from "lucide-react";
 import { useStore } from "@/store";
 import { INTERESTS, USER_ROLES, STARTUP_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
 
-const steps = ["welcome", "login", "profile", "professional", "interests", "location"] as const;
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+
+const steps = ["welcome", "google-login", "profile", "professional", "interests", "location"] as const;
 type Step = (typeof steps)[number];
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: Record<string, unknown>) => void;
+          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
+}
 
 export default function Onboarding() {
   const [step, setStep] = useState<Step>("welcome");
-  const [phone, setPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", ""]);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  // Professional fields
   const [role, setRole] = useState("");
   const [startupStage, setStartupStage] = useState("");
   const [company, setCompany] = useState("");
@@ -26,8 +40,11 @@ export default function Onboarding() {
   const [skills, setSkills] = useState<string[]>([]);
   const [collegeName, setCollegeName] = useState("");
   const [graduationYear, setGraduationYear] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [onboardError, setOnboardError] = useState("");
 
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
   const { setUser, setUserLocation, setOnboarded } = useStore();
 
   const next = () => {
@@ -35,22 +52,133 @@ export default function Onboarding() {
     if (idx < steps.length - 1) setStep(steps[idx + 1]);
   };
 
-  const handleOtp = () => {
-    if (!otpSent) {
-      if (phone.length < 10) return;
-      setOtpSent(true);
-      setTimeout(() => setOtp(["1", "2", "3", "4"]), 500);
-    } else {
-      next();
-    }
-  };
+  const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
+    setLoginLoading(true);
+    setLoginError("");
 
-  const handleOtpChange = (index: number, value: string) => {
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    if (value && index < 3) otpRefs.current[index + 1]?.focus();
-  };
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.id) {
+        setLoginError(data.error || "Login failed. Please try again.");
+        return;
+      }
+
+      // Save credential for session persistence
+      localStorage.setItem("hobbyhub_token", response.credential);
+      localStorage.setItem("hobbyhub_user", JSON.stringify(data));
+
+      // Set user data from Google
+      setName(data.name || "");
+      setAvatar(data.avatar || "");
+      setEmail(data.email || "");
+
+      // If returning user with interests already set, skip to map
+      const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
+      if (interests && interests.length > 0) {
+        setUser({
+          ...data,
+          interests,
+          skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+        });
+        setUserLocation({ lat: data.lat || 0, lng: data.lng || 0 });
+        setOnboarded(true);
+        return;
+      }
+
+      // New user — continue onboarding
+      next();
+    } catch (e) {
+      console.error("Google auth error:", e);
+      setLoginError("Network error. Please check your connection.");
+    } finally {
+      setLoginLoading(false);
+    }
+  }, [setUser, setUserLocation, setOnboarded]);
+
+  // Initialize Google Sign-In
+  useEffect(() => {
+    if (step !== "google-login") return;
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const initGoogle = () => {
+      if (window.google && googleBtnRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        window.google.accounts.id.renderButton(googleBtnRef.current, {
+          theme: "outline",
+          size: "large",
+          width: 320,
+          text: "continue_with",
+          shape: "pill",
+          logo_alignment: "center",
+        });
+      }
+    };
+
+    // Google script might already be loaded
+    if (window.google) {
+      initGoogle();
+    } else {
+      // Wait for script to load
+      const interval = setInterval(() => {
+        if (window.google) {
+          clearInterval(interval);
+          initGoogle();
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [step, handleGoogleResponse]);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem("hobbyhub_user");
+    if (savedUser) {
+      try {
+        const data = JSON.parse(savedUser);
+        if (data.id && data.email) {
+          // Verify session is still valid by pinging the server
+          fetch("/api/users/ping", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: data.id, lat: data.lat || 0, lng: data.lng || 0 }),
+          }).then(res => {
+            if (res.ok) {
+              setUser({
+                ...data,
+                interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests || [],
+                skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+              });
+              setUserLocation({ lat: data.lat || 0, lng: data.lng || 0 });
+              setOnboarded(true);
+            } else {
+              localStorage.removeItem("hobbyhub_user");
+              localStorage.removeItem("hobbyhub_token");
+            }
+          }).catch(() => {
+            // Offline — still load cached user
+            setUser({
+              ...data,
+              interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests || [],
+              skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+            });
+            setUserLocation({ lat: data.lat || 0, lng: data.lng || 0 });
+            setOnboarded(true);
+          });
+        }
+      } catch {
+        localStorage.removeItem("hobbyhub_user");
+      }
+    }
+  }, [setUser, setUserLocation, setOnboarded]);
 
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
@@ -67,65 +195,58 @@ export default function Onboarding() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          finishOnboarding();
+          finishOnboarding(pos.coords.latitude, pos.coords.longitude);
         },
-        () => finishOnboarding()
+        () => finishOnboarding(0, 0)
       );
     } else {
-      finishOnboarding();
+      finishOnboarding(0, 0);
     }
   };
 
-  const [onboardError, setOnboardError] = useState("");
-
-  const finishOnboarding = async () => {
-    const loc = useStore.getState().userLocation;
+  const finishOnboarding = async (lat?: number, lng?: number) => {
+    const loc = lat !== undefined ? { lat, lng: lng || 0 } : useStore.getState().userLocation;
     setOnboardError("");
 
-    // Retry up to 3 times
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const res = await fetch("/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: name || "Explorer",
-            phone: phone || "9999999999",
-            bio,
-            interests: selectedInterests,
-            role,
-            startupStage,
-            company,
-            title,
-            lookingFor,
-            skills,
-            collegeName,
-            graduationYear: parseInt(graduationYear) || 0,
-            lat: loc.lat,
-            lng: loc.lng,
-          }),
-        });
-        const data = await res.json();
-        if (res.ok && data.id) {
-          setUser({
-            ...data,
-            interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests,
-            skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills,
-          });
-          setOnboarded(true);
-          return;
-        }
-        // If response not ok, try again
-        console.error("User creation failed:", data);
-      } catch (e) {
-        console.error("User creation attempt failed:", e);
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name || "Explorer",
+          email,
+          bio,
+          avatar,
+          interests: selectedInterests,
+          role,
+          startupStage,
+          company,
+          title,
+          lookingFor,
+          skills,
+          collegeName,
+          graduationYear: parseInt(graduationYear) || 0,
+          lat: loc.lat,
+          lng: loc.lng,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        const userData = {
+          ...data,
+          interests: typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests,
+          skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills,
+        };
+        setUser(userData);
+        localStorage.setItem("hobbyhub_user", JSON.stringify(data));
+        setOnboarded(true);
+        return;
       }
-      // Wait before retrying
-      await new Promise(r => setTimeout(r, 1000));
+      setOnboardError(data.error || "Failed to save profile. Please try again.");
+    } catch (e) {
+      console.error("Finish onboarding error:", e);
+      setOnboardError("Network error. Please check your connection and try again.");
     }
-
-    // All retries failed — show error instead of creating fake user
-    setOnboardError("Could not connect to server. Please check your internet and try again.");
   };
 
   const slideVariants = {
@@ -172,41 +293,93 @@ export default function Onboarding() {
             </div>
           )}
 
-          {step === "login" && (
+          {step === "google-login" && (
             <div>
               <h2 className="text-3xl font-bold mb-2">Welcome!</h2>
-              <p className="text-white/80 mb-8">Enter your phone number to continue</p>
-              <div className="flex items-center bg-white/15 backdrop-blur rounded-xl overflow-hidden mb-4 border-2 border-transparent focus-within:border-white/50">
-                <span className="px-4 font-semibold">+91</span>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  placeholder="Phone number"
-                  className="flex-1 bg-transparent py-4 pr-4 outline-none text-white placeholder-white/50"
-                />
-              </div>
-              {otpSent && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <p className="text-sm text-white/70 mb-3">Enter OTP sent to your number</p>
-                  <div className="flex gap-3 justify-center mb-6">
-                    {otp.map((digit, i) => (
-                      <input
-                        key={i}
-                        ref={(el) => { otpRefs.current[i] = el; }}
-                        type="text"
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleOtpChange(i, e.target.value)}
-                        className="w-14 h-14 text-center text-xl font-bold bg-white/15 border-2 border-white/30 rounded-xl outline-none focus:border-white transition-colors"
-                      />
-                    ))}
-                  </div>
-                </motion.div>
+              <p className="text-white/80 mb-8">Sign in with Google to continue</p>
+
+              {loginError && (
+                <div className="mb-4 p-3 bg-red-500/20 border border-red-300/50 rounded-xl text-sm">
+                  {loginError}
+                </div>
               )}
-              <button onClick={handleOtp} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform">
-                {otpSent ? "Verify OTP" : "Send OTP"}
-              </button>
+
+              {loginLoading && (
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Signing in...</span>
+                </div>
+              )}
+
+              {/* Google Sign-In Button */}
+              {GOOGLE_CLIENT_ID ? (
+                <div className="flex justify-center mb-6">
+                  <div ref={googleBtnRef} />
+                </div>
+              ) : (
+                <div className="mb-6 space-y-3">
+                  <p className="text-white/60 text-xs">Google Sign-In not configured yet</p>
+                  {/* Fallback: simple email login for development */}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
+                  />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                    className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!email) { setLoginError("Please enter your email"); return; }
+                      setLoginLoading(true);
+                      setLoginError("");
+                      try {
+                        const res = await fetch("/api/users", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email, name: name || "Explorer" }),
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.id) {
+                          localStorage.setItem("hobbyhub_user", JSON.stringify(data));
+                          setAvatar(data.avatar || "");
+                          const interests = typeof data.interests === "string" ? JSON.parse(data.interests) : data.interests;
+                          if (interests && interests.length > 0) {
+                            setUser({
+                              ...data,
+                              interests,
+                              skills: typeof data.skills === "string" ? JSON.parse(data.skills) : data.skills || [],
+                            });
+                            setOnboarded(true);
+                            return;
+                          }
+                          next();
+                        } else {
+                          setLoginError(data.error || "Failed to sign in");
+                        }
+                      } catch {
+                        setLoginError("Network error. Please try again.");
+                      } finally {
+                        setLoginLoading(false);
+                      }
+                    }}
+                    disabled={loginLoading}
+                    className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50"
+                  >
+                    Continue
+                  </button>
+                </div>
+              )}
+
+              <p className="text-white/50 text-xs mt-4">
+                By continuing, you agree to our Terms of Service
+              </p>
             </div>
           )}
 
@@ -214,9 +387,13 @@ export default function Onboarding() {
             <div>
               <h2 className="text-3xl font-bold mb-2">Set Up Profile</h2>
               <p className="text-white/80 mb-6">Tell us about yourself</p>
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/20 border-2 border-dashed border-white/50 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
-                <Camera size={28} />
-              </div>
+              {avatar ? (
+                <img src={avatar} alt="avatar" className="w-20 h-20 mx-auto mb-6 rounded-full border-2 border-white/50 object-cover" />
+              ) : (
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/20 border-2 border-dashed border-white/50 flex items-center justify-center text-2xl font-bold">
+                  {name?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
                 className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 mb-3 outline-none placeholder-white/50" />
               <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Short bio (optional)" rows={2}
@@ -339,7 +516,7 @@ export default function Onboarding() {
               <button onClick={requestLocation} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform mb-3">
                 Allow Location Access
               </button>
-              <button onClick={finishOnboarding} className="text-white/60 text-sm hover:text-white/80 transition-colors">
+              <button onClick={() => finishOnboarding(0, 0)} className="text-white/60 text-sm hover:text-white/80 transition-colors">
                 Use default location
               </button>
             </div>

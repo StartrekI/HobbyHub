@@ -33,21 +33,23 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      name, phone, bio, interests, lat, lng,
+      email, name, bio, interests, lat, lng, avatar,
       role, startupStage, company, title, lookingFor, skills,
       collegeName, graduationYear,
     } = body;
 
-    if (!phone) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    let user = await prisma.user.findUnique({ where: { phone } });
+    let user = await prisma.user.findUnique({ where: { email } });
     if (user) {
       user = await prisma.user.update({
-        where: { phone },
+        where: { email },
         data: {
-          name: name || user.name, bio: bio ?? user.bio,
+          name: name || user.name,
+          bio: bio ?? user.bio,
+          avatar: avatar || user.avatar,
           interests: JSON.stringify(interests || []),
           lat: lat || user.lat, lng: lng || user.lng, online: true,
           role: role ?? "", startupStage: startupStage ?? "",
@@ -61,8 +63,8 @@ export async function POST(req: NextRequest) {
     } else {
       user = await prisma.user.create({
         data: {
-          name: name || "Explorer", phone,
-          bio: bio || "",
+          name: name || "Explorer", email,
+          bio: bio || "", avatar: avatar || "",
           interests: JSON.stringify(interests || []),
           lat: lat || 0, lng: lng || 0, online: true,
           role: role || "", startupStage: startupStage || "",

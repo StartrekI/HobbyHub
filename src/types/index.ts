@@ -1,7 +1,8 @@
 export interface UserType {
   id: string;
   name: string;
-  phone: string;
+  email: string;
+  phone?: string;
   bio: string;
   avatar: string;
   interests: string[];

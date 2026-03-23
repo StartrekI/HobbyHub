@@ -88,11 +88,13 @@ export default function ProfileScreen() {
         }),
       });
       const updated = await res.json();
-      setUser({
+      const userData = {
         ...user, ...updated,
         interests: typeof updated.interests === "string" ? JSON.parse(updated.interests) : updated.interests,
         skills: typeof updated.skills === "string" ? JSON.parse(updated.skills) : updated.skills,
-      });
+      };
+      setUser(userData);
+      localStorage.setItem("hobbyhub_user", JSON.stringify(updated));
       setEditing(false);
     } catch {} finally { setSaving(false); }
   };
@@ -114,7 +116,12 @@ export default function ProfileScreen() {
     setRequests((prev) => prev.filter((r) => r.id !== requestId));
   };
 
-  const logout = () => { setUser(null); setOnboarded(false); };
+  const logout = () => {
+    localStorage.removeItem("hobbyhub_user");
+    localStorage.removeItem("hobbyhub_token");
+    setUser(null);
+    setOnboarded(false);
+  };
 
   if (!user) return null;
 
