@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// Combined endpoint: activities + nearby users + unread count in one request
+// Combined endpoint: activities + opportunities + nearby users + unread count
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
       lng: { gte: lng - radius, lte: lng + radius },
     };
 
-    // Run all queries in parallel
-    const [activities, users, unreadCount] = await Promise.all([
+    // Run ALL queries in parallel — activities, trips, gigs, skills, ideas, users, unread
+    const [activities, trips, gigs, skillSessions, ideas, users, unreadCount] = await Promise.all([
       prisma.activity.findMany({
         where: { status: "active", ...locationFilter },
         include: {
@@ -26,6 +26,30 @@ export async function GET(req: NextRequest) {
         },
         orderBy: { createdAt: "desc" },
         take: 50,
+      }),
+      prisma.trip.findMany({
+        where: { status: "planning", ...locationFilter },
+        include: { creator: true, participants: { include: { user: true } }, _count: { select: { participants: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      prisma.gig.findMany({
+        where: { status: "open", ...locationFilter },
+        include: { creator: true, _count: { select: { applications: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      prisma.skillSession.findMany({
+        where: { status: "active", ...locationFilter },
+        include: { teacher: true },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      prisma.idea.findMany({
+        where: locationFilter,
+        include: { creator: true, _count: { select: { comments: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 20,
       }),
       prisma.user.findMany({
         where: {
@@ -43,6 +67,122 @@ export async function GET(req: NextRequest) {
         : Promise.resolve(0),
     ]);
 
+    // Convert opportunities to Activity-shaped objects so they show as map markers
+    const opportunityActivities = [
+      ...trips.map((t) => ({
+        id: `trip:${t.id}`,
+        type: "travel",
+        title: `Trip: ${t.destination}`,
+        description: t.description,
+        lat: t.lat,
+        lng: t.lng,
+        time: t.createdAt,
+        playersNeeded: t.maxBuddies,
+        status: "active",
+        category: "travel",
+        isEvent: false,
+        ticketPrice: 0,
+        isFree: true,
+        eventUrl: "",
+        isRecurring: false,
+        recurrencePattern: "",
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt,
+        creatorId: t.creatorId,
+        creator: t.creator,
+        participants: t.participants.map((p) => ({
+          id: p.id,
+          userId: p.userId,
+          activityId: `trip:${t.id}`,
+          joinedAt: p.joinedAt,
+          user: p.user,
+        })),
+        _count: { messages: 0, participants: t._count.participants },
+        _opportunityType: "trip",
+        _originalId: t.id,
+      })),
+      ...gigs.map((g) => ({
+        id: `gig:${g.id}`,
+        type: "other",
+        title: `Gig: ${g.title}`,
+        description: g.description,
+        lat: g.lat,
+        lng: g.lng,
+        time: g.createdAt,
+        playersNeeded: 1,
+        status: "active",
+        category: "work",
+        isEvent: false,
+        ticketPrice: 0,
+        isFree: true,
+        eventUrl: "",
+        isRecurring: false,
+        recurrencePattern: "",
+        createdAt: g.createdAt,
+        updatedAt: g.updatedAt,
+        creatorId: g.creatorId,
+        creator: g.creator,
+        participants: [],
+        _count: { messages: 0, participants: g._count.applications },
+        _opportunityType: "gig",
+        _originalId: g.id,
+      })),
+      ...skillSessions.map((s) => ({
+        id: `skill:${s.id}`,
+        type: "study",
+        title: `Skill: ${s.skill}`,
+        description: s.description,
+        lat: s.lat,
+        lng: s.lng,
+        time: s.createdAt,
+        playersNeeded: 2,
+        status: "active",
+        category: "education",
+        isEvent: false,
+        ticketPrice: s.price,
+        isFree: s.isFree,
+        eventUrl: "",
+        isRecurring: false,
+        recurrencePattern: "",
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+        creatorId: s.teacherId,
+        creator: s.teacher,
+        participants: [],
+        _count: { messages: 0, participants: 0 },
+        _opportunityType: "skill",
+        _originalId: s.id,
+      })),
+      ...ideas.map((i) => ({
+        id: `idea:${i.id}`,
+        type: "other",
+        title: `Idea: ${i.title}`,
+        description: i.description,
+        lat: i.lat,
+        lng: i.lng,
+        time: i.createdAt,
+        playersNeeded: 0,
+        status: "active",
+        category: "ideas",
+        isEvent: false,
+        ticketPrice: 0,
+        isFree: true,
+        eventUrl: "",
+        isRecurring: false,
+        recurrencePattern: "",
+        createdAt: i.createdAt,
+        updatedAt: i.updatedAt,
+        creatorId: i.creatorId,
+        creator: i.creator,
+        participants: [],
+        _count: { messages: 0, participants: i._count.comments },
+        _opportunityType: "idea",
+        _originalId: i.id,
+      })),
+    ];
+
+    const allActivities = [...activities, ...opportunityActivities];
+
     // Auto-end old activities in background (non-blocking)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     prisma.activity.updateMany({
@@ -50,7 +190,7 @@ export async function GET(req: NextRequest) {
       data: { status: "completed" },
     }).catch(() => {});
 
-    return NextResponse.json({ activities, users, unreadCount });
+    return NextResponse.json({ activities: allActivities, users, unreadCount });
   } catch (error) {
     console.error("GET /api/feed error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
