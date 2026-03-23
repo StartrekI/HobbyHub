@@ -43,9 +43,14 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (!user) return;
-    fetch(`/api/users/${user.id}`).then((r) => r.json()).then(setProfile).catch(() => {});
-    fetch(`/api/profile-request?userId=${user.id}`).then((r) => r.json()).then(setRequests).catch(() => {});
-    fetch(`/api/connections?userId=${user.id}`).then((r) => r.json()).then(setConnections).catch(() => {});
+    fetch(`/api/profile/me?userId=${user.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile) setProfile(data.profile);
+        if (data.requests) setRequests(data.requests);
+        if (data.connections) setConnections(data.connections);
+      })
+      .catch(() => {});
   }, [user]);
 
   const startEdit = () => {

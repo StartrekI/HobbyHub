@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Filter, MessageCircle, UserPlus, Briefcase } from "lucide-react";
 import { useStore } from "@/store";
@@ -17,7 +17,9 @@ export default function NetworkingView() {
   const [lookingForFilter, setLookingForFilter] = useState("");
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
+  // Debounce fetch when location/filters change
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const fetchPeople = useCallback(() => {
     if (!user) return;
     setLoading(true);
     const params = new URLSearchParams({
@@ -34,6 +36,12 @@ export default function NetworkingView() {
       .then((data) => { setPeople(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [user, userLocation, roleFilter, stageFilter, lookingForFilter]);
+
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(fetchPeople, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [fetchPeople]);
 
   const filtered = search
     ? people.filter((p) =>

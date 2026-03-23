@@ -51,24 +51,48 @@ export default function ChatScreen() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [groupMessages, dmMessages]);
 
-  // Poll for new messages
+  // Poll for new messages (5s interval, only fetch new ones)
+  const lastFetchRef = useRef<string>("");
   useEffect(() => {
     if (!currentChatId || !user) return;
     const interval = setInterval(async () => {
       try {
         if (isDm && dmPartnerId) {
-          const res = await fetch(`/api/dm?userId=${user.id}&otherId=${dmPartnerId}`);
+          const since = dmMessages.length > 0 ? dmMessages[dmMessages.length - 1].createdAt : "";
+          const url = `/api/dm?userId=${user.id}&otherId=${dmPartnerId}${since ? `&since=${since}` : ""}`;
+          if (url === lastFetchRef.current) return;
+          lastFetchRef.current = url;
+          const res = await fetch(url);
           const data = await res.json();
-          setDmMessages(data);
+          if (Array.isArray(data) && data.length > 0) {
+            setDmMessages((prev) => {
+              const ids = new Set(prev.map(m => m.id));
+              const newMsgs = data.filter((m: DmMessage) => !ids.has(m.id));
+              return newMsgs.length > 0 ? [...prev, ...newMsgs] : prev;
+            });
+          }
+          lastFetchRef.current = "";
         } else {
-          const res = await fetch(`/api/activities/${currentChatId}/messages`);
+          const msgs = chatMessages[currentChatId!] || [];
+          const since = msgs.length > 0 ? msgs[msgs.length - 1].createdAt : "";
+          const url = `/api/activities/${currentChatId}/messages${since ? `?since=${since}` : ""}`;
+          if (url === lastFetchRef.current) return;
+          lastFetchRef.current = url;
+          const res = await fetch(url);
           const data = await res.json();
-          setChatMessages(currentChatId!, data);
+          if (Array.isArray(data) && data.length > 0) {
+            const ids = new Set(msgs.map(m => m.id));
+            const newMsgs = data.filter((m: MessageType) => !ids.has(m.id));
+            if (newMsgs.length > 0) {
+              setChatMessages(currentChatId!, [...msgs, ...newMsgs]);
+            }
+          }
+          lastFetchRef.current = "";
         }
-      } catch {}
-    }, 3000);
+      } catch { lastFetchRef.current = ""; }
+    }, 5000);
     return () => clearInterval(interval);
-  }, [currentChatId, user, isDm, dmPartnerId, setChatMessages]);
+  }, [currentChatId, user, isDm, dmPartnerId, setChatMessages, dmMessages, chatMessages]);
 
   const sendMessage = async () => {
     if (!input.trim() || !currentChatId || !user) return;

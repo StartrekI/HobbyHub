@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Search, Briefcase, GraduationCap, Plane, Lightbulb,
@@ -36,7 +36,9 @@ export default function DiscoveryFeed() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
+  // Debounce fetch when location/filter changes
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const fetchFeed = useCallback(() => {
     if (!user) return;
     setLoading(true);
     fetch(`/api/discover?lat=${userLocation.lat}&lng=${userLocation.lng}&type=${filter}`)
@@ -44,6 +46,12 @@ export default function DiscoveryFeed() {
       .then((data) => { setFeed(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [user, userLocation, filter]);
+
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(fetchFeed, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [fetchFeed]);
 
   const filtered = search
     ? feed.filter((item) =>

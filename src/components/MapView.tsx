@@ -32,48 +32,30 @@ export default function MapView() {
     const { lat, lng } = userLocation;
     const currentUserId = user?.id || "";
     try {
-      // Ping to keep user online and update location
-      if (currentUserId) {
-        fetch("/api/users/ping", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUserId, lat, lng }),
-        }).catch(() => {});
+      // Single combined request: activities + users + unread count
+      const res = await fetch(
+        `/api/feed?lat=${lat}&lng=${lng}&radius=0.5&userId=${currentUserId}`
+      );
+      const data = await res.json();
+      if (data.activities && Array.isArray(data.activities)) {
+        setActivities(data.activities);
+        detectHotspots(data.activities);
       }
-
-      const [activitiesRes, usersRes] = await Promise.all([
-        fetch(`/api/activities?lat=${lat}&lng=${lng}&radius=0.5`),
-        fetch(`/api/users?lat=${lat}&lng=${lng}&radius=0.5&excludeId=${currentUserId}`),
-      ]);
-      const acts = await activitiesRes.json();
-      const usrs = await usersRes.json();
-      if (Array.isArray(acts)) {
-        setActivities(acts);
-        detectHotspots(acts);
-      }
-      if (Array.isArray(usrs)) {
+      if (data.users && Array.isArray(data.users)) {
         setNearbyUsers(
-          usrs.map((u: UserType & { interests: string }) => ({
+          data.users.map((u: UserType & { interests: string }) => ({
             ...u,
             interests: typeof u.interests === "string" ? JSON.parse(u.interests) : u.interests,
           }))
         );
       }
+      if (typeof data.unreadCount === "number") {
+        useStore.getState().setUnreadCount(data.unreadCount);
+      }
     } catch (e) {
       console.error("Fetch error:", e);
     }
   }, [userLocation, user, setActivities, setNearbyUsers]);
-
-  // Also fetch notifications count
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
-    try {
-      const res = await fetch(`/api/notifications?userId=${user.id}`);
-      const data = await res.json();
-      const unread = data.filter((n: { read: boolean }) => !n.read).length;
-      useStore.getState().setUnreadCount(unread);
-    } catch {}
-  }, [user]);
 
   const detectHotspots = (acts: ActivityType[]) => {
     const clusters: Record<string, { activities: ActivityType[]; lat: number; lng: number }> = {};
@@ -104,13 +86,9 @@ export default function MapView() {
 
   useEffect(() => {
     fetchData();
-    fetchNotifications();
-    const interval = setInterval(() => {
-      fetchData();
-      fetchNotifications();
-    }, 5000);
+    const interval = setInterval(fetchData, 10000); // 10s polling
     return () => clearInterval(interval);
-  }, [fetchData, fetchNotifications]);
+  }, [fetchData]);
 
   const handleActivityClick = (activity: ActivityType) => {
     setSelectedActivity(activity);

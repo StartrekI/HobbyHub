@@ -41,57 +41,55 @@ export default function Home() {
     setLoading(false);
   }, [setUser, setOnboarded]);
 
-  // Always get real GPS location
+  // Get real GPS location with throttled updates
   useEffect(() => {
     if (!navigator.geolocation) return;
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        setUserLocation({ lat, lng });
+    let lastPing = 0;
+    let lastLat = 0;
+    let lastLng = 0;
 
-        // Update user location in DB + localStorage
-        const currentUser = useStore.getState().user;
-        if (currentUser?.id) {
-          fetch("/api/users/ping", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: currentUser.id, lat, lng }),
-          }).catch(() => {});
+    const handlePosition = (pos: GeolocationPosition) => {
+      const { latitude: lat, longitude: lng } = pos.coords;
 
+      // Only update if moved > 50 meters or first time
+      const dist = Math.sqrt((lat - lastLat) ** 2 + (lng - lastLng) ** 2);
+      if (lastLat !== 0 && dist < 0.0005) return; // ~50m threshold
+
+      lastLat = lat;
+      lastLng = lng;
+      setUserLocation({ lat, lng });
+
+      // Throttle server pings to max once per 15 seconds
+      const now = Date.now();
+      if (now - lastPing < 15000) return;
+      lastPing = now;
+
+      const currentUser = useStore.getState().user;
+      if (currentUser?.id) {
+        fetch("/api/users/ping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, lat, lng }),
+        }).catch(() => {});
+
+        try {
           const saved = localStorage.getItem("hobbyhub_user");
           if (saved) {
-            try {
-              const data = JSON.parse(saved);
-              localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat, lng }));
-            } catch {}
+            const data = JSON.parse(saved);
+            localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat, lng }));
           }
-        }
-      },
-      (err) => {
-        console.warn("Geolocation error:", err.message);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+        } catch {}
+      }
+    };
 
-    // Keep updating location every 30 seconds
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        setUserLocation({ lat, lng });
+    navigator.geolocation.getCurrentPosition(handlePosition, () => {}, {
+      enableHighAccuracy: true, timeout: 10000,
+    });
 
-        const currentUser = useStore.getState().user;
-        if (currentUser?.id) {
-          fetch("/api/users/ping", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: currentUser.id, lat, lng }),
-          }).catch(() => {});
-        }
-      },
-      () => {},
-      { enableHighAccuracy: true }
-    );
+    const watchId = navigator.geolocation.watchPosition(handlePosition, () => {}, {
+      enableHighAccuracy: true,
+    });
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [setUserLocation]);
