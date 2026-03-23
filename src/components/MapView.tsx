@@ -42,19 +42,23 @@ export default function MapView() {
       }
 
       const [activitiesRes, usersRes] = await Promise.all([
-        fetch(`/api/activities?lat=${lat}&lng=${lng}&radius=0.05`),
-        fetch(`/api/users?lat=${lat}&lng=${lng}&radius=0.05&excludeId=${currentUserId}`),
+        fetch(`/api/activities?lat=${lat}&lng=${lng}&radius=0.5`),
+        fetch(`/api/users?lat=${lat}&lng=${lng}&radius=0.5&excludeId=${currentUserId}`),
       ]);
       const acts = await activitiesRes.json();
       const usrs = await usersRes.json();
-      setActivities(acts);
-      setNearbyUsers(
-        usrs.map((u: UserType & { interests: string }) => ({
-          ...u,
-          interests: typeof u.interests === "string" ? JSON.parse(u.interests) : u.interests,
-        }))
-      );
-      detectHotspots(acts);
+      if (Array.isArray(acts)) {
+        setActivities(acts);
+        detectHotspots(acts);
+      }
+      if (Array.isArray(usrs)) {
+        setNearbyUsers(
+          usrs.map((u: UserType & { interests: string }) => ({
+            ...u,
+            interests: typeof u.interests === "string" ? JSON.parse(u.interests) : u.interests,
+          }))
+        );
+      }
     } catch (e) {
       console.error("Fetch error:", e);
     }

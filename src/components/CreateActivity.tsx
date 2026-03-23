@@ -38,9 +38,12 @@ export default function CreateActivity() {
     }
   };
 
+  const [error, setError] = useState("");
+
   const publish = async () => {
     if (!type || !title || !user) return;
     setPublishing(true);
+    setError("");
 
     try {
       const res = await fetch("/api/activities", {
@@ -57,11 +60,16 @@ export default function CreateActivity() {
           eventUrl, isRecurring, recurrencePattern,
         }),
       });
-      const activity = await res.json();
-      addActivity(activity);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to create. Please try again.");
+        return;
+      }
+      addActivity(data);
       setScreen("map");
     } catch (e) {
       console.error("Publish error:", e);
+      setError("Network error. Check your connection and try again.");
     } finally {
       setPublishing(false);
     }
@@ -334,6 +342,13 @@ export default function CreateActivity() {
               <span className="text-sm text-gray-600">Use current location</span>
             </div>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              {error}
+            </div>
+          )}
 
           {/* Big Create Button */}
           <button
