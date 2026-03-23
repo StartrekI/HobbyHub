@@ -15,18 +15,13 @@ export async function GET(req: NextRequest) {
       lng: { gte: lng - radius, lte: lng + radius },
     };
 
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
     // Run all queries in parallel
     const [activities, users, unreadCount] = await Promise.all([
       prisma.activity.findMany({
-        where: { status: "active", time: { gte: oneDayAgo }, ...locationFilter },
+        where: { status: "active", ...locationFilter },
         include: {
-          creator: { select: { id: true, name: true, avatar: true, rating: true } },
-          participants: {
-            include: { user: { select: { id: true, name: true, avatar: true, rating: true } } },
-            take: 10,
-          },
+          creator: true,
+          participants: { include: { user: true }, take: 20 },
           _count: { select: { messages: true, participants: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -48,15 +43,14 @@ export async function GET(req: NextRequest) {
         : Promise.resolve(0),
     ]);
 
-    // Auto-end old activities in background
+    // Auto-end old activities in background (non-blocking)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     prisma.activity.updateMany({
       where: { status: "active", time: { lt: oneDayAgo } },
       data: { status: "completed" },
     }).catch(() => {});
 
-    const res = NextResponse.json({ activities, users, unreadCount });
-    res.headers.set("Cache-Control", "public, s-maxage=5, stale-while-revalidate=15");
-    return res;
+    return NextResponse.json({ activities, users, unreadCount });
   } catch (error) {
     console.error("GET /api/feed error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

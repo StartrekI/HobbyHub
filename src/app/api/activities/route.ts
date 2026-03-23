@@ -13,13 +13,9 @@ export async function GET(req: NextRequest) {
       lng: { gte: lng - radius, lte: lng + radius },
     };
 
-    // Filter by active + future time instead of running updateMany on every GET
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
     const activities = await prisma.activity.findMany({
       where: {
         status: "active",
-        time: { gte: oneDayAgo },
         ...locationFilter,
       },
       include: {
@@ -35,14 +31,13 @@ export async function GET(req: NextRequest) {
     });
 
     // Auto-end old activities in background (non-blocking)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     prisma.activity.updateMany({
       where: { status: "active", time: { lt: oneDayAgo } },
       data: { status: "completed" },
     }).catch(() => {});
 
-    const res = NextResponse.json(activities);
-    res.headers.set("Cache-Control", "public, s-maxage=10, stale-while-revalidate=20");
-    return res;
+    return NextResponse.json(activities);
   } catch (error) {
     console.error("GET /api/activities error:", error);
     return NextResponse.json({ error: "Failed to fetch activities" }, { status: 500 });
@@ -64,8 +59,8 @@ export async function POST(req: NextRequest) {
     const activityTime = time ? new Date(time) : new Date(Date.now() + 3600000);
 
     // Create activity + auto-join creator in a transaction
-    const activity = await prisma.$transaction(async (tx) => {
-      const created = await tx.activity.create({
+    await prisma.$transaction(async (tx) => {
+      await tx.activity.create({
         data: {
           type, title, description: description || "",
           lat: lat || 0, lng: lng || 0, time: activityTime,
@@ -75,24 +70,37 @@ export async function POST(req: NextRequest) {
           eventUrl: eventUrl || "", isRecurring: isRecurring || false,
           recurrencePattern: recurrencePattern || "",
         },
-        include: {
-          creator: { select: { id: true, name: true, avatar: true, rating: true } },
-        },
       });
+    });
 
-      await tx.participant.create({ data: { userId: creatorId, activityId: created.id } });
+    // Find the just-created activity (latest by this creator)
+    const activity = await prisma.activity.findFirst({
+      where: { creatorId, title, type },
+      orderBy: { createdAt: "desc" },
+      include: {
+        creator: true,
+        participants: { include: { user: true } },
+        _count: { select: { messages: true, participants: true } },
+      },
+    });
 
-      // Re-fetch with full relations
-      return tx.activity.findUnique({
-        where: { id: created.id },
-        include: {
-          creator: { select: { id: true, name: true, avatar: true, rating: true } },
-          participants: {
-            include: { user: { select: { id: true, name: true, avatar: true, rating: true } } },
-          },
-          _count: { select: { messages: true, participants: true } },
-        },
-      });
+    if (!activity) {
+      return NextResponse.json({ error: "Failed to create activity" }, { status: 500 });
+    }
+
+    // Auto-join creator as participant
+    await prisma.participant.create({
+      data: { userId: creatorId, activityId: activity.id },
+    }).catch(() => {});
+
+    // Re-fetch with participant included
+    const full = await prisma.activity.findUnique({
+      where: { id: activity.id },
+      include: {
+        creator: true,
+        participants: { include: { user: true } },
+        _count: { select: { messages: true, participants: true } },
+      },
     });
 
     // Notify nearby users in background (non-blocking, batch create)
@@ -113,9 +121,9 @@ export async function POST(req: NextRequest) {
             data: nearbyUsers.map((u) => ({
               type: "new_activity",
               title: "New Activity Nearby",
-              body: `${activity?.creator?.name || "Someone"} created "${title}" near you`,
+              body: `${activity.creator.name} created "${title}" near you`,
               userId: u.id,
-              data: JSON.stringify({ activityId: activity?.id }),
+              data: JSON.stringify({ activityId: activity.id }),
             })),
           });
         }
@@ -124,7 +132,7 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    return NextResponse.json(activity, { status: 201 });
+    return NextResponse.json(full, { status: 201 });
   } catch (error) {
     console.error("POST /api/activities error:", error);
     return NextResponse.json({ error: "Failed to create activity" }, { status: 500 });
