@@ -11,47 +11,71 @@ export async function GET(req: NextRequest) {
 
   // If otherId provided, get conversation between two users
   if (otherId) {
-    const messages = await prisma.directMessage.findMany({
-      where: {
-        OR: [
-          { senderId: userId, receiverId: otherId },
-          { senderId: otherId, receiverId: userId },
-        ],
-      },
-      include: { sender: true, receiver: true },
-      orderBy: { createdAt: "asc" },
-    });
-
-    // Mark as seen
-    await prisma.directMessage.updateMany({
-      where: { senderId: otherId, receiverId: userId, seen: false },
-      data: { seen: true },
-    });
+    const [messages] = await Promise.all([
+      prisma.directMessage.findMany({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: otherId },
+            { senderId: otherId, receiverId: userId },
+          ],
+        },
+        include: {
+          sender: { select: { id: true, name: true, avatar: true } },
+          receiver: { select: { id: true, name: true, avatar: true } },
+        },
+        orderBy: { createdAt: "asc" },
+        take: 100,
+      }),
+      // Mark as seen in parallel
+      prisma.directMessage.updateMany({
+        where: { senderId: otherId, receiverId: userId, seen: false },
+        data: { seen: true },
+      }),
+    ]);
 
     return NextResponse.json(messages);
   }
 
-  // Get all conversation partners
-  const sent = await prisma.directMessage.findMany({
-    where: { senderId: userId },
-    select: { receiverId: true },
-    distinct: ["receiverId"],
-  });
-  const received = await prisma.directMessage.findMany({
-    where: { receiverId: userId },
-    select: { senderId: true },
-    distinct: ["senderId"],
-  });
+  // Get all conversation partners — single optimized query approach
+  // 1. Find all distinct partner IDs from sent and received
+  const [sent, received] = await Promise.all([
+    prisma.directMessage.findMany({
+      where: { senderId: userId },
+      select: { receiverId: true },
+      distinct: ["receiverId"],
+    }),
+    prisma.directMessage.findMany({
+      where: { receiverId: userId },
+      select: { senderId: true },
+      distinct: ["senderId"],
+    }),
+  ]);
 
   const partnerIds = [...new Set([
     ...sent.map((s) => s.receiverId),
     ...received.map((r) => r.senderId),
   ])];
 
-  const conversations = await Promise.all(
-    partnerIds.map(async (partnerId) => {
-      const partner = await prisma.user.findUnique({ where: { id: partnerId } });
-      const lastMessage = await prisma.directMessage.findFirst({
+  if (partnerIds.length === 0) return NextResponse.json([]);
+
+  // 2. Batch-fetch all partner users + unread counts in parallel
+  const [partners, unreadCounts] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: partnerIds } },
+      select: { id: true, name: true, online: true, avatar: true },
+    }),
+    prisma.directMessage.groupBy({
+      by: ["senderId"],
+      where: { receiverId: userId, seen: false, senderId: { in: partnerIds } },
+      _count: { id: true },
+    }),
+  ]);
+
+  // 3. Get last message for each conversation in a single query per partner
+  //    (use raw SQL-like approach with ordered distinct)
+  const lastMessages = await Promise.all(
+    partnerIds.map((partnerId) =>
+      prisma.directMessage.findFirst({
         where: {
           OR: [
             { senderId: userId, receiverId: partnerId },
@@ -59,14 +83,30 @@ export async function GET(req: NextRequest) {
           ],
         },
         orderBy: { createdAt: "desc" },
-        include: { sender: true },
-      });
-      const unread = await prisma.directMessage.count({
-        where: { senderId: partnerId, receiverId: userId, seen: false },
-      });
-      return { partner, lastMessage, unread };
-    })
+        select: {
+          text: true, createdAt: true,
+          sender: { select: { name: true } },
+        },
+      })
+    )
   );
+
+  // Build response
+  const partnerMap = new Map(partners.map((p) => [p.id, p]));
+  const unreadMap = new Map(unreadCounts.map((u) => [u.senderId, u._count.id]));
+
+  const conversations = partnerIds
+    .map((pid, i) => ({
+      partner: partnerMap.get(pid),
+      lastMessage: lastMessages[i],
+      unread: unreadMap.get(pid) || 0,
+    }))
+    .filter((c) => c.partner)
+    .sort((a, b) => {
+      const aTime = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const bTime = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
 
   return NextResponse.json(conversations);
 }
@@ -95,11 +135,14 @@ export async function POST(req: NextRequest) {
 
   const message = await prisma.directMessage.create({
     data: { senderId, receiverId, text },
-    include: { sender: true, receiver: true },
+    include: {
+      sender: { select: { id: true, name: true, avatar: true } },
+      receiver: { select: { id: true, name: true, avatar: true } },
+    },
   });
 
-  // Create notification
-  await prisma.notification.create({
+  // Create notification (non-blocking)
+  prisma.notification.create({
     data: {
       type: "chat_message",
       title: "New Message",
@@ -107,7 +150,7 @@ export async function POST(req: NextRequest) {
       userId: receiverId,
       data: JSON.stringify({ senderId }),
     },
-  });
+  }).catch(() => {});
 
   return NextResponse.json(message, { status: 201 });
 }

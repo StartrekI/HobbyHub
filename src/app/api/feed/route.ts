@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// Combined endpoint: returns activities + nearby users + unread notification count
-// in a single request instead of 3 separate ones
+// Combined endpoint: activities + nearby users + unread count in one request
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -16,41 +15,48 @@ export async function GET(req: NextRequest) {
       lng: { gte: lng - radius, lte: lng + radius },
     };
 
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
     // Run all queries in parallel
     const [activities, users, unreadCount] = await Promise.all([
-      // Activities
       prisma.activity.findMany({
-        where: { status: "active", ...locationFilter },
+        where: { status: "active", time: { gte: oneDayAgo }, ...locationFilter },
         include: {
-          creator: true,
-          participants: { include: { user: true } },
+          creator: { select: { id: true, name: true, avatar: true, rating: true } },
+          participants: {
+            include: { user: { select: { id: true, name: true, avatar: true, rating: true } } },
+            take: 10,
+          },
           _count: { select: { messages: true, participants: true } },
         },
         orderBy: { createdAt: "desc" },
-        take: 100,
+        take: 50,
       }),
-      // Nearby users
       prisma.user.findMany({
         where: {
           ...locationFilter,
           ...(userId ? { id: { not: userId } } : {}),
         },
-        take: 100,
+        select: {
+          id: true, name: true, avatar: true, lat: true, lng: true,
+          online: true, rating: true, interests: true, role: true,
+        },
+        take: 50,
       }),
-      // Unread notifications count
       userId
         ? prisma.notification.count({ where: { userId, read: false } })
         : Promise.resolve(0),
     ]);
 
-    // Auto-end old activities (non-blocking, don't await)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Auto-end old activities in background
     prisma.activity.updateMany({
       where: { status: "active", time: { lt: oneDayAgo } },
       data: { status: "completed" },
     }).catch(() => {});
 
-    return NextResponse.json({ activities, users, unreadCount });
+    const res = NextResponse.json({ activities, users, unreadCount });
+    res.headers.set("Cache-Control", "public, s-maxage=5, stale-while-revalidate=15");
+    return res;
   } catch (error) {
     console.error("GET /api/feed error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

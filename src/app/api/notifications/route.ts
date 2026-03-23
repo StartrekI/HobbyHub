@@ -13,11 +13,22 @@ export async function GET(req: NextRequest) {
     take: 50,
   });
 
-  return NextResponse.json(notifications);
+  const res = NextResponse.json(notifications);
+  res.headers.set("Cache-Control", "private, s-maxage=5, stale-while-revalidate=10");
+  return res;
 }
 
 export async function PATCH(req: NextRequest) {
-  const { notificationId } = await req.json();
+  const { notificationId, markAll, userId } = await req.json();
+
+  // Batch mark all as read
+  if (markAll && userId) {
+    await prisma.notification.updateMany({
+      where: { userId, read: false },
+      data: { read: true },
+    });
+    return NextResponse.json({ success: true });
+  }
 
   if (notificationId) {
     await prisma.notification.update({

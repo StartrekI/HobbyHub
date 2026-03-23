@@ -63,6 +63,9 @@ model User {
   connectionsFrom   Connection[]     @relation("ConnectionFrom")
   connectionsTo     Connection[]     @relation("ConnectionTo")
   businessesOwned   Business[]       @relation("BusinessOwner")
+
+  @@index([lat, lng])
+  @@index([online, updatedAt])
 }
 
 model Activity {
@@ -90,6 +93,10 @@ model Activity {
   creator          User          @relation("CreatedBy", fields: [creatorId], references: [id])
   participants     Participant[]
   messages         Message[]
+
+  @@index([status, lat, lng])
+  @@index([creatorId])
+  @@index([status, time])
 }
 
 model Participant {
@@ -101,6 +108,7 @@ model Participant {
   activity   Activity @relation(fields: [activityId], references: [id])
 
   @@unique([userId, activityId])
+  @@index([activityId])
 }
 
 model Message {
@@ -112,6 +120,9 @@ model Message {
   activityId String
   sender     User     @relation(fields: [senderId], references: [id])
   activity   Activity @relation(fields: [activityId], references: [id])
+
+  @@index([activityId, createdAt])
+  @@index([senderId])
 }
 
 model Notification {
@@ -124,6 +135,9 @@ model Notification {
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
 }
 
 model Report {
@@ -147,6 +161,7 @@ model Block {
   blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
 
   @@unique([blockerId, blockedId])
+  @@index([blockedId])
 }
 
 model DirectMessage {
@@ -158,6 +173,10 @@ model DirectMessage {
   receiverId String
   sender     User     @relation("DmSender", fields: [senderId], references: [id])
   receiver   User     @relation("DmReceiver", fields: [receiverId], references: [id])
+
+  @@index([senderId, receiverId, createdAt])
+  @@index([receiverId, senderId])
+  @@index([receiverId, seen])
 }
 
 model ProfileRequest {
@@ -170,6 +189,7 @@ model ProfileRequest {
   requested   User     @relation("Requested", fields: [requestedId], references: [id])
 
   @@unique([requesterId, requestedId])
+  @@index([requestedId, status])
 }
 
 model SkillSession {
@@ -190,6 +210,9 @@ model SkillSession {
   teacher     User     @relation("Teacher", fields: [teacherId], references: [id])
   learnerId   String?
   learner     User?    @relation("Learner", fields: [learnerId], references: [id])
+
+  @@index([status, lat, lng])
+  @@index([teacherId])
 }
 
 model Gig {
@@ -209,6 +232,9 @@ model Gig {
   creatorId   String
   creator     User           @relation("GigCreator", fields: [creatorId], references: [id])
   applications GigApplication[]
+
+  @@index([status, lat, lng])
+  @@index([creatorId])
 }
 
 model GigApplication {
@@ -243,6 +269,9 @@ model Trip {
   creatorId   String
   creator     User              @relation("TripCreator", fields: [creatorId], references: [id])
   participants TripParticipant[]
+
+  @@index([status, lat, lng])
+  @@index([creatorId])
 }
 
 model TripParticipant {
@@ -272,6 +301,9 @@ model Idea {
   creatorId   String
   creator     User          @relation("IdeaCreator", fields: [creatorId], references: [id])
   comments    IdeaComment[]
+
+  @@index([lat, lng])
+  @@index([creatorId])
 }
 
 model IdeaComment {
@@ -282,6 +314,8 @@ model IdeaComment {
   userId    String
   idea      Idea     @relation(fields: [ideaId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([ideaId])
 }
 
 model Connection {
@@ -297,6 +331,7 @@ model Connection {
   toUser           User     @relation("ConnectionTo", fields: [toUserId], references: [id])
 
   @@unique([fromUserId, toUserId])
+  @@index([toUserId])
 }
 
 model Business {
@@ -316,4 +351,7 @@ model Business {
 
   ownerId     String
   owner       User     @relation("BusinessOwner", fields: [ownerId], references: [id])
+
+  @@index([lat, lng])
+  @@index([ownerId])
 }

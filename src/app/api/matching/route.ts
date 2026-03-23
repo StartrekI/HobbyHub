@@ -10,32 +10,65 @@ export async function GET(req: NextRequest) {
 
   if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  // Fetch user + blocked IDs in parallel
+  const [user, blocks] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { interests: true },
+    }),
+    prisma.block.findMany({
+      where: { OR: [{ blockerId: userId }, { blockedId: userId }] },
+      select: { blockerId: true, blockedId: true },
+    }),
+  ]);
+
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const userInterests: string[] = JSON.parse(user.interests || "[]");
+  const blockedIds = [
+    ...new Set([
+      ...blocks.map((b) => b.blockerId),
+      ...blocks.map((b) => b.blockedId),
+      userId,
+    ]),
+  ];
 
-  // Get blocked user IDs
-  const blocks = await prisma.block.findMany({
-    where: { OR: [{ blockerId: userId }, { blockedId: userId }] },
-  });
-  const blockedIds = new Set([
-    ...blocks.map((b) => b.blockerId),
-    ...blocks.map((b) => b.blockedId),
-    userId,
+  const locFilter = {
+    lat: { gte: lat - radius, lte: lat + radius },
+    lng: { gte: lng - radius, lte: lng + radius },
+  };
+
+  // Fetch users + activities in parallel (use notIn to exclude blocked in DB)
+  const [nearbyUsers, activities] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        id: { notIn: blockedIds },
+        ...locFilter,
+        online: true,
+      },
+      select: {
+        id: true, name: true, avatar: true, interests: true,
+        lat: true, lng: true, online: true, rating: true,
+      },
+      take: 30,
+    }),
+    prisma.activity.findMany({
+      where: {
+        status: "active",
+        ...locFilter,
+        creatorId: { notIn: blockedIds },
+      },
+      select: {
+        id: true, type: true, title: true, description: true,
+        lat: true, lng: true, time: true, playersNeeded: true,
+        creator: { select: { id: true, name: true, avatar: true } },
+        _count: { select: { participants: true } },
+      },
+      take: 20,
+    }),
   ]);
 
-  // Get nearby users
-  const nearbyUsers = await prisma.user.findMany({
-    where: {
-      id: { notIn: [...blockedIds] },
-      lat: { gte: lat - radius, lte: lat + radius },
-      lng: { gte: lng - radius, lte: lng + radius },
-      online: true,
-    },
-  });
-
-  // Score by shared interests
+  // Score by shared interests (in-memory, fast for small sets)
   const scoredUsers = nearbyUsers
     .map((u) => {
       const theirInterests: string[] = JSON.parse(u.interests || "[]");
@@ -46,22 +79,6 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
-  // Get suggested activities (matching user interests)
-  const activities = await prisma.activity.findMany({
-    where: {
-      status: "active",
-      lat: { gte: lat - radius, lte: lat + radius },
-      lng: { gte: lng - radius, lte: lng + radius },
-      creatorId: { notIn: [...blockedIds] },
-    },
-    include: {
-      creator: true,
-      participants: { include: { user: true } },
-      _count: { select: { participants: true } },
-    },
-  });
-
-  // Map activity types to interests
   const typeToInterest: Record<string, string[]> = {
     sports: ["badminton", "cricket", "football", "basketball", "tennis"],
     fitness: ["gym", "running", "yoga", "swimming", "cycling"],
@@ -83,8 +100,7 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, 8);
 
-  return NextResponse.json({
-    suggestedUsers: scoredUsers,
-    suggestedActivities,
-  });
+  const res = NextResponse.json({ suggestedUsers: scoredUsers, suggestedActivities });
+  res.headers.set("Cache-Control", "private, s-maxage=10, stale-while-revalidate=20");
+  return res;
 }
