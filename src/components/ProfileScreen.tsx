@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Star, Camera, Check, X, Shield, UserCheck, Briefcase, GraduationCap, Users, LogOut, ChevronRight, Settings, Edit3 } from "lucide-react";
+import { User, Star, Camera, Check, X, Shield, UserCheck, Briefcase, GraduationCap, Users, LogOut, ChevronRight, Edit3, MapPin, Sparkles, Heart } from "lucide-react";
 import { useStore } from "@/store";
 import { INTERESTS, TYPE_COLORS, ACTIVITY_TYPES, USER_ROLES, STARTUP_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
 
@@ -149,24 +149,24 @@ export default function ProfileScreen() {
   const roleInfo = USER_ROLES.find((r) => r.value === user.role);
   const stageInfo = STARTUP_STAGES.find((s) => s.value === user.startupStage);
 
-  const inputCls = "w-full p-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100 outline-none transition-all";
+  const inputCls = "w-full px-4 py-3 bg-[#f5f5f7] rounded-xl text-[14px] outline-none focus:bg-white focus:ring-2 focus:ring-gray-900/10 transition-all placeholder:text-gray-400";
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col">
+      className="absolute inset-0 bottom-[72px] bg-[#f5f5f7] z-[900] flex flex-col">
 
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <h3 className="flex-1 font-bold text-lg">Profile</h3>
+      <div className="flex items-center gap-3 px-5 py-3 bg-white/95 backdrop-blur-2xl border-b border-gray-200/40">
+        <h3 className="flex-1 font-extrabold text-[20px] text-gray-900 tracking-tight">Profile</h3>
         {!editing ? (
-          <button onClick={startEdit} className="flex items-center gap-1.5 px-4 py-2 bg-violet-50 text-violet-600 rounded-xl text-sm font-semibold hover:bg-violet-100 transition-colors">
-            <Edit3 size={14} /> Edit
+          <button onClick={startEdit} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-[12px] font-semibold hover:bg-gray-200 transition-colors">
+            <Edit3 size={12} /> Edit
           </button>
         ) : (
           <div className="flex gap-2">
-            <button onClick={() => setEditing(false)} className="px-4 py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-semibold">Cancel</button>
+            <button onClick={() => setEditing(false)} className="px-3.5 py-1.5 bg-gray-100 text-gray-500 rounded-full text-[12px] font-semibold">Cancel</button>
             <motion.button whileTap={{ scale: 0.97 }} onClick={saveProfile} disabled={saving}
-              className="px-4 py-2 bg-violet-600 text-white rounded-xl text-sm font-semibold disabled:opacity-50">
+              className="px-4 py-1.5 bg-gray-900 text-white rounded-full text-[12px] font-semibold disabled:opacity-50">
               {saving ? "Saving..." : "Save"}
             </motion.button>
           </div>
@@ -180,34 +180,41 @@ export default function ProfileScreen() {
       <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           {editing ? (
-            <motion.div key="edit" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-5 space-y-5">
+            <motion.div key="edit" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 space-y-3">
               {/* Avatar */}
-              <div className="flex justify-center">
+              <div className="flex justify-center pt-2 pb-1">
                 <div onClick={() => fileInputRef.current?.click()}
-                  className="w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white cursor-pointer relative overflow-hidden shadow-lg shadow-violet-200 group">
-                  {avatarPreview ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" /> : <User size={40} />}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><Camera size={22} className="text-white" /></div>
+                  className="relative w-24 h-24 rounded-full cursor-pointer group">
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 overflow-hidden ring-4 ring-white shadow-lg">
+                    {avatarPreview ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" /> : <User size={36} />}
+                  </div>
+                  <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera size={20} className="text-white" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center shadow-md">
+                    <Camera size={12} className="text-white" />
+                  </div>
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
               </div>
 
               {/* Basic Info */}
-              <div className="bg-white rounded-3xl p-6 space-y-5 border border-gray-100 shadow-sm">
-                <h4 className="font-bold text-xs text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-1 h-4 bg-violet-500 rounded-full" /> Basic Info</h4>
+              <div className="bg-white rounded-2xl p-4 space-y-3">
+                <h4 className="font-bold text-[11px] text-gray-400 uppercase tracking-wider">Basic Info</h4>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Name</label>
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1">Name</label>
                   <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Bio</label>
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1">Bio</label>
                   <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-2">Skill Level</label>
-                  <div className="flex gap-2">
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Skill Level</label>
+                  <div className="grid grid-cols-4 gap-1.5">
                     {SKILL_LEVELS.map((level) => (
                       <button key={level} onClick={() => setEditSkill(level)}
-                        className={`flex-1 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${editSkill === level ? "bg-violet-600 text-white shadow-sm" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                        className={`py-2 rounded-lg text-[11px] font-semibold capitalize transition-all ${editSkill === level ? "bg-gray-900 text-white" : "bg-[#f5f5f7] text-gray-500"}`}>
                         {level}
                       </button>
                     ))}
@@ -216,75 +223,75 @@ export default function ProfileScreen() {
               </div>
 
               {/* Professional */}
-              <div className="bg-white rounded-3xl p-6 space-y-5 border border-gray-100 shadow-sm">
-                <h4 className="font-bold text-xs text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-1 h-4 bg-blue-500 rounded-full" /> Professional</h4>
+              <div className="bg-white rounded-2xl p-4 space-y-3">
+                <h4 className="font-bold text-[11px] text-gray-400 uppercase tracking-wider">Professional</h4>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-2">Role</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Role</label>
+                  <div className="flex flex-wrap gap-1.5">
                     {USER_ROLES.map((r) => (
                       <button key={r.value} onClick={() => setEditRole(r.value)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${editRole === r.value ? "bg-violet-600 text-white" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${editRole === r.value ? "bg-gray-900 text-white" : "bg-[#f5f5f7] text-gray-500"}`}>
                         {r.icon} {r.label}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-2">Stage</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Stage</label>
+                  <div className="flex flex-wrap gap-1.5">
                     {STARTUP_STAGES.map((s) => (
                       <button key={s.value} onClick={() => setEditStage(s.value)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${editStage === s.value ? "bg-violet-600 text-white" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${editStage === s.value ? "bg-gray-900 text-white" : "bg-[#f5f5f7] text-gray-500"}`}>
                         {s.icon} {s.label}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Company</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Company</label>
                     <input value={editCompany} onChange={(e) => setEditCompany(e.target.value)} className={inputCls} />
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Title</label>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Title</label>
                     <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputCls} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Looking For</label>
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1">Looking For</label>
                   <input value={editLookingFor} onChange={(e) => setEditLookingFor(e.target.value)} placeholder="cofounder, hiring, mentor..." className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-2">Skills</label>
+                  <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Skills</label>
                   <div className="flex flex-wrap gap-1.5">
                     {PROFESSIONAL_SKILLS.map((s) => (
                       <button key={s} onClick={() => setEditSkills((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])}
-                        className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all ${editSkills.includes(s) ? "bg-violet-600 text-white" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${editSkills.includes(s) ? "bg-gray-900 text-white" : "bg-[#f5f5f7] text-gray-500"}`}>
                         {s}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">College</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2">
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">College</label>
                     <input value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className={inputCls} />
                   </div>
-                  <div className="w-24">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Year</label>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Year</label>
                     <input type="number" value={editGradYear} onChange={(e) => setEditGradYear(e.target.value)} className={inputCls} />
                   </div>
                 </div>
               </div>
 
               {/* Interests */}
-              <div className="bg-white rounded-3xl p-6 space-y-4 border border-gray-100 shadow-sm">
-                <h4 className="font-bold text-xs text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-1 h-4 bg-emerald-500 rounded-full" /> Interests</h4>
-                <div className="flex flex-wrap gap-2">
+              <div className="bg-white rounded-2xl p-4 space-y-3">
+                <h4 className="font-bold text-[11px] text-gray-400 uppercase tracking-wider">Interests</h4>
+                <div className="flex flex-wrap gap-1.5">
                   {INTERESTS.map((interest) => (
                     <button key={interest.id}
                       onClick={() => setEditInterests((prev) => prev.includes(interest.id) ? prev.filter((i) => i !== interest.id) : [...prev, interest.id])}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${editInterests.includes(interest.id) ? "bg-violet-600 text-white" : "bg-gray-50 text-gray-500 border border-gray-200"}`}>
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${editInterests.includes(interest.id) ? "bg-gray-900 text-white" : "bg-[#f5f5f7] text-gray-500"}`}>
                       {interest.icon} {interest.label}
                     </button>
                   ))}
@@ -294,103 +301,101 @@ export default function ProfileScreen() {
             </motion.div>
           ) : (
             <motion.div key="view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              {/* Hero Header */}
-              <div className="relative overflow-hidden px-5 pt-8 pb-16" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 30%, #8b5cf6 60%, #a78bfa 100%)" }}>
-                {/* Mesh-like pattern overlay */}
-                <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px), radial-gradient(circle at 40% 80%, white 1.5px, transparent 1.5px)", backgroundSize: "60px 60px, 80px 80px, 100px 100px" }} />
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(135deg, transparent 40%, white 50%, transparent 60%)", backgroundSize: "200% 200%" }} />
-                <div className="relative z-10 flex items-center gap-4">
-                  {/* Avatar with gradient ring */}
-                  <div className="p-[3px] rounded-[26px] bg-gradient-to-br from-white/60 via-white/30 to-white/60 shadow-xl shadow-purple-900/20">
-                    <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white overflow-hidden">
-                      {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={40} />}
-                    </div>
-                  </div>
-                  <div className="flex-1 text-white">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-2xl font-extrabold tracking-tight">{user.name}</h2>
+              {/* Profile Card */}
+              <div className="p-4">
+                <div className="bg-white rounded-[24px] overflow-hidden">
+                  {/* Avatar & Identity */}
+                  <div className="flex flex-col items-center pt-8 pb-5 px-5">
+                    <div className="relative mb-4">
+                      <div className="w-[88px] h-[88px] rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-400 overflow-hidden ring-[3px] ring-white shadow-lg">
+                        {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={38} />}
+                      </div>
                       {user.verified && (
-                        <span className="px-2.5 py-0.5 bg-white/20 backdrop-blur-sm text-[10px] font-bold rounded-full flex items-center gap-1 border border-white/20">
-                          <Shield size={10} /> Verified
-                        </span>
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center ring-[3px] ring-white">
+                          <Check size={12} className="text-white" strokeWidth={3} />
+                        </div>
                       )}
                     </div>
+
+                    <h2 className="text-[22px] font-extrabold text-gray-900 tracking-tight">{user.name}</h2>
+
                     {(user.title || user.company) && (
-                      <p className="text-white/85 text-sm mt-1 font-medium">{user.title}{user.title && user.company ? " at " : ""}{user.company}</p>
+                      <p className="text-[13px] text-gray-500 mt-0.5 font-medium">
+                        {user.title}{user.title && user.company ? " at " : ""}<span className="font-semibold text-gray-700">{user.company}</span>
+                      </p>
                     )}
-                    <p className="text-white/55 text-sm mt-0.5">{user.bio || "No bio yet"}</p>
+
+                    {user.bio && (
+                      <p className="text-[13px] text-gray-400 mt-2 text-center leading-relaxed max-w-[280px]">{user.bio}</p>
+                    )}
+
+                    {/* Role & Stage pills */}
+                    {(roleInfo || stageInfo || user.lookingFor) && (
+                      <div className="flex flex-wrap gap-1.5 mt-3 justify-center">
+                        {roleInfo && (
+                          <span className="px-2.5 py-1 bg-[#f5f5f7] text-gray-600 text-[11px] font-semibold rounded-full">
+                            {roleInfo.icon} {roleInfo.label}
+                          </span>
+                        )}
+                        {stageInfo && (
+                          <span className="px-2.5 py-1 bg-[#f5f5f7] text-gray-600 text-[11px] font-semibold rounded-full">
+                            {stageInfo.icon} {stageInfo.label}
+                          </span>
+                        )}
+                        {user.lookingFor && (
+                          <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[11px] font-semibold rounded-full">
+                            Looking for: {user.lookingFor}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {user.collegeName && (
+                      <p className="text-[11px] text-gray-400 mt-2.5 flex items-center gap-1 font-medium">
+                        <GraduationCap size={11} /> {user.collegeName}
+                        {user.graduationYear ? ` '${String(user.graduationYear).slice(-2)}` : ""}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-4 border-t border-gray-100 divide-x divide-gray-100">
+                    {[
+                      { value: profile?.activitiesCreated?.length || 0, label: "Created" },
+                      { value: profile?.participants?.length || 0, label: "Joined" },
+                      { value: user.rating || 0, label: "Rating" },
+                      { value: connections.length, label: "Network" },
+                    ].map((stat) => (
+                      <div key={stat.label} className="py-4 text-center">
+                        <span className="block text-[18px] font-extrabold text-gray-900">{stat.value}</span>
+                        <span className="text-[10px] text-gray-400 font-medium">{stat.label}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-
-                {/* Badges */}
-                {(roleInfo || stageInfo) && (
-                  <div className="relative z-10 flex gap-2 mt-4 flex-wrap">
-                    {roleInfo && (
-                      <span className="px-3.5 py-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-semibold rounded-xl border border-white/10">
-                        {roleInfo.icon} {roleInfo.label}
-                      </span>
-                    )}
-                    {stageInfo && (
-                      <span className="px-3.5 py-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-semibold rounded-xl border border-white/10">
-                        {stageInfo.icon} {stageInfo.label}
-                      </span>
-                    )}
-                    {user.lookingFor && (
-                      <span className="px-3.5 py-1.5 bg-emerald-400/25 backdrop-blur-sm text-white text-xs font-semibold rounded-xl border border-emerald-300/20">
-                        Looking for: {user.lookingFor}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {user.collegeName && (
-                  <p className="relative z-10 text-white/50 text-xs mt-3 flex items-center gap-1">
-                    <GraduationCap size={12} /> {user.collegeName}
-                    {user.graduationYear ? ` '${String(user.graduationYear).slice(-2)}` : ""}
-                  </p>
-                )}
               </div>
 
-              {/* Stats Card — overlapping hero */}
-              <div className="mx-4 -mt-10 bg-white rounded-3xl p-5 shadow-lg shadow-gray-200/60 border border-gray-100/80">
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { value: profile?.activitiesCreated?.length || 0, label: "Created", bg: "bg-violet-50", text: "text-violet-700" },
-                    { value: profile?.participants?.length || 0, label: "Joined", bg: "bg-blue-50", text: "text-blue-700" },
-                    { value: user.rating || 0, label: "Rating", icon: <Star size={14} className="text-amber-400 inline" />, bg: "bg-amber-50", text: "text-amber-700" },
-                    { value: connections.length, label: "Network", bg: "bg-emerald-50", text: "text-emerald-700" },
-                  ].map((stat) => (
-                    <div key={stat.label} className={`text-center p-2.5 ${stat.bg} rounded-2xl`}>
-                      <span className={`block text-xl font-extrabold ${stat.text}`}>
-                        {stat.icon || null}{stat.value}
-                      </span>
-                      <span className="text-[10px] text-gray-500 font-semibold">{stat.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4 space-y-4">
+              <div className="px-4 space-y-2 pb-4">
                 {/* Connection Requests */}
                 {pendingRequests.length > 0 && (
-                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
-                      <UserCheck size={16} className="text-violet-600" /> Requests
-                      <span className="px-2 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-bold rounded-full">{pendingRequests.length}</span>
-                    </h4>
-                    <div className="space-y-2.5">
+                  <div className="bg-white rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h4 className="font-bold text-[13px] text-gray-900">Requests</h4>
+                      <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] text-center">{pendingRequests.length}</span>
+                    </div>
+                    <div className="space-y-2">
                       {pendingRequests.map((req) => (
-                        <div key={req.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 text-white flex items-center justify-center font-bold text-sm">
-                            {req.requester.name.charAt(0)}
+                        <div key={req.id} className="flex items-center gap-3 p-2.5 bg-[#f5f5f7] rounded-xl">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 text-gray-500 flex items-center justify-center font-bold text-sm overflow-hidden">
+                            {req.requester.avatar ? <img src={req.requester.avatar} alt="" className="w-full h-full object-cover" /> : req.requester.name.charAt(0)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">{req.requester.name}</p>
-                            <p className="text-xs text-gray-400">wants to connect</p>
+                            <p className="font-semibold text-[13px] truncate text-gray-900">{req.requester.name}</p>
+                            <p className="text-[11px] text-gray-400">wants to connect</p>
                           </div>
                           <div className="flex gap-1.5">
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "accepted")} className="w-9 h-9 bg-emerald-500 text-white rounded-xl flex items-center justify-center shadow-sm"><Check size={14} /></motion.button>
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "rejected")} className="w-9 h-9 bg-gray-200 text-gray-500 rounded-xl flex items-center justify-center"><X size={14} /></motion.button>
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "accepted")} className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center"><Check size={13} /></motion.button>
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "rejected")} className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center"><X size={13} /></motion.button>
                           </div>
                         </div>
                       ))}
@@ -400,13 +405,11 @@ export default function ProfileScreen() {
 
                 {/* Skills */}
                 {userSkills.length > 0 && (
-                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center"><Briefcase size={14} className="text-blue-500" /></div> Skills
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="bg-white rounded-2xl p-4">
+                    <h4 className="font-bold text-[13px] text-gray-900 mb-2.5">Skills</h4>
+                    <div className="flex flex-wrap gap-1.5">
                       {userSkills.map((s) => (
-                        <span key={s} className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-100/60">{s}</span>
+                        <span key={s} className="px-3 py-1.5 bg-[#f5f5f7] text-gray-600 text-[11px] font-semibold rounded-full">{s}</span>
                       ))}
                     </div>
                   </div>
@@ -414,13 +417,13 @@ export default function ProfileScreen() {
 
                 {/* Interests */}
                 {interests.length > 0 && (
-                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <h4 className="font-bold text-sm mb-3">Interests</h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="bg-white rounded-2xl p-4">
+                    <h4 className="font-bold text-[13px] text-gray-900 mb-2.5">Interests</h4>
+                    <div className="flex flex-wrap gap-1.5">
                       {interests.map((i: string) => {
                         const interest = INTERESTS.find((x) => x.id === i);
                         return interest ? (
-                          <span key={i} className="px-3 py-1.5 rounded-xl bg-violet-50 text-violet-600 text-xs font-semibold">
+                          <span key={i} className="px-3 py-1.5 bg-[#f5f5f7] text-gray-600 text-[11px] font-semibold rounded-full">
                             {interest.icon} {interest.label}
                           </span>
                         ) : null;
@@ -430,39 +433,44 @@ export default function ProfileScreen() {
                 )}
 
                 {/* Activity History */}
-                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-                  <h4 className="font-bold text-sm mb-3">Recent Activity</h4>
+                <div className="bg-white rounded-2xl p-4">
+                  <h4 className="font-bold text-[13px] text-gray-900 mb-2.5">Recent Activity</h4>
                   {profile?.participants && profile.participants.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {profile.participants.slice(0, 5).map((p) => (
-                        <div key={p.activity.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+                        <div key={p.activity.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#f5f5f7] transition-colors cursor-pointer">
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm shrink-0"
-                            style={{ background: `${TYPE_COLORS[p.activity.type]}15`, color: TYPE_COLORS[p.activity.type] }}>
+                            style={{ background: `${TYPE_COLORS[p.activity.type]}10`, color: TYPE_COLORS[p.activity.type] }}>
                             {ACTIVITY_TYPES.find((t) => t.value === p.activity.type)?.icon}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">{p.activity.title}</p>
-                            <p className="text-xs text-gray-400">by {p.activity.creator.name}</p>
+                            <p className="font-semibold text-[13px] text-gray-900 truncate">{p.activity.title}</p>
+                            <p className="text-[11px] text-gray-400">by {p.activity.creator.name}</p>
                           </div>
-                          <ChevronRight size={16} className="text-gray-300 shrink-0" />
+                          <ChevronRight size={14} className="text-gray-300 shrink-0" />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-400 text-center py-6">No activities yet. Explore the map!</p>
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 bg-[#f5f5f7] rounded-2xl flex items-center justify-center mx-auto mb-2">
+                        <MapPin size={20} className="text-gray-300" />
+                      </div>
+                      <p className="text-[12px] text-gray-400 font-medium">No activities yet</p>
+                      <p className="text-[11px] text-gray-300 mt-0.5">Explore the map to get started</p>
+                    </div>
                   )}
                 </div>
 
                 {/* Logout */}
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={logout}
-                  className="w-full py-3 text-gray-400 font-medium text-xs flex items-center justify-center gap-1.5 hover:text-red-400 transition-colors"
+                  className="w-full py-3 text-gray-400 font-medium text-[12px] flex items-center justify-center gap-1.5 hover:text-red-400 transition-colors"
                 >
-                  <LogOut size={14} /> Log Out
-                </motion.button>
+                  <LogOut size={13} /> Sign out
+                </button>
 
-                <div className="h-4" />
+                <div className="h-2" />
               </div>
             </motion.div>
           )}
