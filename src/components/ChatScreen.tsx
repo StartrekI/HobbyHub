@@ -153,7 +153,7 @@ export default function ChatScreen() {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[72px] bg-gradient-to-b from-gray-50 to-gray-100/50 z-[900] flex flex-col"
+      className="h-full bg-gradient-to-b from-gray-50 to-gray-100/50 flex flex-col"
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3.5 bg-white/90 backdrop-blur-2xl border-b border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">

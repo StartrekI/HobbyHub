@@ -72,7 +72,7 @@ export default function NetworkingView() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
+      className="h-full bg-gray-50 flex flex-col"
     >
       {/* Header */}
       <div className="px-5 pt-4 pb-3 bg-white/80 backdrop-blur-xl border-b border-gray-100">

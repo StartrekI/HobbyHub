@@ -133,22 +133,33 @@ export default function Home() {
     return <Onboarding />;
   }
 
+  // Screens that overlay on top of the map
+  const mapOverlayScreens = ["map", "create", "notifications", "activity-detail", "create-opportunity"];
+  const showMap = mapOverlayScreens.includes(currentScreen);
+
   return (
     <div className="h-full w-full max-w-[430px] mx-auto flex flex-col relative border-x border-gray-200 bg-gray-50">
-      <div className="flex-1 relative">
-        <MapView />
-        <AnimatePresence mode="wait">
-          {currentScreen === "create" && <CreateActivity key="create" />}
-          {currentScreen === "chat-list" && <ChatList key="chat-list" />}
-          {currentScreen === "chat" && <ChatScreen key="chat" />}
-          {currentScreen === "profile" && <ProfileScreen key="profile" />}
-          {currentScreen === "notifications" && <NotificationsScreen key="notifications" />}
-          {currentScreen === "activity-detail" && <ActivityDetail key="activity-detail" />}
-          {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
-          {currentScreen === "networking" && <NetworkingView key="networking" />}
-          {currentScreen === "create-opportunity" && <CreateOpportunityModal key="create-opportunity" />}
-          {currentScreen === "calendar" && <CalendarView key="calendar" />}
-        </AnimatePresence>
+      <div className="flex-1 relative overflow-hidden">
+        {showMap ? (
+          <>
+            <MapView />
+            <AnimatePresence mode="wait">
+              {currentScreen === "create" && <CreateActivity key="create" />}
+              {currentScreen === "notifications" && <NotificationsScreen key="notifications" />}
+              {currentScreen === "activity-detail" && <ActivityDetail key="activity-detail" />}
+              {currentScreen === "create-opportunity" && <CreateOpportunityModal key="create-opportunity" />}
+            </AnimatePresence>
+          </>
+        ) : (
+          <AnimatePresence mode="wait">
+            {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
+            {currentScreen === "calendar" && <CalendarView key="calendar" />}
+            {currentScreen === "chat-list" && <ChatList key="chat-list" />}
+            {currentScreen === "chat" && <ChatScreen key="chat" />}
+            {currentScreen === "profile" && <ProfileScreen key="profile" />}
+            {currentScreen === "networking" && <NetworkingView key="networking" />}
+          </AnimatePresence>
+        )}
       </div>
       <BottomNav />
     </div>

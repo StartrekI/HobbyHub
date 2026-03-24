@@ -118,7 +118,7 @@ export default function DiscoveryFeed() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[72px] bg-[#f5f5f7] z-[900] flex flex-col"
+      className="h-full bg-[#f5f5f7] flex flex-col"
     >
       {/* Header */}
       <div className="bg-white/95 backdrop-blur-2xl border-b border-gray-200/40">

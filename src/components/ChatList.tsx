@@ -61,7 +61,7 @@ export default function ChatList() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="absolute inset-0 bottom-[72px] bg-gradient-to-b from-gray-50 to-gray-100/80 z-[900] flex flex-col"
+      className="h-full bg-gradient-to-b from-gray-50 to-gray-100/80 flex flex-col"
     >
       {/* Header */}
       <div className="px-5 pt-5 pb-4 bg-white/90 backdrop-blur-2xl border-b border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">

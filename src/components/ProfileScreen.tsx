@@ -153,7 +153,7 @@ export default function ProfileScreen() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="absolute inset-0 bottom-[72px] bg-[#f5f5f7] z-[900] flex flex-col">
+      className="h-full bg-[#f5f5f7] flex flex-col">
 
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white/95 backdrop-blur-2xl border-b border-gray-200/40">
