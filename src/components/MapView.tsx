@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useStore } from "@/store";
 import { getDistance, TYPE_COLORS, ACTIVITY_TYPES, INTERESTS } from "@/lib/utils";
 import type { ActivityType, UserType, HotspotType } from "@/types";
@@ -15,12 +15,25 @@ import dynamic from "next/dynamic";
 const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
 
 export default function MapView() {
-  const {
-    userLocation, activities, setActivities, nearbyUsers, setNearbyUsers,
-    hotspots, setHotspots, mapFilter, setMapFilter, selectedActivity,
-    setSelectedActivity, setScreen, sheetOpen, setSheetOpen, user,
-    unreadCount, setUnreadCount, setCurrentChatId, setOpportunityType,
-  } = useStore();
+  const userLocation = useStore((s) => s.userLocation);
+  const activities = useStore((s) => s.activities);
+  const setActivities = useStore((s) => s.setActivities);
+  const nearbyUsers = useStore((s) => s.nearbyUsers);
+  const setNearbyUsers = useStore((s) => s.setNearbyUsers);
+  const hotspots = useStore((s) => s.hotspots);
+  const setHotspots = useStore((s) => s.setHotspots);
+  const mapFilter = useStore((s) => s.mapFilter);
+  const setMapFilter = useStore((s) => s.setMapFilter);
+  const selectedActivity = useStore((s) => s.selectedActivity);
+  const setSelectedActivity = useStore((s) => s.setSelectedActivity);
+  const setScreen = useStore((s) => s.setScreen);
+  const sheetOpen = useStore((s) => s.sheetOpen);
+  const setSheetOpen = useStore((s) => s.setSheetOpen);
+  const user = useStore((s) => s.user);
+  const unreadCount = useStore((s) => s.unreadCount);
+  const setUnreadCount = useStore((s) => s.setUnreadCount);
+  const setCurrentChatId = useStore((s) => s.setCurrentChatId);
+  const setOpportunityType = useStore((s) => s.setOpportunityType);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -182,20 +195,21 @@ export default function MapView() {
     } catch { alert("Request failed"); }
   };
 
-  const searchResults = searchQuery.trim()
-    ? {
-        activities: activities.filter(
-          (a) =>
-            a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            a.type.toLowerCase().includes(searchQuery.toLowerCase())
-        ),
-        users: nearbyUsers.filter(
-          (u) =>
-            u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.interests.some((i: string) => i.includes(searchQuery.toLowerCase()))
-        ),
-      }
-    : null;
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    return {
+      activities: activities.filter(
+        (a) =>
+          a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          a.type.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+      users: nearbyUsers.filter(
+        (u) =>
+          u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.interests.some((i: string) => i.includes(searchQuery.toLowerCase()))
+      ),
+    };
+  }, [searchQuery, activities, nearbyUsers]);
 
   const filters = [
     { key: "all" as const, label: "All" },
@@ -204,12 +218,15 @@ export default function MapView() {
     { key: "hotspots" as const, label: "Hotspots" },
   ];
 
-  const userInterests = user?.interests
-    ? (Array.isArray(user.interests) ? user.interests : JSON.parse(user.interests as string))
-    : [];
-  const sharedInterests = selectedUser
-    ? selectedUser.interests.filter((i: string) => userInterests.includes(i))
-    : [];
+  const userInterests = useMemo(() => {
+    if (!user?.interests) return [];
+    return Array.isArray(user.interests) ? user.interests : JSON.parse(user.interests as string);
+  }, [user?.interests]);
+
+  const sharedInterests = useMemo(() => {
+    if (!selectedUser) return [];
+    return selectedUser.interests.filter((i: string) => userInterests.includes(i));
+  }, [selectedUser, userInterests]);
 
   const dragControls = useDragControls();
 

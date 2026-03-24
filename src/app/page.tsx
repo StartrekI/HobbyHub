@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "@/store";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 import Onboarding from "@/components/Onboarding";
 import MapView from "@/components/MapView";
 import CreateActivity from "@/components/CreateActivity";
-import ChatList from "@/components/ChatList";
-import ChatScreen from "@/components/ChatScreen";
-import ProfileScreen from "@/components/ProfileScreen";
+const ChatList = lazy(() => import("@/components/ChatList"));
+const ChatScreen = lazy(() => import("@/components/ChatScreen"));
+const ProfileScreen = lazy(() => import("@/components/ProfileScreen"));
 import NotificationsScreen from "@/components/NotificationsScreen";
 import ActivityDetail from "@/components/ActivityDetail";
-import DiscoveryFeed from "@/components/DiscoveryFeed";
-import NetworkingView from "@/components/NetworkingView";
+const DiscoveryFeed = lazy(() => import("@/components/DiscoveryFeed"));
+const NetworkingView = lazy(() => import("@/components/NetworkingView"));
 import CreateOpportunityModal from "@/components/CreateOpportunityModal";
-import CalendarView from "@/components/CalendarView";
+const CalendarView = lazy(() => import("@/components/CalendarView"));
 import BottomNav from "@/components/BottomNav";
 
 export default function Home() {
@@ -75,13 +75,15 @@ export default function Home() {
           body: JSON.stringify({ userId: currentUser.id, lat, lng }),
         }).catch(() => {});
 
-        try {
-          const saved = localStorage.getItem("hobbyhub_user");
-          if (saved) {
-            const data = JSON.parse(saved);
-            localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat, lng }));
-          }
-        } catch {}
+        requestIdleCallback(() => {
+          try {
+            const saved = localStorage.getItem("hobbyhub_user");
+            if (saved) {
+              const data = JSON.parse(saved);
+              localStorage.setItem("hobbyhub_user", JSON.stringify({ ...data, lat, lng }));
+            }
+          } catch {}
+        });
       }
     };
 
@@ -151,14 +153,16 @@ export default function Home() {
             </AnimatePresence>
           </>
         ) : (
-          <AnimatePresence mode="wait">
-            {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
-            {currentScreen === "calendar" && <CalendarView key="calendar" />}
-            {currentScreen === "chat-list" && <ChatList key="chat-list" />}
-            {currentScreen === "chat" && <ChatScreen key="chat" />}
-            {currentScreen === "profile" && <ProfileScreen key="profile" />}
-            {currentScreen === "networking" && <NetworkingView key="networking" />}
-          </AnimatePresence>
+          <Suspense fallback={<div className="h-full bg-[#f5f5f7]" />}>
+            <AnimatePresence mode="wait">
+              {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
+              {currentScreen === "calendar" && <CalendarView key="calendar" />}
+              {currentScreen === "chat-list" && <ChatList key="chat-list" />}
+              {currentScreen === "chat" && <ChatScreen key="chat" />}
+              {currentScreen === "profile" && <ProfileScreen key="profile" />}
+              {currentScreen === "networking" && <NetworkingView key="networking" />}
+            </AnimatePresence>
+          </Suspense>
         )}
       </div>
       <BottomNav />

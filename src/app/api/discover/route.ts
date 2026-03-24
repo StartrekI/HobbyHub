@@ -155,6 +155,6 @@ export async function GET(req: NextRequest) {
   feed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const res = NextResponse.json(feed);
-  res.headers.set("Cache-Control", "public, s-maxage=15, stale-while-revalidate=30");
+  res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=120");
   return res;
 }

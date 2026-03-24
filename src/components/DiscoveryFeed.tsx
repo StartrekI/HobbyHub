@@ -69,7 +69,9 @@ function SkeletonCard({ delay = 0 }: { delay?: number }) {
 }
 
 export default function DiscoveryFeed() {
-  const { user, userLocation, setScreen } = useStore();
+  const user = useStore((s) => s.user);
+  const userLocation = useStore((s) => s.userLocation);
+  const setScreen = useStore((s) => s.setScreen);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

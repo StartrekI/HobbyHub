@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
           messages: {
             orderBy: { createdAt: "desc" },
             take: 1,
-            include: { sender: true },
+            include: { sender: { select: { id: true, name: true, avatar: true } } },
           },
           _count: {
             select: { participants: true, messages: true },

@@ -14,7 +14,10 @@ const navItems = [
 ];
 
 export default function BottomNav() {
-  const { currentScreen, setScreen, setSheetOpen, unreadCount } = useStore();
+  const currentScreen = useStore((s) => s.currentScreen);
+  const setScreen = useStore((s) => s.setScreen);
+  const setSheetOpen = useStore((s) => s.setSheetOpen);
+  const unreadCount = useStore((s) => s.unreadCount);
 
   const handleNav = (screen: typeof navItems[number]["screen"]) => {
     setSheetOpen(false);

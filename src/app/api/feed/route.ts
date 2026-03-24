@@ -20,8 +20,8 @@ export async function GET(req: NextRequest) {
       prisma.activity.findMany({
         where: { status: "active", ...locationFilter },
         include: {
-          creator: true,
-          participants: { include: { user: true }, take: 20 },
+          creator: { select: { id: true, name: true, avatar: true } },
+          participants: { include: { user: { select: { id: true, name: true, avatar: true } } }, take: 6 },
           _count: { select: { messages: true, participants: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -29,25 +29,25 @@ export async function GET(req: NextRequest) {
       }),
       prisma.trip.findMany({
         where: { status: "planning", ...locationFilter },
-        include: { creator: true, participants: { include: { user: true } }, _count: { select: { participants: true } } },
+        include: { creator: { select: { id: true, name: true, avatar: true } }, participants: { include: { user: { select: { id: true, name: true, avatar: true } } } }, _count: { select: { participants: true } } },
         orderBy: { createdAt: "desc" },
         take: 20,
       }),
       prisma.gig.findMany({
         where: { status: "open", ...locationFilter },
-        include: { creator: true, _count: { select: { applications: true } } },
+        include: { creator: { select: { id: true, name: true, avatar: true } }, _count: { select: { applications: true } } },
         orderBy: { createdAt: "desc" },
         take: 20,
       }),
       prisma.skillSession.findMany({
         where: { status: "active", ...locationFilter },
-        include: { teacher: true },
+        include: { teacher: { select: { id: true, name: true, avatar: true } } },
         orderBy: { createdAt: "desc" },
         take: 20,
       }),
       prisma.idea.findMany({
         where: locationFilter,
-        include: { creator: true, _count: { select: { comments: true } } },
+        include: { creator: { select: { id: true, name: true, avatar: true } }, _count: { select: { comments: true } } },
         orderBy: { createdAt: "desc" },
         take: 20,
       }),
@@ -57,8 +57,10 @@ export async function GET(req: NextRequest) {
           ...(userId ? { id: { not: userId } } : {}),
         },
         select: {
-          id: true, name: true, avatar: true, lat: true, lng: true,
-          online: true, rating: true, interests: true, role: true,
+          id: true, name: true, email: true, bio: true, avatar: true,
+          interests: true, lat: true, lng: true, online: true, rating: true,
+          verified: true, role: true, title: true, company: true,
+          skills: true, collegeName: true,
         },
         take: 50,
       }),
@@ -183,9 +185,9 @@ export async function GET(req: NextRequest) {
 
     const allActivities = [...activities, ...opportunityActivities];
 
-    // Auto-end old activities in background (non-blocking)
+    // Auto-end old activities in background (non-blocking) — only 10% of requests
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    prisma.activity.updateMany({
+    if (Math.random() < 0.1) prisma.activity.updateMany({
       where: { status: "active", time: { lt: oneDayAgo } },
       data: { status: "completed" },
     }).catch(() => {});

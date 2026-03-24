@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Calendar, Clock, MapPin, Users, ChevronRight,
@@ -31,7 +31,10 @@ function DaySkeleton() {
 }
 
 export default function CalendarView() {
-  const { user, userLocation, setScreen, setSelectedActivity } = useStore();
+  const user = useStore((s) => s.user);
+  const userLocation = useStore((s) => s.userLocation);
+  const setScreen = useStore((s) => s.setScreen);
+  const setSelectedActivity = useStore((s) => s.setSelectedActivity);
   const [days, setDays] = useState<CalendarDayType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -57,6 +60,10 @@ export default function CalendarView() {
   }, [fetchCalendar]);
 
   const totalActivities = days.reduce((sum, d) => sum + d.activities.length, 0);
+
+  const filteredDays = useMemo(() => {
+    return selectedDate ? days.filter((d) => d.date === selectedDate) : days;
+  }, [selectedDate, days]);
 
   // Date strip at top
   const today = new Date().toISOString().split("T")[0];
@@ -140,7 +147,7 @@ export default function CalendarView() {
             {[0, 1, 2].map((i) => <DaySkeleton key={i} />)}
           </div>
         ) : (
-          (selectedDate ? days.filter((d) => d.date === selectedDate) : days).map((day) => (
+          filteredDays.map((day) => (
             <DaySection
               key={day.date}
               day={day}

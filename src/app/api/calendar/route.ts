@@ -23,7 +23,10 @@ export async function GET(req: NextRequest) {
         status: "active",
         ...locationFilter,
       },
-      include: {
+      select: {
+        id: true, type: true, title: true, description: true,
+        lat: true, lng: true, time: true, playersNeeded: true,
+        status: true, creatorId: true,
         creator: { select: { id: true, name: true, avatar: true } },
         _count: { select: { participants: true } },
       },
@@ -53,7 +56,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return NextResponse.json(calendar);
+    return NextResponse.json(calendar, { headers: { "Cache-Control": "s-maxage=30, stale-while-revalidate=60" } });
   } catch (error) {
     console.error("GET /api/calendar error:", error);
     return NextResponse.json([], { status: 200 });

@@ -66,6 +66,7 @@ model User {
 
   @@index([lat, lng])
   @@index([online, updatedAt])
+  @@index([role])
 }
 
 model Activity {
@@ -97,6 +98,7 @@ model Activity {
   @@index([status, lat, lng])
   @@index([creatorId])
   @@index([status, time])
+  @@index([time, status])
 }
 
 model Participant {
@@ -249,6 +251,7 @@ model GigApplication {
   user      User     @relation(fields: [userId], references: [id])
 
   @@unique([gigId, userId])
+  @@index([userId])
 }
 
 model Trip {
@@ -272,6 +275,7 @@ model Trip {
 
   @@index([status, lat, lng])
   @@index([creatorId])
+  @@index([createdAt])
 }
 
 model TripParticipant {
@@ -283,6 +287,7 @@ model TripParticipant {
   user     User     @relation(fields: [userId], references: [id])
 
   @@unique([tripId, userId])
+  @@index([userId])
 }
 
 model Idea {
@@ -302,7 +307,7 @@ model Idea {
   creator     User          @relation("IdeaCreator", fields: [creatorId], references: [id])
   comments    IdeaComment[]
 
-  @@index([lat, lng])
+  @@index([lat, lng, createdAt])
   @@index([creatorId])
 }
 

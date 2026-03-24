@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Send, CheckCheck, Phone, MoreVertical } from "lucide-react";
 import { useStore } from "@/store";
@@ -19,7 +19,13 @@ interface DmMessage {
 }
 
 export default function ChatScreen() {
-  const { user, currentChatId, selectedActivity, setScreen, chatMessages, setChatMessages, addChatMessage } = useStore();
+  const user = useStore((s) => s.user);
+  const currentChatId = useStore((s) => s.currentChatId);
+  const selectedActivity = useStore((s) => s.selectedActivity);
+  const setScreen = useStore((s) => s.setScreen);
+  const chatMessages = useStore((s) => s.chatMessages);
+  const setChatMessages = useStore((s) => s.setChatMessages);
+  const addChatMessage = useStore((s) => s.addChatMessage);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [dmMessages, setDmMessages] = useState<DmMessage[]>([]);
@@ -88,7 +94,7 @@ export default function ChatScreen() {
           lastFetchRef.current = "";
         }
       } catch { lastFetchRef.current = ""; }
-    }, 5000);
+    }, 8000);
     return () => clearInterval(interval);
   }, [currentChatId, user, isDm, dmPartnerId, setChatMessages, dmMessages, chatMessages]);
 
@@ -136,16 +142,19 @@ export default function ChatScreen() {
   const allMessages = isDm ? dmMessages : groupMessages;
 
   // Group messages by date
-  const groupedByDate: { date: string; messages: (MessageType | DmMessage)[] }[] = [];
-  let lastDate = "";
-  allMessages.forEach((msg) => {
-    const d = new Date(msg.createdAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-    if (d !== lastDate) {
-      groupedByDate.push({ date: d, messages: [] });
-      lastDate = d;
-    }
-    groupedByDate[groupedByDate.length - 1].messages.push(msg);
-  });
+  const groupedByDate = useMemo(() => {
+    const groups: { date: string; messages: (MessageType | DmMessage)[] }[] = [];
+    let lastDate = "";
+    allMessages.forEach((msg) => {
+      const d = new Date(msg.createdAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      if (d !== lastDate) {
+        groups.push({ date: d, messages: [] });
+        lastDate = d;
+      }
+      groups[groups.length - 1].messages.push(msg);
+    });
+    return groups;
+  }, [allMessages]);
 
   return (
     <motion.div

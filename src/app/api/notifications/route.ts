@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   });
 
   const res = NextResponse.json(notifications);
-  res.headers.set("Cache-Control", "private, s-maxage=5, stale-while-revalidate=10");
+  res.headers.set("Cache-Control", "private, max-age=0");
   return res;
 }
 
