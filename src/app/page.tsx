@@ -15,6 +15,7 @@ import ActivityDetail from "@/components/ActivityDetail";
 import DiscoveryFeed from "@/components/DiscoveryFeed";
 import NetworkingView from "@/components/NetworkingView";
 import CreateOpportunityModal from "@/components/CreateOpportunityModal";
+import CalendarView from "@/components/CalendarView";
 import BottomNav from "@/components/BottomNav";
 
 export default function Home() {
@@ -146,6 +147,7 @@ export default function Home() {
           {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
           {currentScreen === "networking" && <NetworkingView key="networking" />}
           {currentScreen === "create-opportunity" && <CreateOpportunityModal key="create-opportunity" />}
+          {currentScreen === "calendar" && <CalendarView key="calendar" />}
         </AnimatePresence>
       </div>
       <BottomNav />
