@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/store";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { MapPin } from "lucide-react";
 import Onboarding from "@/components/Onboarding";
 import MapView from "@/components/MapView";
 import CreateActivity from "@/components/CreateActivity";
@@ -96,11 +97,33 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-violet-600 to-indigo-400">
-        <div className="text-center text-white">
-          <div className="w-16 h-16 mx-auto mb-4 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-          <p className="font-semibold">Loading HobbyHub...</p>
-        </div>
+      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-violet-700 via-indigo-500 to-purple-500">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="text-center text-white flex flex-col items-center"
+        >
+          <div className="splash-glow splash-float w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-5">
+            <MapPin className="w-10 h-10 text-white" strokeWidth={2.25} />
+          </div>
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className="text-3xl font-bold tracking-tight"
+          >
+            HobbyHub
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            transition={{ delay: 0.45, duration: 0.4 }}
+            className="text-sm mt-2 font-medium text-white/70"
+          >
+            Discover hobbies near you
+          </motion.p>
+        </motion.div>
       </div>
     );
   }

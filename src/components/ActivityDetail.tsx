@@ -40,73 +40,84 @@ export default function ActivityDetail() {
       className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
     >
       {/* Hero Header */}
-      <div className="relative" style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)` }}>
+      <div className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${color}, ${color}dd, ${color}aa)` }}>
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, white 1.5px, transparent 1.5px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)", backgroundSize: "40px 40px, 60px 60px" }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
         <div className="absolute top-0 left-0 right-0 flex items-center gap-3 px-4 py-3 z-10">
-          <button onClick={() => setScreen("map")} className="w-9 h-9 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white">
+          <button onClick={() => setScreen("map")} className="w-9 h-9 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/10 hover:bg-white/25 transition-colors">
             <ArrowLeft size={20} />
           </button>
           <span className="flex-1" />
         </div>
-        <div className="px-5 pt-16 pb-8 text-white">
+        <div className="relative z-[1] px-5 pt-16 pb-10 text-white">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-2xl">
+            <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl border border-white/10 shadow-lg">
               {emoji}
             </div>
             <div className="flex-1">
-              <span className="px-2.5 py-0.5 bg-white/20 backdrop-blur rounded-lg text-[10px] font-bold uppercase tracking-wide">
+              <span className="px-2.5 py-0.5 bg-white/20 backdrop-blur-sm rounded-lg text-[10px] font-bold uppercase tracking-wider border border-white/10">
                 {a.type}
               </span>
               {a.isEvent && (
-                <span className="ml-2 px-2.5 py-0.5 bg-amber-400/30 rounded-lg text-[10px] font-bold uppercase tracking-wide">Event</span>
+                <span className="ml-2 px-2.5 py-0.5 bg-amber-400/30 backdrop-blur-sm rounded-lg text-[10px] font-bold uppercase tracking-wider border border-amber-300/20">Event</span>
               )}
             </div>
           </div>
-          <h2 className="text-2xl font-extrabold leading-tight">{a.title}</h2>
+          <h2 className="text-2xl font-extrabold leading-tight tracking-tight">{a.title}</h2>
           {a.description && (
-            <p className="text-white/70 text-sm mt-2 leading-relaxed">{a.description}</p>
+            <p className="text-white/65 text-sm mt-2 leading-relaxed">{a.description}</p>
           )}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto -mt-4">
+      <div className="flex-1 overflow-y-auto -mt-5">
         {/* Info Cards */}
-        <div className="mx-4 bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+        <div className="mx-4 bg-white rounded-3xl p-5 shadow-lg shadow-gray-200/50 border border-gray-100/80">
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-gray-50 rounded-2xl">
-              <MapPin size={18} className="mx-auto mb-1.5" style={{ color }} />
+            <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
+              <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
+                <MapPin size={16} style={{ color }} />
+              </div>
               <p className="text-xs font-bold text-gray-800">{dist}</p>
-              <p className="text-[10px] text-gray-400">Distance</p>
+              <p className="text-[10px] text-gray-400 font-medium">Distance</p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-2xl">
-              <Clock size={18} className="mx-auto mb-1.5" style={{ color }} />
+            <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
+              <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
+                <Clock size={16} style={{ color }} />
+              </div>
               <p className="text-xs font-bold text-gray-800">{new Date(a.time).toLocaleDateString([], { month: "short", day: "numeric" })}</p>
-              <p className="text-[10px] text-gray-400">{new Date(a.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{new Date(a.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-2xl">
-              <Users size={18} className="mx-auto mb-1.5" style={{ color }} />
+            <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
+              <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
+                <Users size={16} style={{ color }} />
+              </div>
               <p className="text-xs font-bold text-gray-800">{a.participants?.length || 0}/{a.playersNeeded}</p>
-              <p className="text-[10px] text-gray-400">Joined</p>
+              <p className="text-[10px] text-gray-400 font-medium">Joined</p>
             </div>
           </div>
         </div>
 
         {/* Participants */}
-        <div className="mx-4 mt-4 bg-white rounded-3xl p-5 border border-gray-100">
-          <h4 className="font-bold text-sm mb-4">Participants ({a.participants?.length || 0})</h4>
-          <div className="space-y-3">
+        <div className="mx-4 mt-4 bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+          <h4 className="font-bold text-sm mb-4 flex items-center gap-2">Participants <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold" style={{ background: `${color}12`, color }}>{a.participants?.length || 0}</span></h4>
+          <div className="space-y-2.5">
             {a.participants?.map((p, i) => (
-              <div key={p.id} className="flex items-center gap-3">
-                <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-white text-sm font-bold overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
-                >
-                  {p.user.avatar ? <img src={p.user.avatar} alt="" className="w-full h-full object-cover" /> : p.user.name.charAt(0)}
+              <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-gray-50/80 transition-colors">
+                <div className="p-[2px] rounded-[14px]" style={{ background: `linear-gradient(135deg, ${color}, ${color}88)` }}>
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold overflow-hidden bg-gray-100"
+                    style={{ background: p.user.avatar ? undefined : `linear-gradient(135deg, ${color}, ${color}cc)` }}
+                  >
+                    {p.user.avatar ? <img src={p.user.avatar} alt="" className="w-full h-full object-cover" /> : p.user.name.charAt(0)}
+                  </div>
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-sm flex items-center gap-2">
                     {p.user.name}
-                    {i === 0 && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-lg">Host</span>}
-                    {p.userId === user?.id && <span className="px-2 py-0.5 bg-violet-50 text-violet-600 text-[10px] font-bold rounded-lg">You</span>}
+                    {i === 0 && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-lg border border-amber-100/60">Host</span>}
+                    {p.userId === user?.id && <span className="px-2 py-0.5 bg-violet-50 text-violet-600 text-[10px] font-bold rounded-lg border border-violet-100/60">You</span>}
                   </p>
                   <p className="text-xs text-gray-400 flex items-center gap-1">
                     <Star size={10} className="text-amber-400" /> {p.user.rating || 4.5}
@@ -121,7 +132,7 @@ export default function ActivityDetail() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2.5 p-4 bg-white/80 backdrop-blur-xl border-t border-gray-100">
+      <div className="flex gap-2.5 p-4 bg-white/90 backdrop-blur-xl border-t border-gray-100/80">
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleJoin}
@@ -129,17 +140,19 @@ export default function ActivityDetail() {
           className={`flex-[2] py-3.5 rounded-2xl font-bold text-sm transition-all ${
             isJoined
               ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-              : "bg-violet-600 text-white shadow-md shadow-violet-200"
+              : "text-white shadow-lg shadow-violet-300/40"
           }`}
+          style={!isJoined ? { background: "linear-gradient(135deg, #7c3aed, #6366f1)" } : undefined}
         >
           {isJoined ? "Joined ✓" : "Join Activity"}
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={openChat}
-          className="flex-1 py-3.5 border border-gray-200 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 hover:border-violet-300 transition-colors"
+          className="flex-1 py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 text-violet-600 shadow-sm"
+          style={{ background: "linear-gradient(135deg, #ede9fe, #e0e7ff)" }}
         >
-          <MessageCircle size={16} className="text-violet-500" /> Chat
+          <MessageCircle size={16} /> Chat
         </motion.button>
       </div>
     </motion.div>

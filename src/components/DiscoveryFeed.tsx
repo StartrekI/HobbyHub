@@ -41,23 +41,26 @@ const TYPE_LABELS: Record<string, string> = {
 /* Skeleton placeholder card */
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 animate-pulse">
-      <div className="h-1 bg-gray-100" />
+    <div className="bg-white rounded-3xl overflow-hidden border border-gray-100/80 shadow-sm animate-pulse">
+      <div className="h-1.5 bg-gradient-to-r from-gray-100 via-gray-200/60 to-gray-100" />
       <div className="p-5">
         <div className="flex gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gray-100 shrink-0" />
-          <div className="flex-1 space-y-2.5">
+          <div className="w-12 h-12 rounded-2xl bg-gray-100/80 shrink-0" />
+          <div className="flex-1 space-y-3">
             <div className="flex gap-2">
-              <div className="w-16 h-4 bg-gray-100 rounded-lg" />
+              <div className="w-16 h-4 bg-gray-100/80 rounded-lg" />
               <div className="w-10 h-4 bg-gray-50 rounded-lg" />
             </div>
-            <div className="w-3/4 h-4 bg-gray-100 rounded-lg" />
-            <div className="w-full h-3 bg-gray-50 rounded-lg" />
+            <div className="w-4/5 h-4.5 bg-gray-100/70 rounded-lg" />
+            <div className="w-full h-3.5 bg-gray-50/80 rounded-lg" />
+            <div className="w-2/3 h-3 bg-gray-50/60 rounded-lg" />
           </div>
         </div>
         <div className="flex gap-2.5 mt-4 pt-3.5 border-t border-gray-50">
-          <div className="w-16 h-6 bg-gray-50 rounded-lg" />
-          <div className="w-20 h-6 bg-gray-50 rounded-lg" />
+          <div className="w-16 h-7 bg-gray-50 rounded-lg" />
+          <div className="w-20 h-7 bg-gray-50 rounded-lg" />
+          <div className="flex-1" />
+          <div className="w-14 h-7 bg-gray-50 rounded-lg" />
         </div>
       </div>
     </div>
@@ -175,11 +178,12 @@ export default function DiscoveryFeed() {
                 key={f.value}
                 whileTap={{ scale: 0.93 }}
                 onClick={() => setFilter(f.value)}
-                className={`relative px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
+                className={`relative px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 border ${
                   active
-                    ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200/50"
-                    : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"
+                    ? "text-white border-violet-600 shadow-lg shadow-violet-200/50"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500 hover:bg-violet-50/30"
                 }`}
+                style={active ? { background: "linear-gradient(135deg, #7c3aed, #6366f1)" } : undefined}
               >
                 {f.icon} {f.label}
               </motion.button>
@@ -204,18 +208,22 @@ export default function DiscoveryFeed() {
             transition={{ duration: 0.25 }}
             className="flex flex-col items-center justify-center py-20 text-gray-400"
           >
-            <div className="w-20 h-20 bg-violet-50 rounded-[28px] flex items-center justify-center mb-4">
-              <Sparkles size={32} className="text-violet-300" />
+            <div className="relative w-24 h-24 mb-5">
+              <div className="absolute inset-0 bg-violet-100/60 rounded-[28px] animate-pulse" />
+              <div className="relative w-full h-full bg-gradient-to-br from-violet-50 to-indigo-50 rounded-[28px] flex items-center justify-center border border-violet-100/50">
+                <Sparkles size={36} className="text-violet-400" />
+              </div>
             </div>
-            <p className="text-sm font-semibold text-gray-500">No opportunities found</p>
-            <p className="text-xs text-gray-400 mt-1 text-center max-w-[220px]">
-              {search ? "Try a different search term" : "Be the first to create one!"}
+            <p className="text-base font-bold text-gray-600">No opportunities found</p>
+            <p className="text-sm text-gray-400 mt-1.5 text-center max-w-[260px] leading-relaxed">
+              {search ? "Try a different search term or filter" : "Be the first to create one and get discovered!"}
             </p>
             {search && (
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSearch("")}
-                className="mt-4 px-5 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl shadow-sm shadow-violet-200"
+                className="mt-5 px-6 py-2.5 text-white text-xs font-bold rounded-xl shadow-lg shadow-violet-200/50"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
               >
                 Clear Search
               </motion.button>
@@ -251,18 +259,18 @@ const FeedCard = ({ item, idx, userLocation }: { item: FeedItem; idx: number; us
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: staggerDelay, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       whileTap={{ scale: 0.98 }}
-      className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm active:shadow-md transition-shadow cursor-pointer"
+      className="bg-white rounded-3xl overflow-hidden border border-gray-100/80 shadow-sm hover:shadow-lg active:shadow-md transition-all duration-200 cursor-pointer"
       style={{ contentVisibility: "auto", containIntrinsicSize: "auto 180px" }}
     >
       {/* Colored accent bar */}
-      <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}66)` }} />
+      <div className="h-1 rounded-b-full mx-4" style={{ background: `linear-gradient(90deg, ${color}, ${color}88, ${color}33)` }} />
 
-      <div className="p-5">
+      <div className="p-5 pt-4">
         {/* Top row */}
         <div className="flex items-start gap-3.5">
           <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: `linear-gradient(135deg, ${color}22, ${color}0a)`, color }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+            style={{ background: `linear-gradient(135deg, ${color}18, ${color}08)`, color, border: `1px solid ${color}12` }}
           >
             <Icon size={20} />
           </div>

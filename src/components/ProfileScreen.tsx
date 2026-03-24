@@ -192,8 +192,8 @@ export default function ProfileScreen() {
               </div>
 
               {/* Basic Info */}
-              <div className="bg-white rounded-3xl p-5 space-y-4 border border-gray-100">
-                <h4 className="font-bold text-sm text-gray-400 uppercase tracking-wide">Basic Info</h4>
+              <div className="bg-white rounded-3xl p-6 space-y-5 border border-gray-100 shadow-sm">
+                <h4 className="font-bold text-xs text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-1 h-4 bg-violet-500 rounded-full" /> Basic Info</h4>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5">Name</label>
                   <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputCls} />
@@ -216,8 +216,8 @@ export default function ProfileScreen() {
               </div>
 
               {/* Professional */}
-              <div className="bg-white rounded-3xl p-5 space-y-4 border border-gray-100">
-                <h4 className="font-bold text-sm text-gray-400 uppercase tracking-wide">Professional</h4>
+              <div className="bg-white rounded-3xl p-6 space-y-5 border border-gray-100 shadow-sm">
+                <h4 className="font-bold text-xs text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-1 h-4 bg-blue-500 rounded-full" /> Professional</h4>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-2">Role</label>
                   <div className="flex flex-wrap gap-2">
@@ -278,8 +278,8 @@ export default function ProfileScreen() {
               </div>
 
               {/* Interests */}
-              <div className="bg-white rounded-3xl p-5 space-y-3 border border-gray-100">
-                <h4 className="font-bold text-sm text-gray-400 uppercase tracking-wide">Interests</h4>
+              <div className="bg-white rounded-3xl p-6 space-y-4 border border-gray-100 shadow-sm">
+                <h4 className="font-bold text-xs text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-1 h-4 bg-emerald-500 rounded-full" /> Interests</h4>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map((interest) => (
                     <button key={interest.id}
@@ -295,42 +295,48 @@ export default function ProfileScreen() {
           ) : (
             <motion.div key="view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               {/* Hero Header */}
-              <div className="relative bg-gradient-to-br from-violet-500 via-indigo-500 to-purple-600 px-5 pt-8 pb-16">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur flex items-center justify-center text-white overflow-hidden border-2 border-white/30 shadow-lg">
-                    {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={36} />}
+              <div className="relative overflow-hidden px-5 pt-8 pb-16" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 30%, #8b5cf6 60%, #a78bfa 100%)" }}>
+                {/* Mesh-like pattern overlay */}
+                <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px), radial-gradient(circle at 40% 80%, white 1.5px, transparent 1.5px)", backgroundSize: "60px 60px, 80px 80px, 100px 100px" }} />
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(135deg, transparent 40%, white 50%, transparent 60%)", backgroundSize: "200% 200%" }} />
+                <div className="relative z-10 flex items-center gap-4">
+                  {/* Avatar with gradient ring */}
+                  <div className="p-[3px] rounded-[26px] bg-gradient-to-br from-white/60 via-white/30 to-white/60 shadow-xl shadow-purple-900/20">
+                    <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white overflow-hidden">
+                      {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={40} />}
+                    </div>
                   </div>
                   <div className="flex-1 text-white">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold">{user.name}</h2>
+                      <h2 className="text-2xl font-extrabold tracking-tight">{user.name}</h2>
                       {user.verified && (
-                        <span className="px-2 py-0.5 bg-white/20 backdrop-blur text-[10px] font-bold rounded-full flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 bg-white/20 backdrop-blur-sm text-[10px] font-bold rounded-full flex items-center gap-1 border border-white/20">
                           <Shield size={10} /> Verified
                         </span>
                       )}
                     </div>
                     {(user.title || user.company) && (
-                      <p className="text-white/80 text-sm mt-0.5">{user.title}{user.title && user.company ? " at " : ""}{user.company}</p>
+                      <p className="text-white/85 text-sm mt-1 font-medium">{user.title}{user.title && user.company ? " at " : ""}{user.company}</p>
                     )}
-                    <p className="text-white/60 text-sm mt-0.5">{user.bio || "No bio yet"}</p>
+                    <p className="text-white/55 text-sm mt-0.5">{user.bio || "No bio yet"}</p>
                   </div>
                 </div>
 
                 {/* Badges */}
                 {(roleInfo || stageInfo) && (
-                  <div className="flex gap-2 mt-4 flex-wrap">
+                  <div className="relative z-10 flex gap-2 mt-4 flex-wrap">
                     {roleInfo && (
-                      <span className="px-3 py-1 bg-white/15 backdrop-blur text-white text-xs font-semibold rounded-xl">
+                      <span className="px-3.5 py-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-semibold rounded-xl border border-white/10">
                         {roleInfo.icon} {roleInfo.label}
                       </span>
                     )}
                     {stageInfo && (
-                      <span className="px-3 py-1 bg-white/15 backdrop-blur text-white text-xs font-semibold rounded-xl">
+                      <span className="px-3.5 py-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-semibold rounded-xl border border-white/10">
                         {stageInfo.icon} {stageInfo.label}
                       </span>
                     )}
                     {user.lookingFor && (
-                      <span className="px-3 py-1 bg-emerald-500/30 backdrop-blur text-white text-xs font-semibold rounded-xl">
+                      <span className="px-3.5 py-1.5 bg-emerald-400/25 backdrop-blur-sm text-white text-xs font-semibold rounded-xl border border-emerald-300/20">
                         Looking for: {user.lookingFor}
                       </span>
                     )}
@@ -338,7 +344,7 @@ export default function ProfileScreen() {
                 )}
 
                 {user.collegeName && (
-                  <p className="text-white/50 text-xs mt-3 flex items-center gap-1">
+                  <p className="relative z-10 text-white/50 text-xs mt-3 flex items-center gap-1">
                     <GraduationCap size={12} /> {user.collegeName}
                     {user.graduationYear ? ` '${String(user.graduationYear).slice(-2)}` : ""}
                   </p>
@@ -346,19 +352,19 @@ export default function ProfileScreen() {
               </div>
 
               {/* Stats Card — overlapping hero */}
-              <div className="mx-4 -mt-10 bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+              <div className="mx-4 -mt-10 bg-white rounded-3xl p-5 shadow-lg shadow-gray-200/60 border border-gray-100/80">
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { value: profile?.activitiesCreated?.length || 0, label: "Created" },
-                    { value: profile?.participants?.length || 0, label: "Joined" },
-                    { value: user.rating || 0, label: "Rating", icon: <Star size={14} className="text-amber-400 inline" /> },
-                    { value: connections.length, label: "Network" },
+                    { value: profile?.activitiesCreated?.length || 0, label: "Created", bg: "bg-violet-50", text: "text-violet-700" },
+                    { value: profile?.participants?.length || 0, label: "Joined", bg: "bg-blue-50", text: "text-blue-700" },
+                    { value: user.rating || 0, label: "Rating", icon: <Star size={14} className="text-amber-400 inline" />, bg: "bg-amber-50", text: "text-amber-700" },
+                    { value: connections.length, label: "Network", bg: "bg-emerald-50", text: "text-emerald-700" },
                   ].map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <span className="block text-xl font-extrabold text-gray-800">
+                    <div key={stat.label} className={`text-center p-2.5 ${stat.bg} rounded-2xl`}>
+                      <span className={`block text-xl font-extrabold ${stat.text}`}>
                         {stat.icon || null}{stat.value}
                       </span>
-                      <span className="text-[10px] text-gray-400 font-medium">{stat.label}</span>
+                      <span className="text-[10px] text-gray-500 font-semibold">{stat.label}</span>
                     </div>
                   ))}
                 </div>
@@ -367,7 +373,7 @@ export default function ProfileScreen() {
               <div className="p-4 space-y-4">
                 {/* Connection Requests */}
                 {pendingRequests.length > 0 && (
-                  <div className="bg-white rounded-3xl p-5 border border-gray-100">
+                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
                       <UserCheck size={16} className="text-violet-600" /> Requests
                       <span className="px-2 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-bold rounded-full">{pendingRequests.length}</span>
@@ -394,13 +400,13 @@ export default function ProfileScreen() {
 
                 {/* Skills */}
                 {userSkills.length > 0 && (
-                  <div className="bg-white rounded-3xl p-5 border border-gray-100">
+                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <h4 className="font-bold text-sm mb-3 flex items-center gap-2">
-                      <Briefcase size={16} className="text-blue-500" /> Skills
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center"><Briefcase size={14} className="text-blue-500" /></div> Skills
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {userSkills.map((s) => (
-                        <span key={s} className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl">{s}</span>
+                        <span key={s} className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-xl border border-blue-100/60">{s}</span>
                       ))}
                     </div>
                   </div>
@@ -408,7 +414,7 @@ export default function ProfileScreen() {
 
                 {/* Interests */}
                 {interests.length > 0 && (
-                  <div className="bg-white rounded-3xl p-5 border border-gray-100">
+                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <h4 className="font-bold text-sm mb-3">Interests</h4>
                     <div className="flex flex-wrap gap-2">
                       {interests.map((i: string) => {
@@ -424,7 +430,7 @@ export default function ProfileScreen() {
                 )}
 
                 {/* Activity History */}
-                <div className="bg-white rounded-3xl p-5 border border-gray-100">
+                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
                   <h4 className="font-bold text-sm mb-3">Recent Activity</h4>
                   {profile?.participants && profile.participants.length > 0 ? (
                     <div className="space-y-2">
@@ -451,9 +457,9 @@ export default function ProfileScreen() {
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={logout}
-                  className="w-full py-3.5 bg-white border border-red-200 rounded-3xl text-red-500 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
+                  className="w-full py-3 text-gray-400 font-medium text-xs flex items-center justify-center gap-1.5 hover:text-red-400 transition-colors"
                 >
-                  <LogOut size={16} /> Log Out
+                  <LogOut size={14} /> Log Out
                 </motion.button>
 
                 <div className="h-4" />

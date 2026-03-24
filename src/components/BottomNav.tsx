@@ -21,7 +21,7 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className="h-[72px] flex items-center bg-white/80 backdrop-blur-xl border-t border-gray-100 z-[1000] pb-[env(safe-area-inset-bottom)] px-2">
+    <nav className="h-[72px] flex items-center bg-white/70 backdrop-blur-2xl border-t border-gray-200/40 z-[1000] pb-[env(safe-area-inset-bottom)] px-2 shadow-[0_-4px_30px_rgba(0,0,0,0.06)]">
       {navItems.map((item) => {
         const isActive = currentScreen === item.screen ||
           (item.screen === "chat-list" && currentScreen === "chat") ||
@@ -37,8 +37,8 @@ export default function BottomNav() {
               className="flex-1 flex items-center justify-center"
             >
               <motion.div
-                whileTap={{ scale: 0.9 }}
-                className="w-[52px] h-[52px] -mt-6 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-[0_4px_20px_rgba(108,92,231,0.5)] rotate-0 hover:rotate-90 transition-transform duration-300"
+                whileTap={{ scale: 0.85 }}
+                className="w-14 h-14 -mt-7 rounded-full bg-gradient-to-br from-violet-500 via-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-[0_6px_24px_rgba(108,92,231,0.55),0_0_12px_rgba(139,92,246,0.3)] hover:shadow-[0_8px_28px_rgba(108,92,231,0.65),0_0_16px_rgba(139,92,246,0.4)] rotate-0 hover:rotate-90 transition-all duration-300"
               >
                 <Icon size={24} strokeWidth={2.5} />
               </motion.div>
@@ -50,34 +50,38 @@ export default function BottomNav() {
           <button
             key={item.screen}
             onClick={() => handleNav(item.screen)}
-            className="flex-1 flex flex-col items-center gap-0.5 py-2 relative"
+            className="flex-1 flex flex-col items-center justify-center py-2 relative"
           >
             <motion.div
-              animate={isActive ? { scale: 1, y: -2 } : { scale: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="relative"
+              animate={isActive ? { scale: 1 } : { scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="relative flex flex-col items-center gap-0.5"
             >
-              <Icon
-                size={22}
-                strokeWidth={isActive ? 2.5 : 1.8}
-                className={`transition-colors duration-200 ${isActive ? "text-violet-600" : "text-gray-400"}`}
-              />
-              {showBadge && (
-                <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
+              {isActive && (
+                <motion.div
+                  layoutId="navPill"
+                  className="absolute inset-0 -mx-1 -my-0.5 bg-violet-50 rounded-xl"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
               )}
+              <div className="relative z-10 flex flex-col items-center gap-0.5 px-3 py-1">
+                <div className="relative">
+                  <Icon
+                    size={21}
+                    strokeWidth={isActive ? 2.5 : 1.8}
+                    className={`transition-colors duration-200 ${isActive ? "text-violet-600" : "text-gray-400"}`}
+                  />
+                  {showBadge && (
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[10px] font-semibold transition-colors duration-200 ${isActive ? "text-violet-600" : "text-gray-400"}`}>
+                  {item.label}
+                </span>
+              </div>
             </motion.div>
-            <span className={`text-[10px] font-medium transition-colors duration-200 ${isActive ? "text-violet-600" : "text-gray-400"}`}>
-              {item.label}
-            </span>
-            {isActive && (
-              <motion.div
-                layoutId="navIndicator"
-                className="absolute -bottom-0 w-5 h-[3px] rounded-full bg-violet-600"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
           </button>
         );
       })}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Users, Zap, Locate, Briefcase } from "lucide-react";
+import { MapPin, Users, Zap, Locate, Briefcase, Check, ChevronRight, Shield, Sparkles } from "lucide-react";
 import { useStore } from "@/store";
 import { INTERESTS, USER_ROLES, STARTUP_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
 
@@ -283,13 +283,27 @@ export default function Onboarding() {
   };
 
   const slideVariants = {
-    enter: { x: 100, opacity: 0 },
-    center: { x: 0, opacity: 1 },
-    exit: { x: -100, opacity: 0 },
+    enter: { y: 20, opacity: 0, filter: "blur(4px)" },
+    center: { y: 0, opacity: 1, filter: "blur(0px)" },
+    exit: { y: -20, opacity: 0, filter: "blur(4px)" },
+  };
+
+  const stagger = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+  };
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: 16 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-violet-600 to-indigo-400 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 overflow-hidden">
+      {/* Subtle ambient glow */}
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-500/8 rounded-full blur-3xl pointer-events-none" />
+
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -297,60 +311,70 @@ export default function Onboarding() {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.3 }}
-          className="w-full max-w-md px-6 text-white text-center"
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="w-full max-w-md px-6 text-white text-center relative z-10"
         >
           {step === "welcome" && (
-            <div>
-              <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-white/20 backdrop-blur flex items-center justify-center">
-                <MapPin size={48} />
-              </div>
-              <h1 className="text-4xl font-extrabold mb-2">HobbyHub</h1>
-              <p className="text-white/80 mb-10">Turn your city into a live map of human activity</p>
-              <div className="space-y-3 mb-10 text-left">
+            <motion.div variants={stagger} initial="hidden" animate="show">
+              <motion.div variants={fadeUp} className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
+                <Sparkles size={36} className="text-white" />
+              </motion.div>
+              <motion.h1 variants={fadeUp} className="text-5xl font-extrabold mb-3 bg-gradient-to-r from-white via-violet-200 to-indigo-300 bg-clip-text text-transparent">
+                HobbyHub
+              </motion.h1>
+              <motion.p variants={fadeUp} className="text-slate-400 mb-10 text-base">
+                Turn your city into a live map of human activity
+              </motion.p>
+              <motion.div variants={fadeUp} className="space-y-2.5 mb-10 text-left">
                 {[
-                  { icon: MapPin, text: "Discover activities nearby" },
-                  { icon: Users, text: "Meet people with similar hobbies" },
-                  { icon: Zap, text: "Join spontaneous plans instantly" },
-                  { icon: Briefcase, text: "Network with founders & freelancers" },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-3 bg-white/15 backdrop-blur rounded-xl px-4 py-3">
-                    <Icon size={20} />
-                    <span className="text-sm">{text}</span>
-                  </div>
+                  { icon: MapPin, text: "Discover activities nearby", color: "from-violet-500/20 to-transparent" },
+                  { icon: Users, text: "Meet people with similar hobbies", color: "from-indigo-500/20 to-transparent" },
+                  { icon: Zap, text: "Join spontaneous plans instantly", color: "from-purple-500/20 to-transparent" },
+                  { icon: Briefcase, text: "Network with founders & freelancers", color: "from-blue-500/20 to-transparent" },
+                ].map(({ icon: Icon, text, color }, i) => (
+                  <motion.div
+                    key={text}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + i * 0.1, duration: 0.4 }}
+                    className={`flex items-center gap-3.5 bg-gradient-to-r ${color} border border-white/[0.06] rounded-xl px-4 py-3.5`}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center shrink-0">
+                      <Icon size={16} className="text-violet-300" />
+                    </div>
+                    <span className="text-sm text-slate-300">{text}</span>
+                  </motion.div>
                 ))}
-              </div>
-              <button onClick={next} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform">
-                Get Started
-              </button>
-            </div>
+              </motion.div>
+              <motion.button variants={fadeUp} onClick={next}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-violet-600/25 flex items-center justify-center gap-2">
+                Get Started <ChevronRight size={20} />
+              </motion.button>
+            </motion.div>
           )}
 
           {step === "google-login" && (
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Welcome!</h2>
-              <p className="text-white/80 mb-6">Sign in to continue</p>
+            <motion.div variants={stagger} initial="hidden" animate="show">
+              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Welcome back</motion.h2>
+              <motion.p variants={fadeUp} className="text-slate-400 mb-8">Sign in to get started</motion.p>
 
               {loginError && (
-                <div className="mb-4 p-3 bg-red-500/20 border border-red-300/50 rounded-xl text-sm">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                  className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-300">
                   {loginError}
-                </div>
+                </motion.div>
               )}
 
               {loginLoading && (
                 <div className="flex items-center justify-center gap-3 mb-6">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Signing in...</span>
+                  <span className="w-5 h-5 border-2 border-slate-600 border-t-violet-400 rounded-full animate-spin" />
+                  <span className="text-slate-400">Signing in...</span>
                 </div>
               )}
 
-              {/* Google Sign-In - Custom Button */}
               {GOOGLE_CLIENT_ID && (
-                <button
-                  onClick={handleGoogleClick}
-                  disabled={loginLoading}
-                  className="w-full flex items-center justify-center gap-3 py-3.5 bg-white text-gray-700 rounded-xl font-semibold text-base hover:scale-[1.02] transition-transform shadow-lg disabled:opacity-50 mb-2"
-                >
+                <motion.button variants={fadeUp} onClick={handleGoogleClick} disabled={loginLoading}
+                  className="w-full flex items-center justify-center gap-3 py-3.5 bg-white text-slate-800 rounded-2xl font-semibold text-base hover:scale-[1.02] hover:shadow-xl transition-all shadow-lg disabled:opacity-50 mb-3">
                   <svg width="20" height="20" viewBox="0 0 48 48">
                     <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                     <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -358,190 +382,210 @@ export default function Onboarding() {
                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                   </svg>
                   Continue with Google
-                </button>
+                </motion.button>
               )}
 
               {!GOOGLE_CLIENT_ID && !googleReady && (
-                <div className="mb-2 p-3 bg-yellow-500/20 border border-yellow-300/50 rounded-xl text-xs text-white/70">
+                <div className="mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-300/80">
                   Google Sign-In not configured. Use email below.
                 </div>
               )}
 
-              {/* Divider */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-white/30" />
-                <span className="text-white/50 text-xs">or continue with email</span>
-                <div className="flex-1 h-px bg-white/30" />
-              </div>
+              <motion.div variants={fadeUp} className="flex items-center gap-4 my-5">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+                <span className="text-slate-500 text-xs uppercase tracking-wider">or</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+              </motion.div>
 
-              {/* Email login */}
-              <div className="space-y-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
-                />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 outline-none placeholder-white/50 text-white"
-                />
-                <button
-                  onClick={handleEmailLogin}
-                  disabled={loginLoading}
-                  className="w-full py-4 bg-white/20 border-2 border-white/40 text-white rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50"
-                >
+              <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 space-y-3">
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email"
+                  className="w-full bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-4 py-3 outline-none placeholder-slate-500 text-white transition-colors" />
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
+                  className="w-full bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-4 py-3 outline-none placeholder-slate-500 text-white transition-colors" />
+                <button onClick={handleEmailLogin} disabled={loginLoading}
+                  className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-semibold hover:scale-[1.02] transition-all disabled:opacity-50">
                   Continue with Email
                 </button>
-              </div>
+              </motion.div>
 
-              <p className="text-white/50 text-xs mt-4">
+              <motion.p variants={fadeUp} className="text-slate-600 text-xs mt-5">
                 By continuing, you agree to our Terms of Service
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
           )}
 
           {step === "profile" && (
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Set Up Profile</h2>
-              <p className="text-white/80 mb-6">Tell us about yourself</p>
-              {avatar ? (
-                <img src={avatar} alt="avatar" className="w-20 h-20 mx-auto mb-6 rounded-full border-2 border-white/50 object-cover" />
-              ) : (
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/20 border-2 border-dashed border-white/50 flex items-center justify-center text-2xl font-bold">
-                  {name?.[0]?.toUpperCase() || "?"}
-                </div>
-              )}
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
-                className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 mb-3 outline-none placeholder-white/50" />
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Short bio (optional)" rows={2}
-                className="w-full bg-white/15 border-2 border-transparent focus:border-white/50 rounded-xl px-4 py-3 mb-6 outline-none placeholder-white/50 resize-none" />
-              <button onClick={next} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform">
+            <motion.div variants={stagger} initial="hidden" animate="show">
+              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Your Profile</motion.h2>
+              <motion.p variants={fadeUp} className="text-slate-400 mb-8">Tell us about yourself</motion.p>
+              <motion.div variants={fadeUp} className="mb-8">
+                {avatar ? (
+                  <div className="relative w-24 h-24 mx-auto">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 p-[3px]">
+                      <img src={avatar} alt="avatar" className="w-full h-full rounded-full object-cover" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-24 h-24 mx-auto">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 p-[3px]">
+                      <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-bold text-violet-300">
+                        {name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+              <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 space-y-3 mb-6">
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
+                  className="w-full bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-4 py-3 outline-none placeholder-slate-500 text-white transition-colors" />
+                <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Short bio (optional)" rows={2}
+                  className="w-full bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-4 py-3 outline-none placeholder-slate-500 text-white resize-none transition-colors" />
+              </motion.div>
+              <motion.button variants={fadeUp} onClick={next}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-violet-600/20">
                 Continue
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           )}
 
           {step === "professional" && (
-            <div className="max-h-[70vh] overflow-y-auto">
-              <h2 className="text-3xl font-bold mb-2">Professional Info</h2>
-              <p className="text-white/80 mb-4">Optional - helps you network better</p>
+            <motion.div variants={stagger} initial="hidden" animate="show" className="max-h-[75vh] overflow-y-auto scrollbar-none">
+              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Professional Info</motion.h2>
+              <motion.p variants={fadeUp} className="text-slate-400 mb-6">Optional -- helps you network better</motion.p>
 
-              <div className="space-y-4 text-left">
-                <div>
-                  <label className="text-xs font-semibold text-white/70 mb-1 block">Your Role</label>
+              <div className="space-y-5 text-left">
+                <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 block">Your Role</label>
                   <div className="flex flex-wrap gap-2">
                     {USER_ROLES.map((r) => (
                       <button key={r.value} onClick={() => setRole(r.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs transition-all ${role === r.value ? "bg-white text-violet-600 font-semibold" : "bg-white/15 border border-white/30"}`}>
+                        className={`px-3.5 py-1.5 rounded-full text-xs transition-all ${role === r.value ? "bg-violet-600 text-white font-semibold shadow-md shadow-violet-600/30" : "bg-slate-800/80 border border-slate-700/50 text-slate-300 hover:border-slate-600"}`}>
                         {r.icon} {r.label}
                       </button>
                     ))}
                   </div>
-                </div>
+                </motion.div>
 
                 {role && (
-                  <div>
-                    <label className="text-xs font-semibold text-white/70 mb-1 block">Startup Stage</label>
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                    className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 block">Startup Stage</label>
                     <div className="flex flex-wrap gap-2">
                       {STARTUP_STAGES.map((s) => (
                         <button key={s.value} onClick={() => setStartupStage(s.value)}
-                          className={`px-3 py-1.5 rounded-full text-xs transition-all ${startupStage === s.value ? "bg-white text-violet-600 font-semibold" : "bg-white/15 border border-white/30"}`}>
+                          className={`px-3.5 py-1.5 rounded-full text-xs transition-all ${startupStage === s.value ? "bg-violet-600 text-white font-semibold shadow-md shadow-violet-600/30" : "bg-slate-800/80 border border-slate-700/50 text-slate-300 hover:border-slate-600"}`}>
                           {s.icon} {s.label}
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
-                <div className="flex gap-3">
+                <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
                   <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company"
-                    className="flex-1 bg-white/15 border border-white/30 rounded-xl px-3 py-2.5 text-sm outline-none placeholder-white/50" />
+                    className="bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-slate-500 text-white transition-colors" />
                   <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title"
-                    className="flex-1 bg-white/15 border border-white/30 rounded-xl px-3 py-2.5 text-sm outline-none placeholder-white/50" />
-                </div>
+                    className="bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-slate-500 text-white transition-colors" />
+                </motion.div>
 
-                <input value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} placeholder="Looking for... (cofounder, hiring, etc.)"
-                  className="w-full bg-white/15 border border-white/30 rounded-xl px-3 py-2.5 text-sm outline-none placeholder-white/50" />
+                <motion.input variants={fadeUp} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} placeholder="Looking for... (cofounder, hiring, etc.)"
+                  className="w-full bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-slate-500 text-white transition-colors" />
 
-                <div>
-                  <label className="text-xs font-semibold text-white/70 mb-1 block">Skills</label>
+                <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 block">Skills</label>
                   <div className="flex flex-wrap gap-1.5">
                     {PROFESSIONAL_SKILLS.map((s) => (
                       <button key={s} onClick={() => toggleSkill(s)}
-                        className={`px-2.5 py-1 rounded-full text-[11px] transition-all ${skills.includes(s) ? "bg-white text-violet-600 font-semibold" : "bg-white/15 border border-white/30"}`}>
+                        className={`px-2.5 py-1 rounded-full text-[11px] transition-all ${skills.includes(s) ? "bg-violet-600 text-white font-semibold" : "bg-slate-800/80 border border-slate-700/50 text-slate-400 hover:border-slate-600"}`}>
                         {s}
                       </button>
                     ))}
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="flex gap-3">
+                <motion.div variants={fadeUp} className="grid grid-cols-[1fr_5rem] gap-3">
                   <input value={collegeName} onChange={(e) => setCollegeName(e.target.value)} placeholder="College (optional)"
-                    className="flex-1 bg-white/15 border border-white/30 rounded-xl px-3 py-2.5 text-sm outline-none placeholder-white/50" />
+                    className="bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-slate-500 text-white transition-colors" />
                   <input value={graduationYear} onChange={(e) => setGraduationYear(e.target.value)} placeholder="Year" type="number"
-                    className="w-20 bg-white/15 border border-white/30 rounded-xl px-3 py-2.5 text-sm outline-none placeholder-white/50" />
-                </div>
+                    className="bg-slate-800/80 border border-slate-700/50 focus:border-violet-500/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-slate-500 text-white transition-colors" />
+                </motion.div>
               </div>
 
-              <button onClick={next} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform mt-6">
+              <motion.button variants={fadeUp} onClick={next}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-violet-600/20 mt-6">
                 Continue
-              </button>
-              <button onClick={next} className="text-white/60 text-sm hover:text-white/80 transition-colors mt-2">
+              </motion.button>
+              <motion.button variants={fadeUp} onClick={next} className="text-slate-500 text-sm hover:text-slate-300 transition-colors mt-3 block mx-auto">
                 Skip for now
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           )}
 
           {step === "interests" && (
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Pick Your Interests</h2>
-              <p className="text-white/80 mb-6">Select at least 3 hobbies</p>
-              <div className="flex flex-wrap gap-2 justify-center mb-8">
-                {INTERESTS.map((interest) => (
-                  <button
-                    key={interest.id}
-                    onClick={() => toggleInterest(interest.id)}
-                    className={`px-4 py-2 rounded-full border-2 text-sm transition-all ${
-                      selectedInterests.includes(interest.id)
-                        ? "bg-white text-violet-600 border-white font-semibold scale-105"
-                        : "bg-white/15 border-white/30 hover:scale-105"
-                    }`}
-                  >
-                    {interest.icon} {interest.label}
-                  </button>
-                ))}
-              </div>
-              <button onClick={next} disabled={selectedInterests.length < 3}
-                className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:cursor-not-allowed">
-                Continue ({selectedInterests.length} selected)
-              </button>
-            </div>
+            <motion.div variants={stagger} initial="hidden" animate="show">
+              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Pick Your Interests</motion.h2>
+              <motion.p variants={fadeUp} className="text-slate-400 mb-6">Select at least 3 hobbies</motion.p>
+              <motion.div variants={fadeUp} className="grid grid-cols-2 gap-2 mb-8">
+                {INTERESTS.map((interest) => {
+                  const selected = selectedInterests.includes(interest.id);
+                  return (
+                    <button key={interest.id} onClick={() => toggleInterest(interest.id)}
+                      className={`relative px-3 py-2.5 rounded-xl text-sm text-left transition-all ${
+                        selected
+                          ? "bg-violet-600/20 border-violet-500/50 border text-white font-medium"
+                          : "bg-white/[0.04] border border-white/[0.06] text-slate-300 hover:border-slate-600"
+                      }`}>
+                      <span>{interest.icon} {interest.label}</span>
+                      {selected && (
+                        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+                          className="absolute top-1.5 right-1.5 w-4 h-4 bg-violet-500 rounded-full flex items-center justify-center">
+                          <Check size={10} className="text-white" />
+                        </motion.span>
+                      )}
+                    </button>
+                  );
+                })}
+              </motion.div>
+              <motion.button variants={fadeUp} onClick={next} disabled={selectedInterests.length < 3}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-violet-600/20 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed">
+                Continue
+                <span className="ml-2 text-sm font-normal opacity-70">({selectedInterests.length} selected)</span>
+              </motion.button>
+            </motion.div>
           )}
 
           {step === "location" && (
-            <div>
-              <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
-                <Locate size={80} className="mx-auto mb-6" />
+            <motion.div variants={stagger} initial="hidden" animate="show">
+              <motion.div variants={fadeUp} className="relative w-28 h-28 mx-auto mb-8">
+                <div className="absolute inset-0 rounded-full bg-violet-500/10 animate-ping" style={{ animationDuration: "2.5s" }} />
+                <div className="absolute inset-2 rounded-full bg-violet-500/10" />
+                <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                  className="relative w-full h-full rounded-full bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 flex items-center justify-center">
+                  <Locate size={44} className="text-violet-400" />
+                </motion.div>
               </motion.div>
-              <h2 className="text-3xl font-bold mb-2">Enable Location</h2>
-              <p className="text-white/80 mb-8">HobbyHub needs your location to show nearby activities and people</p>
+              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-2">Enable Location</motion.h2>
+              <motion.p variants={fadeUp} className="text-slate-400 mb-4 max-w-xs mx-auto">
+                Discover nearby activities and connect with people around you
+              </motion.p>
+              <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 text-slate-500 text-xs mb-8">
+                <Shield size={12} /> <span>Your location is only shared while you are active</span>
+              </motion.div>
               {onboardError && (
-                <div className="mb-4 p-3 bg-red-500/20 border border-red-300/50 rounded-xl text-sm text-white">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                  className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-300">
                   {onboardError}
-                </div>
+                </motion.div>
               )}
-              <button onClick={requestLocation} className="w-full py-4 bg-white text-violet-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform mb-3">
-                Allow Location Access
-              </button>
-              <button onClick={() => finishOnboarding(0, 0)} className="text-white/60 text-sm hover:text-white/80 transition-colors">
+              <motion.button variants={fadeUp} onClick={requestLocation}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-violet-600/20 mb-3 flex items-center justify-center gap-2">
+                <Locate size={18} /> Allow Location Access
+              </motion.button>
+              <motion.button variants={fadeUp} onClick={() => finishOnboarding(0, 0)}
+                className="w-full py-3 bg-white/[0.04] border border-white/[0.06] text-slate-400 rounded-2xl text-sm hover:text-slate-200 hover:border-slate-600 transition-all">
                 Use default location
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           )}
         </motion.div>
       </AnimatePresence>
