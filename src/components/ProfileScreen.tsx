@@ -20,9 +20,10 @@ interface ProfileReq {
 const SKILL_LEVELS = ["beginner", "intermediate", "advanced", "expert"];
 
 export default function ProfileScreen() {
-  const { user, setUser, setOnboarded, setScreen } = useStore();
+  const { user, setUser, setOnboarded, setScreen, userLocation } = useStore();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editing, setEditing] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editSkill, setEditSkill] = useState("intermediate");
@@ -461,6 +462,20 @@ export default function ProfileScreen() {
                     </div>
                   )}
                 </div>
+
+                {/* Seed demo data */}
+                <button
+                  onClick={async () => {
+                    if (!userLocation.lat) return;
+                    setSeeding(true);
+                    await fetch(`/api/seed?lat=${userLocation.lat}&lng=${userLocation.lng}`, { method: "POST" });
+                    setSeeding(false);
+                    setScreen("map");
+                  }}
+                  className="w-full py-2.5 text-violet-400 font-medium text-[12px] flex items-center justify-center gap-1.5 hover:text-violet-600 transition-colors"
+                >
+                  {seeding ? "Loading demo data..." : "✨ Load Demo Data Nearby"}
+                </button>
 
                 {/* Logout */}
                 <button
