@@ -210,17 +210,6 @@ export interface BusinessType {
   owner: UserType;
 }
 
-export interface StoryType {
-  id: string;
-  type: "new_activity" | "join" | "new_trip" | "new_gig" | "new_idea";
-  text: string;
-  avatar: string;
-  userName: string;
-  activityId: string;
-  activityType: string;
-  createdAt: string;
-}
-
 export interface CalendarDayType {
   date: string;
   label: string;

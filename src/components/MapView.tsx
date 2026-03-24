@@ -11,7 +11,6 @@ import {
   Briefcase, Lightbulb, ChevronRight, Sparkles,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import StoriesStrip from "./StoriesStrip";
 
 const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
 
@@ -266,11 +265,6 @@ export default function MapView() {
             </motion.button>
           );
         })}
-      </div>
-
-      {/* Stories Strip */}
-      <div className="absolute top-[112px] left-0 right-0 z-[500] px-3">
-        <StoriesStrip />
       </div>
 
       {/* Live Stats */}

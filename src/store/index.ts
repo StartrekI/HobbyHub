@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ActivityType, UserType, MessageType, NotificationType, HotspotType, StoryType } from "@/types";
+import type { ActivityType, UserType, MessageType, NotificationType, HotspotType } from "@/types";
 
 type Screen =
   | "map"
@@ -73,9 +73,6 @@ interface AppState {
   opportunityType: "gig" | "trip" | "skill" | "idea";
   setOpportunityType: (type: "gig" | "trip" | "skill" | "idea") => void;
 
-  // Stories
-  stories: StoryType[];
-  setStories: (stories: StoryType[]) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -132,6 +129,4 @@ export const useStore = create<AppState>((set) => ({
   opportunityType: "gig",
   setOpportunityType: (opportunityType) => set({ opportunityType }),
 
-  stories: [],
-  setStories: (stories) => set({ stories }),
 }));
