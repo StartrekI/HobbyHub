@@ -194,25 +194,18 @@ export async function GET(req: NextRequest) {
         data: { status: "completed" },
       }).catch(() => {});
 
-      // Mark stale users offline (no ping in 2 minutes)
+      // Safety net: mark users offline if no heartbeat for 60 seconds
+      // (handles cases where sendBeacon/socket disconnect both fail)
       prisma.user.updateMany({
         where: {
           online: true,
-          lastSeenAt: { lt: new Date(Date.now() - 2 * 60 * 1000) },
+          lastSeenAt: { lt: new Date(Date.now() - 60_000) },
         },
         data: { online: false },
       }).catch(() => {});
     }
 
-    // Compute real-time online status: override stale users to offline in response
-    const STALE_MS = 2 * 60 * 1000;
-    const now = Date.now();
-    const usersWithPresence = users.map((u) => ({
-      ...u,
-      online: u.online && u.lastSeenAt ? (now - new Date(u.lastSeenAt).getTime() < STALE_MS) : u.online,
-    }));
-
-    return NextResponse.json({ activities: allActivities, users: usersWithPresence, unreadCount });
+    return NextResponse.json({ activities: allActivities, users, unreadCount });
   } catch (error) {
     console.error("GET /api/feed error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

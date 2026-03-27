@@ -4,7 +4,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "@/store";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin } from "lucide-react";
-import { getSocket, disconnectSocket } from "@/lib/socket-client";
+import { getSocket } from "@/lib/socket-client";
 import Onboarding from "@/components/Onboarding";
 import MapView from "@/components/MapView";
 import CreateActivity from "@/components/CreateActivity";
@@ -99,35 +99,62 @@ export default function Home() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [setUserLocation]);
 
-  // ─── Real-time presence via Socket.io ───
+  // ─── Real-time presence: instant online/offline ───
   useEffect(() => {
     const currentUser = useStore.getState().user;
     if (!currentUser?.id) return;
 
+    const uid = currentUser.id;
     const socket = getSocket();
 
-    // Tell the server we're online
-    socket.emit("user-online", currentUser.id);
+    // 1) Immediately mark online in DB + broadcast via socket
+    fetch("/api/users/presence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: uid, online: true }),
+    }).catch(() => {});
+    socket.emit("user-online", uid);
 
-    // Listen for other users going online/offline
+    // 2) Listen for other users going online/offline — instant UI update
     const handlePresence = (data: { userId: string; online: boolean }) => {
       const { nearbyUsers, setNearbyUsers } = useStore.getState();
       const updated = nearbyUsers.map((u) =>
-        u.id === data.userId ? { ...u, online: data.online } : u
+        u.id === data.userId ? { ...u, online: data.online, lastSeenAt: new Date().toISOString() } : u
       );
       setNearbyUsers(updated);
     };
-
     socket.on("presence-update", handlePresence);
 
-    // On page unload, disconnect cleanly
+    // 3) Tab visibility: hidden → offline, visible → online
+    const handleVisibility = () => {
+      if (document.hidden) {
+        navigator.sendBeacon(
+          "/api/users/presence",
+          new Blob([JSON.stringify({ userId: uid, online: false })], { type: "application/json" })
+        );
+      } else {
+        fetch("/api/users/presence", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: uid, online: true }),
+        }).catch(() => {});
+        socket.emit("user-online", uid);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    // 4) Page close: sendBeacon ensures DB write even if tab is killed
     const handleBeforeUnload = () => {
-      socket.disconnect();
+      navigator.sendBeacon(
+        "/api/users/presence",
+        new Blob([JSON.stringify({ userId: uid, online: false })], { type: "application/json" })
+      );
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       socket.off("presence-update", handlePresence);
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [user]);

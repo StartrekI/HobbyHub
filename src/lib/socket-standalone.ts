@@ -10,6 +10,15 @@ const io = new Server(httpServer, {
 const userSockets = new Map<string, Set<string>>();
 const socketToUser = new Map<string, string>();
 
+// Write presence to DB via the Next.js API
+function setPresenceInDB(userId: string, online: boolean) {
+  fetch("http://localhost:3000/api/users/presence", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, online }),
+  }).catch(() => {});
+}
+
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
@@ -23,8 +32,11 @@ io.on("connection", (socket) => {
     }
     userSockets.get(userId)!.add(socket.id);
 
-    // Broadcast to all other clients that this user is online
+    // Broadcast to all other clients instantly
     socket.broadcast.emit("presence-update", { userId, online: true });
+
+    // Also write to DB (backup — client already does this via presence API)
+    setPresenceInDB(userId, true);
     console.log(`User ${userId} is now online (${userSockets.get(userId)!.size} connections)`);
   });
 
@@ -65,7 +77,10 @@ io.on("connection", (socket) => {
         // Only mark offline when ALL tabs/connections are gone
         if (sockets.size === 0) {
           userSockets.delete(userId);
+          // Broadcast to all clients instantly
           socket.broadcast.emit("presence-update", { userId, online: false });
+          // Write to DB (backup — client sendBeacon also does this)
+          setPresenceInDB(userId, false);
           console.log(`User ${userId} is now offline`);
         }
       }
