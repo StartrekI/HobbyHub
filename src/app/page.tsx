@@ -4,6 +4,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "@/store";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin } from "lucide-react";
+import { getSocket, disconnectSocket } from "@/lib/socket-client";
 import Onboarding from "@/components/Onboarding";
 import MapView from "@/components/MapView";
 import CreateActivity from "@/components/CreateActivity";
@@ -97,6 +98,39 @@ export default function Home() {
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [setUserLocation]);
+
+  // ─── Real-time presence via Socket.io ───
+  useEffect(() => {
+    const currentUser = useStore.getState().user;
+    if (!currentUser?.id) return;
+
+    const socket = getSocket();
+
+    // Tell the server we're online
+    socket.emit("user-online", currentUser.id);
+
+    // Listen for other users going online/offline
+    const handlePresence = (data: { userId: string; online: boolean }) => {
+      const { nearbyUsers, setNearbyUsers } = useStore.getState();
+      const updated = nearbyUsers.map((u) =>
+        u.id === data.userId ? { ...u, online: data.online } : u
+      );
+      setNearbyUsers(updated);
+    };
+
+    socket.on("presence-update", handlePresence);
+
+    // On page unload, disconnect cleanly
+    const handleBeforeUnload = () => {
+      socket.disconnect();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      socket.off("presence-update", handlePresence);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [user]);
 
   if (loading) {
     return (

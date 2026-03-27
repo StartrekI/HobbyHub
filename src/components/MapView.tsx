@@ -211,10 +211,13 @@ export default function MapView() {
     };
   }, [searchQuery, activities, nearbyUsers]);
 
+  const onlineUsers = nearbyUsers.filter(u => u.id !== user?.id && u.online);
+
   const filters = [
     { key: "all" as const, label: "All" },
     { key: "activities" as const, label: "Activities" },
     { key: "people" as const, label: "People" },
+    { key: "online" as const, label: "Online" },
     { key: "hotspots" as const, label: "Hotspots" },
   ];
 
@@ -264,6 +267,7 @@ export default function MapView() {
           const count = f.key === "all" ? activities.length + nearbyUsers.filter(u => u.id !== user?.id).length
             : f.key === "activities" ? activities.length
             : f.key === "people" ? nearbyUsers.filter(u => u.id !== user?.id).length
+            : f.key === "online" ? onlineUsers.length
             : hotspots.length;
           const active = mapFilter === f.key;
           return (
@@ -294,7 +298,12 @@ export default function MapView() {
             </span>
             <span className="w-px h-3 bg-gray-200/80" />
             <span className="flex items-center gap-1 text-emerald-600 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {onlineUsers.length} online
+            </span>
+            <span className="w-px h-3 bg-gray-200/80" />
+            <span className="flex items-center gap-1 text-gray-500 font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
               {nearbyUsers.filter(u => u.id !== user?.id).length} nearby
             </span>
           </div>
@@ -304,8 +313,12 @@ export default function MapView() {
       {/* Map */}
       <LeafletMap
         userLocation={userLocation}
-        activities={mapFilter === "all" || mapFilter === "activities" ? activities : []}
-        users={mapFilter === "all" || mapFilter === "people" ? nearbyUsers.filter((u) => u.id !== user?.id) : []}
+        activities={mapFilter === "all" || mapFilter === "activities" ? activities : mapFilter === "online" ? [] : []}
+        users={
+          mapFilter === "online" ? onlineUsers
+          : mapFilter === "all" || mapFilter === "people" ? nearbyUsers.filter((u) => u.id !== user?.id)
+          : []
+        }
         hotspots={mapFilter === "all" || mapFilter === "hotspots" ? hotspots : []}
         onActivityClick={handleActivityClick}
         onUserClick={handleUserClick}
@@ -548,7 +561,15 @@ export default function MapView() {
                           <span className="px-1.5 py-0.5 bg-blue-50 text-blue-500 text-[10px] font-bold rounded-full ring-1 ring-blue-100">✓</span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-400">{selectedUser.online ? "Online now" : "Offline"}</p>
+                      <p className="text-sm text-gray-400">
+                        {selectedUser.online ? (
+                          <span className="text-emerald-500 font-medium">Online now</span>
+                        ) : (
+                          selectedUser.lastSeenAt
+                            ? `Last seen ${(() => { const diff = Date.now() - new Date(selectedUser.lastSeenAt).getTime(); const mins = Math.floor(diff / 60000); if (mins < 1) return "just now"; if (mins < 60) return `${mins}m ago`; const hrs = Math.floor(mins / 60); if (hrs < 24) return `${hrs}h ago`; return `${Math.floor(hrs / 24)}d ago`; })()}`
+                            : "Offline"
+                        )}
+                      </p>
                     </div>
                   </div>
 

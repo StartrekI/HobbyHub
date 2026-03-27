@@ -6,8 +6,27 @@ const io = new Server(httpServer, {
   cors: { origin: "*" },
 });
 
+// Track userId -> Set<socketId> for presence
+const userSockets = new Map<string, Set<string>>();
+const socketToUser = new Map<string, string>();
+
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
+
+  // ─── Presence: user comes online ───
+  socket.on("user-online", (userId: string) => {
+    if (!userId) return;
+    socketToUser.set(socket.id, userId);
+
+    if (!userSockets.has(userId)) {
+      userSockets.set(userId, new Set());
+    }
+    userSockets.get(userId)!.add(socket.id);
+
+    // Broadcast to all other clients that this user is online
+    socket.broadcast.emit("presence-update", { userId, online: true });
+    console.log(`User ${userId} is now online (${userSockets.get(userId)!.size} connections)`);
+  });
 
   socket.on("join-activity", (activityId: string) => {
     socket.join(`activity:${activityId}`);
@@ -34,7 +53,24 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("user-moved", data);
   });
 
+  // ─── Presence: user disconnects ───
   socket.on("disconnect", () => {
+    const userId = socketToUser.get(socket.id);
+    socketToUser.delete(socket.id);
+
+    if (userId) {
+      const sockets = userSockets.get(userId);
+      if (sockets) {
+        sockets.delete(socket.id);
+        // Only mark offline when ALL tabs/connections are gone
+        if (sockets.size === 0) {
+          userSockets.delete(userId);
+          socket.broadcast.emit("presence-update", { userId, online: false });
+          console.log(`User ${userId} is now offline`);
+        }
+      }
+    }
+
     console.log("Client disconnected:", socket.id);
   });
 });

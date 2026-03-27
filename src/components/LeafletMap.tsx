@@ -171,10 +171,11 @@ export default function LeafletMap({
       const icon = L.divIcon({
         className: "",
         html: `
-          <div class="map-marker user-marker">
+          <div class="map-marker user-marker ${isOnline ? "user-online" : "user-offline"}">
+            ${isOnline ? '<div class="online-pulse-ring"></div>' : ""}
             <div class="user-marker-body" style="--user-color: ${bgColor}">
               ${avatarHtml}
-              ${isOnline ? '<div class="online-dot"></div>' : ""}
+              <div class="presence-dot ${isOnline ? "online" : "offline"}"></div>
             </div>
             ${hasRole ? `<div class="role-tag" style="background:${bgColor}">${roleInfo.icon}</div>` : ""}
             <div class="marker-shadow small"></div>
@@ -367,16 +368,48 @@ export default function LeafletMap({
           font-weight: 800;
           text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-        .online-dot {
+        /* ─── Presence indicators ─── */
+        .presence-dot {
           position: absolute;
           bottom: 0;
           right: 0;
           width: 10px;
           height: 10px;
           border-radius: 50%;
-          background: #00E676;
           border: 2px solid white;
-          box-shadow: 0 0 6px rgba(0, 230, 118, 0.6);
+          z-index: 3;
+        }
+        .presence-dot.online {
+          background: #00E676;
+          box-shadow: 0 0 8px rgba(0, 230, 118, 0.7);
+        }
+        .presence-dot.offline {
+          background: #B0BEC5;
+          box-shadow: none;
+        }
+        .user-offline .user-marker-body {
+          opacity: 0.55;
+          filter: saturate(0.4);
+        }
+        .user-online .user-marker-body {
+          opacity: 1;
+          filter: none;
+        }
+        .online-pulse-ring {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          border: 2px solid rgba(0, 230, 118, 0.5);
+          animation: onlinePulse 2s ease-out infinite;
+          z-index: 0;
+        }
+        @keyframes onlinePulse {
+          0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+          100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
         }
         .role-tag {
           position: absolute;

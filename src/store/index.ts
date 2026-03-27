@@ -58,8 +58,8 @@ interface AppState {
   setUnreadCount: (count: number) => void;
 
   // Map filter
-  mapFilter: "all" | "activities" | "people" | "hotspots";
-  setMapFilter: (filter: "all" | "activities" | "people" | "hotspots") => void;
+  mapFilter: "all" | "activities" | "people" | "online" | "hotspots";
+  setMapFilter: (filter: "all" | "activities" | "people" | "online" | "hotspots") => void;
 
   // Bottom sheet
   sheetOpen: boolean;

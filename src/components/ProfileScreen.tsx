@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Star, Camera, Check, X, Shield, GraduationCap, Users,
   LogOut, ChevronRight, Edit3, MapPin, Zap, Trophy, Target,
-  Clock, TrendingUp, Share2, Copy, CheckCircle2,
+  Clock, TrendingUp, Share2, Copy, CheckCircle2, Eye, EyeOff,
 } from "lucide-react";
 import { useStore } from "@/store";
 import { INTERESTS, TYPE_COLORS, ACTIVITY_TYPES, USER_ROLES, STARTUP_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
@@ -153,6 +153,7 @@ export default function ProfileScreen() {
   const [seeding, setSeeding] = useState(false);
   const [activeTab, setActiveTab] = useState<"joined" | "created">("joined");
   const [availability, setAvailability] = useState("open");
+  const [locationSharing, setLocationSharing] = useState(user?.shareLocation !== false);
   const [copied, setCopied] = useState(false);
 
   const [editName, setEditName] = useState("");
@@ -722,6 +723,48 @@ export default function ProfileScreen() {
                         </motion.div>
                       )}
                     </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Settings */}
+                <div className="bg-white rounded-2xl p-4">
+                  <h4 className="font-bold text-[13px] text-gray-900 mb-3">Settings</h4>
+                  <div className="space-y-3">
+                    {/* Location sharing toggle */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${locationSharing ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400"}`}>
+                          {locationSharing ? <Eye size={15} /> : <EyeOff size={15} />}
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-900">Location Status</p>
+                          <p className="text-[11px] text-gray-400">{locationSharing ? "Others can see you on the map" : "You are hidden from the map"}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const newVal = !locationSharing;
+                          setLocationSharing(newVal);
+                          if (user) {
+                            await fetch(`/api/users/${user.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ shareLocation: newVal }),
+                            });
+                            const updated = { ...user, shareLocation: newVal };
+                            setUser(updated);
+                            localStorage.setItem("hobbyhub_user", JSON.stringify(updated));
+                          }
+                        }}
+                        className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${locationSharing ? "bg-emerald-500" : "bg-gray-300"}`}
+                      >
+                        <motion.div
+                          animate={{ x: locationSharing ? 20 : 2 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
 

@@ -20,6 +20,8 @@ model User {
   lat             Float    @default(0)
   lng             Float    @default(0)
   online          Boolean  @default(false)
+  lastSeenAt      DateTime?
+  shareLocation   Boolean  @default(true)
   rating          Float    @default(5.0)
   ratingCount     Int      @default(0)
   verified        Boolean  @default(false)

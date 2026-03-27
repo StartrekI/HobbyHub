@@ -55,12 +55,13 @@ export async function GET(req: NextRequest) {
         where: {
           ...locationFilter,
           ...(userId ? { id: { not: userId } } : {}),
+          shareLocation: true,
         },
         select: {
           id: true, name: true, email: true, bio: true, avatar: true,
           interests: true, lat: true, lng: true, online: true, rating: true,
           verified: true, role: true, title: true, company: true,
-          skills: true, collegeName: true,
+          skills: true, collegeName: true, lastSeenAt: true, shareLocation: true,
         },
         take: 50,
       }),
@@ -187,12 +188,31 @@ export async function GET(req: NextRequest) {
 
     // Auto-end old activities in background (non-blocking) — only 10% of requests
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    if (Math.random() < 0.1) prisma.activity.updateMany({
-      where: { status: "active", time: { lt: oneDayAgo } },
-      data: { status: "completed" },
-    }).catch(() => {});
+    if (Math.random() < 0.1) {
+      prisma.activity.updateMany({
+        where: { status: "active", time: { lt: oneDayAgo } },
+        data: { status: "completed" },
+      }).catch(() => {});
 
-    return NextResponse.json({ activities: allActivities, users, unreadCount });
+      // Mark stale users offline (no ping in 2 minutes)
+      prisma.user.updateMany({
+        where: {
+          online: true,
+          lastSeenAt: { lt: new Date(Date.now() - 2 * 60 * 1000) },
+        },
+        data: { online: false },
+      }).catch(() => {});
+    }
+
+    // Compute real-time online status: override stale users to offline in response
+    const STALE_MS = 2 * 60 * 1000;
+    const now = Date.now();
+    const usersWithPresence = users.map((u) => ({
+      ...u,
+      online: u.online && u.lastSeenAt ? (now - new Date(u.lastSeenAt).getTime() < STALE_MS) : u.online,
+    }));
+
+    return NextResponse.json({ activities: allActivities, users: usersWithPresence, unreadCount });
   } catch (error) {
     console.error("GET /api/feed error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

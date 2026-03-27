@@ -9,6 +9,8 @@ export interface UserType {
   lat: number;
   lng: number;
   online: boolean;
+  lastSeenAt?: string;
+  shareLocation: boolean;
   rating: number;
   verified: boolean;
   // Professional
