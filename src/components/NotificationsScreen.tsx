@@ -8,13 +8,13 @@ import { formatRelativeTime } from "@/lib/utils";
 import type { NotificationType } from "@/types";
 
 const ICON_MAP: Record<string, { icon: typeof Bell; color: string; bg: string }> = {
-  activity_joined: { icon: UserPlus, color: "#6C5CE7", bg: "#6C5CE712" },
-  new_activity: { icon: MapPin, color: "#00B894", bg: "#00B89412" },
-  chat_message: { icon: MessageCircle, color: "#0984E3", bg: "#0984E312" },
-  rating: { icon: Star, color: "#FDCB6E", bg: "#FDCB6E20" },
-  hotspot: { icon: Flame, color: "#FF4757", bg: "#FF475712" },
-  profile_request: { icon: UserCheck, color: "#6C5CE7", bg: "#6C5CE712" },
-  system: { icon: Shield, color: "#636E72", bg: "#636E7212" },
+  activity_joined: { icon: UserPlus, color: "#6c5ce7", bg: "#e8e5ff" },
+  new_activity: { icon: MapPin, color: "#00b894", bg: "#e6f9f4" },
+  chat_message: { icon: MessageCircle, color: "#74b9ff", bg: "#e8f4ff" },
+  rating: { icon: Star, color: "#fdcb6e", bg: "#fef9e7" },
+  hotspot: { icon: Flame, color: "#ff6b6b", bg: "#ffe8e8" },
+  profile_request: { icon: UserCheck, color: "#6c5ce7", bg: "#e8e5ff" },
+  system: { icon: Shield, color: "#6e6e82", bg: "#f4f4f8" },
 };
 
 export default function NotificationsScreen() {
@@ -50,7 +50,6 @@ export default function NotificationsScreen() {
 
   const markAllRead = async () => {
     if (!user) return;
-    // Single batch request instead of N individual requests
     await fetch("/api/notifications", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -68,16 +67,16 @@ export default function NotificationsScreen() {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
+      className="absolute inset-0 bottom-[68px] bg-[#f8f8fa] z-[900] flex flex-col"
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <button onClick={() => setScreen("map")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-          <ArrowLeft size={20} />
+      {/* ── Header ── */}
+      <div className="header-glass flex items-center gap-3 px-5 py-3.5">
+        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
+          <ArrowLeft size={16} className="text-[#4a4a5e]" />
         </button>
-        <h3 className="flex-1 font-bold text-lg">Notifications</h3>
+        <h3 className="flex-1 font-bold text-lg text-[#1a1a2e]">Notifications</h3>
         {unreadCount > 0 && (
-          <button onClick={markAllRead} className="text-violet-600 text-xs font-semibold">
+          <button onClick={markAllRead} className="text-[#6c5ce7] text-[12px] font-semibold hover:text-[#5a4bd1] transition-colors">
             Mark all read
           </button>
         )}
@@ -86,15 +85,15 @@ export default function NotificationsScreen() {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="w-8 h-8 border-3 border-gray-200 border-t-violet-500 rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-[#e8e8ef] border-t-[#6c5ce7] rounded-full animate-spin" />
           </div>
         ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
-            <div className="w-16 h-16 bg-gray-100 rounded-3xl flex items-center justify-center mb-4">
-              <Bell size={28} className="text-gray-300" />
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-14 h-14 bg-[#f4f4f8] rounded-2xl flex items-center justify-center mb-4">
+              <Bell size={26} className="text-[#d1d1db]" />
             </div>
-            <p className="text-sm font-medium">No notifications yet</p>
-            <p className="text-xs text-gray-300 mt-1">You&apos;re all caught up</p>
+            <p className="text-[14px] font-semibold text-[#1a1a2e]">No notifications yet</p>
+            <p className="text-[12px] text-[#9e9eb0] mt-1">You&apos;re all caught up</p>
           </div>
         ) : (
           <div className="p-3 space-y-0.5">
@@ -104,27 +103,27 @@ export default function NotificationsScreen() {
               return (
                 <motion.div
                   key={notif.id}
-                  initial={{ opacity: 0, x: 15 }}
+                  initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.03 }}
                   onClick={() => !notif.read && markRead(notif.id)}
-                  className={`flex items-start gap-3.5 p-4 rounded-2xl cursor-pointer transition-all ${
-                    notif.read ? "opacity-50" : "bg-white hover:shadow-sm"
+                  className={`flex items-start gap-3 p-3.5 rounded-xl cursor-pointer transition-all ${
+                    notif.read ? "opacity-45" : "bg-white border border-black/[0.03] hover:shadow-sm"
                   }`}
                 >
                   <div
-                    className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                     style={{ background: config.bg, color: config.color }}
                   >
-                    <IconComp size={18} />
+                    <IconComp size={17} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold leading-tight">{notif.title}</p>
-                    <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">{notif.body}</p>
-                    <p className="text-[10px] text-gray-300 mt-1.5 font-medium">{formatRelativeTime(notif.createdAt)}</p>
+                    <p className="text-[13px] font-semibold text-[#1a1a2e] leading-tight">{notif.title}</p>
+                    <p className="text-[12px] text-[#6e6e82] mt-0.5 leading-relaxed">{notif.body}</p>
+                    <p className="text-[10px] text-[#d1d1db] mt-1.5 font-medium">{formatRelativeTime(notif.createdAt)}</p>
                   </div>
                   {!notif.read && (
-                    <div className="w-2.5 h-2.5 rounded-full bg-violet-600 mt-1.5 shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-[#6c5ce7] mt-1.5 shrink-0" />
                   )}
                 </motion.div>
               );

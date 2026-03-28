@@ -111,7 +111,7 @@ export default function CreateActivity() {
   const canPublish = type && title && user && !publishing && !isPastDate;
   const formTitle = mode === "event" ? "Create Event" : mode === "group" ? "Create Group" : "Create Activity";
 
-  const inputCls = "w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all";
+  const inputCls = "w-full px-4 py-3 bg-[#f4f4f8] border border-transparent rounded-xl text-[14px] outline-none focus:bg-white focus:border-[#a29bfe] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]";
 
   return (
     <motion.div
@@ -119,23 +119,23 @@ export default function CreateActivity() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
+      className="absolute inset-0 bottom-[68px] bg-[#f8f8fa] z-[900] flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      <div className="header-glass flex items-center gap-3 px-5 py-3">
         {mode !== "pick" ? (
-          <button onClick={() => setMode("pick")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-            <ChevronLeft size={20} />
+          <button onClick={() => setMode("pick")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
+            <ChevronLeft size={16} className="text-[#4a4a5e]" />
           </button>
         ) : (
-          <button onClick={() => setScreen("map")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-            <X size={20} />
+          <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
+            <X size={16} className="text-[#4a4a5e]" />
           </button>
         )}
-        <h3 className="flex-1 font-bold text-lg">{mode === "pick" ? "Create" : formTitle}</h3>
+        <h3 className="flex-1 font-bold text-[16px] text-[#1a1a2e]">{mode === "pick" ? "Create" : formTitle}</h3>
         {mode !== "pick" && (
-          <button onClick={() => setScreen("map")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-            <X size={18} className="text-gray-400" />
+          <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
+            <X size={14} className="text-[#9e9eb0]" />
           </button>
         )}
       </div>
@@ -150,28 +150,28 @@ export default function CreateActivity() {
             exit={{ opacity: 0, x: -20 }}
             className="flex-1 overflow-y-auto p-4 space-y-3"
           >
-            <p className="text-sm text-gray-400 font-medium px-1 mb-1">What would you like to create?</p>
+            <p className="text-[13px] text-[#9e9eb0] font-medium px-1 mb-1">What would you like to create?</p>
 
             {createOptions.map((opt, idx) => {
               const Icon = opt.icon;
               return (
                 <motion.button
                   key={opt.id}
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.06 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => pickMode(opt.id)}
-                  className="w-full flex items-center gap-4 p-5 rounded-3xl bg-white border border-gray-100 hover:shadow-md transition-all text-left"
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white border border-black/[0.03] hover:shadow-md transition-all text-left"
                 >
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${opt.gradient} flex items-center justify-center shadow-lg`}>
-                    <Icon size={26} className="text-white" />
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${opt.gradient} flex items-center justify-center`}>
+                    <Icon size={22} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-gray-800 text-[15px]">{opt.label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{opt.desc}</p>
+                    <p className="font-bold text-[#1a1a2e] text-[14px]">{opt.label}</p>
+                    <p className="text-[11px] text-[#9e9eb0] mt-0.5">{opt.desc}</p>
                   </div>
-                  <ChevronLeft size={18} className="text-gray-300 rotate-180" />
+                  <ChevronLeft size={16} className="text-[#d1d1db] rotate-180" />
                 </motion.button>
               );
             })}
@@ -226,8 +226,8 @@ export default function CreateActivity() {
           >
             {/* Category (only for activity mode) */}
             {mode === "activity" && (
-              <div className="bg-white rounded-3xl p-5 border border-gray-100">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Category</label>
+              <div className="bg-white rounded-2xl p-4 border border-black/[0.03]">
+                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Category</label>
                 <div className="flex gap-1.5 flex-wrap mt-2">
                   {ACTIVITY_CATEGORIES.map((c) => (
                     <motion.button key={c.value} whileTap={{ scale: 0.95 }} onClick={() => setCategory(c.value)}
@@ -240,9 +240,9 @@ export default function CreateActivity() {
             )}
 
             {/* Type & Title Card */}
-            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+            <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">
                   {mode === "event" ? "Event Type" : mode === "group" ? "Group Type" : "Activity Type"}
                 </label>
                 <select value={type} onChange={(e) => setType(e.target.value)}
@@ -255,7 +255,7 @@ export default function CreateActivity() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">
                   {mode === "group" ? "Group Name" : "Title"}
                 </label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)}
@@ -268,7 +268,7 @@ export default function CreateActivity() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Description</label>
+                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Description</label>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)}
                   placeholder={
                     mode === "group" ? "What is this group about? Who should join?" :
@@ -280,17 +280,17 @@ export default function CreateActivity() {
             </div>
 
             {/* Date, Time & Players Card */}
-            <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+            <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider flex items-center gap-1">
                     <Calendar size={10} /> {mode === "group" ? "Start Date" : "Date"}
                   </label>
                   <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
                     className={`${inputCls} mt-2`} />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider flex items-center gap-1">
                     <Clock size={10} /> Time
                   </label>
                   <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
@@ -303,7 +303,7 @@ export default function CreateActivity() {
               )}
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider flex items-center gap-1">
                   <Users size={10} /> {mode === "group" ? "Max Members" : mode === "event" ? "Capacity" : "Players Needed"}
                 </label>
                 <div className="flex items-center gap-5 mt-3">
@@ -322,7 +322,7 @@ export default function CreateActivity() {
 
             {/* Event-specific fields */}
             {mode === "event" && (
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+              <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
                 <h4 className="font-bold text-sm flex items-center gap-2 text-amber-700">
                   <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center">
                     <Megaphone size={16} className="text-amber-500" />
@@ -330,12 +330,12 @@ export default function CreateActivity() {
                   Event Details
                 </h4>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Ticket Price (INR, 0 = free)</label>
+                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Ticket Price (INR, 0 = free)</label>
                   <input type="number" value={ticketPrice} onChange={(e) => setTicketPrice(e.target.value)} placeholder="0"
                     className={`${inputCls} mt-2`} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Event URL (optional)</label>
+                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Event URL (optional)</label>
                   <input value={eventUrl} onChange={(e) => setEventUrl(e.target.value)} placeholder="https://..."
                     className={`${inputCls} mt-2`} />
                 </div>
@@ -344,7 +344,7 @@ export default function CreateActivity() {
 
             {/* Group-specific: always recurring */}
             {mode === "group" && (
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-3">
+              <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-3">
                 <h4 className="font-bold text-sm flex items-center gap-2 text-emerald-700">
                   <div className="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center">
                     <UsersRound size={16} className="text-emerald-500" />
@@ -365,7 +365,7 @@ export default function CreateActivity() {
 
             {/* Recurring toggle for activity mode */}
             {mode === "activity" && (
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 space-y-3">
+              <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-3">
                 <div className="flex items-center gap-3">
                   <button onClick={() => setIsRecurring(!isRecurring)}
                     className={`w-12 h-7 rounded-full transition-colors relative ${isRecurring ? "bg-violet-600" : "bg-gray-200"}`}>
@@ -397,8 +397,8 @@ export default function CreateActivity() {
             )}
 
             {/* Location */}
-            <div className="bg-white rounded-3xl p-5 border border-gray-100">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Location</label>
+            <div className="bg-white rounded-2xl p-4 border border-black/[0.03]">
+              <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Location</label>
               <div className="flex items-center gap-3 mt-2 p-3.5 bg-gray-50 border border-gray-200 rounded-2xl">
                 <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center">
                   <MapPin size={16} className="text-red-500" />
@@ -425,12 +425,8 @@ export default function CreateActivity() {
               disabled={!canPublish}
               className={`w-full py-4 rounded-2xl font-bold text-[15px] transition-all ${
                 canPublish
-                  ? mode === "event"
-                    ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-200/50"
-                    : mode === "group"
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200/50"
-                    : "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200/50"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  ? "bg-[#6c5ce7] text-white shadow-[0_4px_16px_rgba(108,92,231,0.35)]"
+                  : "bg-[#f4f4f8] text-[#d1d1db] cursor-not-allowed"
               }`}
             >
               {publishing ? (

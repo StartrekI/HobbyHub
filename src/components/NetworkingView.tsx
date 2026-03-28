@@ -76,34 +76,35 @@ export default function NetworkingView() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="h-full bg-gray-50 flex flex-col"
+      className="h-full bg-[#f8f8fa] flex flex-col"
     >
-      {/* Header */}
-      <div className="px-5 pt-4 pb-3 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      {/* ── Header ── */}
+      <div className="header-glass px-5 pt-4 pb-3">
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => setScreen("map")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={20} />
+          <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
+            <ArrowLeft size={16} className="text-[#4a4a5e]" />
           </button>
-          <h3 className="flex-1 font-bold text-xl">Networking</h3>
+          <h3 className="flex-1 font-bold text-xl text-[#1a1a2e] tracking-tight">Networking</h3>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowFilters(!showFilters)}
-            className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${showFilters ? "bg-violet-100 text-violet-600" : "bg-gray-100 text-gray-400"}`}
+            className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showFilters ? "bg-[#e8e5ff] text-[#6c5ce7]" : "bg-[#f4f4f8] text-[#9e9eb0]"}`}
           >
-            <Filter size={18} />
+            <Filter size={16} />
             {activeFilters > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-violet-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{activeFilters}</span>
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#6c5ce7] text-white text-[9px] font-bold rounded-full flex items-center justify-center">{activeFilters}</span>
             )}
           </motion.button>
         </div>
+
         {/* Search */}
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-violet-400" />
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9eb0]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people, roles, companies..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200/80 rounded-2xl text-sm outline-none focus:bg-white focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all placeholder:text-gray-400"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#f4f4f8] rounded-xl text-[13px] outline-none border border-transparent focus:bg-white focus:border-[#a29bfe] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]"
           />
         </div>
 
@@ -116,63 +117,27 @@ export default function NetworkingView() {
               exit={{ height: 0, opacity: 0 }}
               className="mt-3 space-y-3 overflow-hidden"
             >
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Role</label>
-                <div className="flex gap-1.5 flex-wrap mt-1.5">
-                  <button onClick={() => setRoleFilter("")}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${!roleFilter ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-200/50" : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"}`}>All</button>
-                  {USER_ROLES.map((r) => (
-                    <button key={r.value} onClick={() => setRoleFilter(r.value)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${roleFilter === r.value ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-200/50" : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"}`}>
-                      {r.icon} {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Stage</label>
-                <div className="flex gap-1.5 flex-wrap mt-1.5">
-                  <button onClick={() => setStageFilter("")}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${!stageFilter ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-200/50" : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"}`}>All</button>
-                  {STARTUP_STAGES.map((s) => (
-                    <button key={s.value} onClick={() => setStageFilter(s.value)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${stageFilter === s.value ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-200/50" : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"}`}>
-                      {s.icon} {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Looking For</label>
-                <div className="flex gap-1.5 flex-wrap mt-1.5">
-                  <button onClick={() => setLookingForFilter("")}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${!lookingForFilter ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-200/50" : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"}`}>All</button>
-                  {LOOKING_FOR_OPTIONS.map((l) => (
-                    <button key={l.value} onClick={() => setLookingForFilter(l.value)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${lookingForFilter === l.value ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-200/50" : "bg-white text-gray-500 border-gray-200 hover:border-violet-200 hover:text-violet-500"}`}>
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <FilterSection label="Role" options={[{ value: "", label: "All" }, ...USER_ROLES.map(r => ({ value: r.value, label: `${r.icon} ${r.label}` }))]} selected={roleFilter} onSelect={setRoleFilter} />
+              <FilterSection label="Stage" options={[{ value: "", label: "All" }, ...STARTUP_STAGES.map(s => ({ value: s.value, label: `${s.icon} ${s.label}` }))]} selected={stageFilter} onSelect={setStageFilter} />
+              <FilterSection label="Looking For" options={[{ value: "", label: "All" }, ...LOOKING_FOR_OPTIONS.map(l => ({ value: l.value, label: l.label }))]} selected={lookingForFilter} onSelect={setLookingForFilter} />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* People list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      {/* ── People list ── */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-3 border-gray-200 border-t-violet-500 rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-[#e8e8ef] border-t-[#6c5ce7] rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center mb-4">
-              <Briefcase size={28} className="text-emerald-300" />
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-14 h-14 bg-[#f4f4f8] rounded-2xl flex items-center justify-center mb-4">
+              <Briefcase size={26} className="text-[#d1d1db]" />
             </div>
-            <p className="text-sm font-medium">No professionals nearby</p>
-            <p className="text-xs text-gray-300 mt-1">Try expanding your filters</p>
+            <p className="text-[14px] font-semibold text-[#1a1a2e]">No professionals nearby</p>
+            <p className="text-[12px] text-[#9e9eb0] mt-1">Try expanding your filters</p>
           </div>
         ) : (
           filtered.map((person, idx) => {
@@ -189,75 +154,73 @@ export default function NetworkingView() {
             return (
               <motion.div
                 key={person.id}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.03 }}
-                className="bg-white rounded-3xl p-5 border border-gray-100/80 shadow-sm hover:shadow-lg transition-shadow duration-300"
+                className="bg-white rounded-2xl p-4 border border-black/[0.03] hover:shadow-md transition-shadow duration-300"
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3.5">
                   <div className="relative shrink-0">
-                    <div className="p-[2px] rounded-[18px] bg-gradient-to-br from-violet-400 to-indigo-600">
-                      <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-violet-600 font-bold text-lg overflow-hidden" style={{ background: person.avatar ? undefined : "linear-gradient(135deg, #8b5cf6, #6366f1)" }}>
-                        {person.avatar ? (
-                          <img src={person.avatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white">{person.name.charAt(0)}</span>
-                        )}
-                      </div>
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                      {person.avatar ? (
+                        <img src={person.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{person.name.charAt(0)}</span>
+                      )}
                     </div>
                     {person.online && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 border-[2.5px] border-white rounded-full shadow-sm" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00b894] border-2 border-white rounded-full" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-[15px]">{person.name}</h4>
-                      {person.online && <span className="text-[10px] text-emerald-500 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-md">Online</span>}
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-bold text-[14px] text-[#1a1a2e]">{person.name}</h4>
+                      {person.online && <span className="text-[10px] text-[#00b894] font-semibold bg-[#e6f9f4] px-1.5 py-0.5 rounded-md">Online</span>}
                     </div>
                     {(person.title || person.company) && (
-                      <p className="text-xs text-gray-500 mt-0.5 font-medium">
-                        {person.title}{person.title && person.company ? " at " : ""}<span className="text-gray-700">{person.company}</span>
+                      <p className="text-[12px] text-[#9e9eb0] mt-0.5">
+                        {person.title}{person.title && person.company ? " at " : ""}<span className="text-[#6e6e82]">{person.company}</span>
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                       {role && (
-                        <span className="px-2.5 py-1 bg-violet-50 text-violet-600 text-[10px] font-semibold rounded-lg border border-violet-100/60">
+                        <span className="px-2 py-0.5 bg-[#e8e5ff] text-[#6c5ce7] text-[10px] font-semibold rounded-md">
                           {role.icon} {role.label}
                         </span>
                       )}
                       {stage && (
-                        <span className="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-semibold rounded-lg border border-blue-100/60">
+                        <span className="px-2 py-0.5 bg-[#e8f4ff] text-[#74b9ff] text-[10px] font-semibold rounded-md">
                           {stage.icon} {stage.label}
                         </span>
                       )}
-                      <span className="text-[10px] text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-md">{dist}</span>
+                      <span className="badge">{dist}</span>
                     </div>
                     {person.lookingFor && (
-                      <p className="text-[11px] text-emerald-600 font-semibold mt-2 bg-emerald-50/60 inline-block px-2 py-0.5 rounded-md">
+                      <p className="text-[11px] text-[#00b894] font-semibold mt-2 bg-[#e6f9f4] inline-block px-2 py-0.5 rounded-md">
                         Looking for: {person.lookingFor}
                       </p>
                     )}
                     {personSkills.length > 0 && (
-                      <div className="flex gap-1.5 flex-wrap mt-2.5">
+                      <div className="flex gap-1.5 flex-wrap mt-2">
                         {personSkills.slice(0, 4).map((s) => (
-                          <span key={s} className="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] font-medium rounded-lg border border-gray-100">{s}</span>
+                          <span key={s} className="px-2 py-0.5 bg-[#f4f4f8] text-[#6e6e82] text-[10px] font-medium rounded-md">{s}</span>
                         ))}
                         {personSkills.length > 4 && (
-                          <span className="text-[10px] text-gray-400 font-medium self-center">+{personSkills.length - 4}</span>
+                          <span className="text-[10px] text-[#9e9eb0] font-medium self-center">+{personSkills.length - 4}</span>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
+
                 {/* Actions */}
-                <div className="flex gap-2.5 mt-4 pt-4 border-t border-gray-100/80">
+                <div className="flex gap-2 mt-3.5 pt-3.5 border-t border-black/[0.04]">
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => sendHi(person.id)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white text-xs font-bold rounded-2xl shadow-md shadow-violet-200/50"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#6c5ce7] text-white text-[12px] font-semibold rounded-xl shadow-[0_4px_12px_rgba(108,92,231,0.3)]"
                   >
-                    <MessageCircle size={14} /> Say Hi
+                    <MessageCircle size={13} /> Say Hi
                   </motion.button>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
@@ -268,10 +231,9 @@ export default function NetworkingView() {
                         body: JSON.stringify({ fromUserId: user?.id, toUserId: person.id }),
                       });
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 text-violet-600 text-xs font-bold rounded-2xl border border-violet-200/80 hover:bg-violet-50 transition-colors"
-                    style={{ background: "linear-gradient(135deg, #f5f3ff, #eef2ff)" }}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[#6c5ce7] text-[12px] font-semibold rounded-xl border border-[#6c5ce7]/20 bg-[#e8e5ff]/50 hover:bg-[#e8e5ff] transition-colors"
                   >
-                    <UserPlus size={14} /> Connect
+                    <UserPlus size={13} /> Connect
                   </motion.button>
                 </div>
               </motion.div>
@@ -280,5 +242,33 @@ export default function NetworkingView() {
         )}
       </div>
     </motion.div>
+  );
+}
+
+function FilterSection({ label, options, selected, onSelect }: {
+  label: string;
+  options: { value: string; label: string }[];
+  selected: string;
+  onSelect: (v: string) => void;
+}) {
+  return (
+    <div>
+      <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">{label}</label>
+      <div className="flex gap-1.5 flex-wrap mt-1.5">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => onSelect(opt.value)}
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 border ${
+              selected === opt.value
+                ? "bg-[#6c5ce7] text-white border-[#6c5ce7]"
+                : "bg-white text-[#6e6e82] border-black/[0.04] hover:border-[#6c5ce7]/30"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

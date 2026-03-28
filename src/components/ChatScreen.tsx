@@ -141,7 +141,6 @@ export default function ChatScreen() {
 
   const allMessages = isDm ? dmMessages : groupMessages;
 
-  // Group messages by date
   const groupedByDate = useMemo(() => {
     const groups: { date: string; messages: (MessageType | DmMessage)[] }[] = [];
     let lastDate = "";
@@ -162,43 +161,39 @@ export default function ChatScreen() {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="h-full bg-gradient-to-b from-gray-50 to-gray-100/50 flex flex-col"
+      className="h-full bg-[#f8f8fa] flex flex-col"
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3.5 bg-white/90 backdrop-blur-2xl border-b border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <button onClick={() => setScreen("chat-list")} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-          <ArrowLeft size={20} />
+      {/* ── Header ── */}
+      <div className="header-glass flex items-center gap-3 px-4 py-3">
+        <button onClick={() => setScreen("chat-list")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
+          <ArrowLeft size={16} className="text-[#4a4a5e]" />
         </button>
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-400 to-indigo-600 flex items-center justify-center text-white font-bold overflow-hidden shrink-0 shadow-md shadow-violet-200">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] flex items-center justify-center text-white font-bold text-[13px] overflow-hidden shrink-0">
           {partnerAvatar ? <img src={partnerAvatar} alt="" className="w-full h-full object-cover" /> : chatTitle.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[15px] text-gray-900 truncate">{chatTitle}</h3>
-          <p className="text-xs text-gray-400 font-medium">{chatSubtitle}</p>
+          <h3 className="font-bold text-[14px] text-[#1a1a2e] truncate">{chatTitle}</h3>
+          <p className="text-[11px] text-[#9e9eb0] font-medium">{chatSubtitle}</p>
         </div>
       </div>
 
-      {/* Messages */}
+      {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-10 h-10 mx-auto mb-3 border-[3px] border-gray-200 border-t-violet-500 rounded-full animate-spin" />
-              <p className="text-gray-400 text-sm font-medium">Loading messages...</p>
+              <div className="w-7 h-7 mx-auto mb-3 border-2 border-[#e8e8ef] border-t-[#6c5ce7] rounded-full animate-spin" />
+              <p className="text-[#9e9eb0] text-[13px]">Loading messages...</p>
             </div>
           </div>
         ) : allMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-3xl flex items-center justify-center shadow-sm"
-              >
-                <Send size={28} className="text-violet-400" />
-              </motion.div>
-              <p className="text-gray-500 text-sm font-semibold">No messages yet</p>
-              <p className="text-gray-300 text-xs mt-1.5">Say something to start the conversation</p>
+              <div className="w-14 h-14 mx-auto mb-4 bg-[#e8e5ff] rounded-2xl flex items-center justify-center">
+                <Send size={24} className="text-[#a29bfe]" />
+              </div>
+              <p className="text-[14px] font-semibold text-[#1a1a2e]">No messages yet</p>
+              <p className="text-[12px] text-[#9e9eb0] mt-1">Say something to start the conversation</p>
             </div>
           </div>
         ) : (
@@ -206,9 +201,9 @@ export default function ChatScreen() {
             {groupedByDate.map((group) => (
               <div key={group.date}>
                 <div className="flex items-center justify-center my-4 gap-3">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-                  <span className="px-3.5 py-1 bg-white/80 text-gray-400 text-[10px] font-semibold rounded-full border border-gray-100 shadow-sm">{group.date}</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+                  <div className="flex-1 h-px bg-black/[0.04]" />
+                  <span className="px-3 py-0.5 bg-white text-[#9e9eb0] text-[10px] font-semibold rounded-full border border-black/[0.04]">{group.date}</span>
+                  <div className="flex-1 h-px bg-black/[0.04]" />
                 </div>
                 {group.messages.map((msg: MessageType | DmMessage, idx) => {
                   const isSelf = msg.senderId === user?.id;
@@ -219,27 +214,27 @@ export default function ChatScreen() {
                   return (
                     <motion.div
                       key={msg.id}
-                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.15 }}
                       className={`flex ${isSelf ? "justify-end" : "justify-start"} ${isConsecutive ? "mt-0.5" : "mt-3"}`}
                     >
-                      <div className={`max-w-[78%] ${isSelf ? "order-1" : "order-1"}`}>
+                      <div className="max-w-[78%]">
                         {!isSelf && !isDm && !isConsecutive && (
-                          <p className="text-[11px] font-bold mb-1 ml-1 text-violet-500">
+                          <p className="text-[11px] font-semibold mb-1 ml-1 text-[#6c5ce7]">
                             {msg.sender?.name}
                           </p>
                         )}
                         <div
-                          className={`px-4 py-3 text-[15px] leading-relaxed ${
+                          className={`px-3.5 py-2.5 text-[14px] leading-relaxed ${
                             isSelf
-                              ? `bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-200/40 ${isConsecutive ? "rounded-2xl rounded-tr-lg" : "rounded-2xl rounded-br-lg"}`
-                              : `bg-white text-gray-800 shadow-sm border border-gray-100/80 ${isConsecutive ? "rounded-2xl rounded-tl-lg" : "rounded-2xl rounded-bl-lg"}`
+                              ? `bg-[#6c5ce7] text-white ${isConsecutive ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-br-md"}`
+                              : `bg-white text-[#1a1a2e] border border-black/[0.04] ${isConsecutive ? "rounded-2xl rounded-tl-md" : "rounded-2xl rounded-bl-md"}`
                           }`}
                         >
                           {msg.text}
-                          <div className={`flex items-center gap-1 mt-1.5 ${isSelf ? "justify-end" : "justify-end"}`}>
-                            <span className={`text-[10px] ${isSelf ? "text-white/50" : "text-gray-300"}`}>
+                          <div className="flex items-center gap-1 mt-1 justify-end">
+                            <span className={`text-[10px] ${isSelf ? "text-white/50" : "text-[#d1d1db]"}`}>
                               {formatTime(msg.createdAt)}
                             </span>
                             {isSelf && (
@@ -258,27 +253,27 @@ export default function ChatScreen() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-3 bg-white/90 backdrop-blur-2xl border-t border-gray-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center gap-2.5">
+      {/* ── Input ── */}
+      <div className="p-3 header-glass border-t-0" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center gap-2">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl text-[15px] outline-none focus:border-violet-400 focus:bg-white focus:ring-4 focus:ring-violet-100/60 focus:shadow-sm transition-all placeholder:text-gray-300"
+            className="flex-1 px-4 py-2.5 bg-[#f4f4f8] rounded-xl text-[14px] outline-none border border-transparent focus:border-[#a29bfe] focus:bg-white focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]"
           />
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={sendMessage}
             disabled={!input.trim()}
-            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
               input.trim()
-                ? "bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-200/60"
-                : "bg-gray-100 text-gray-300"
+                ? "bg-[#6c5ce7] text-white shadow-[0_4px_12px_rgba(108,92,231,0.3)]"
+                : "bg-[#f4f4f8] text-[#d1d1db]"
             }`}
           >
-            <Send size={18} />
+            <Send size={16} />
           </motion.button>
         </div>
       </div>

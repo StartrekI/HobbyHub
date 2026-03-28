@@ -50,8 +50,8 @@ export default function LeafletMap({
     // Radius circle showing nearby area
     radiusRef.current = L.circle([userLocation.lat, userLocation.lng], {
       radius: 1500,
-      color: "#6C5CE7",
-      fillColor: "#6C5CE7",
+      color: "#6c5ce7",
+      fillColor: "#6c5ce7",
       fillOpacity: 0.04,
       weight: 1.5,
       dashArray: "8 6",
@@ -119,7 +119,7 @@ export default function LeafletMap({
 
     // ─── ACTIVITY MARKERS ───
     activities.forEach((a) => {
-      const color = TYPE_COLORS[a.type] || "#6C5CE7";
+      const color = TYPE_COLORS[a.type] || "#6c5ce7";
       const emoji = ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon || "⭐";
       const pCount = a.participants?.length || a._count?.participants || 0;
       const isEvent = a.isEvent;
@@ -155,7 +155,7 @@ export default function LeafletMap({
 
       // Color based on role
       let bgColor = "#00B894";
-      if (u.role === "founder") bgColor = "#6C5CE7";
+      if (u.role === "founder") bgColor = "#6c5ce7";
       else if (u.role === "developer") bgColor = "#0984E3";
       else if (u.role === "designer") bgColor = "#FD79A8";
       else if (u.role === "investor") bgColor = "#FDCB6E";
@@ -233,7 +233,7 @@ export default function LeafletMap({
           width: 60px;
           height: 60px;
           border-radius: 50%;
-          border: 2px solid rgba(108, 92, 231, 0.4);
+          border: 2px solid rgba(108, 92, 231, 0.35);
           animation: selfPulse 2.5s ease-out infinite;
         }
         .self-pulse-ring.delay {
@@ -243,9 +243,9 @@ export default function LeafletMap({
           width: 22px;
           height: 22px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #6C5CE7, #A29BFE);
+          background: linear-gradient(135deg, #6c5ce7, #a29bfe);
           border: 3px solid white;
-          box-shadow: 0 2px 12px rgba(108, 92, 231, 0.6);
+          box-shadow: 0 2px 10px rgba(108, 92, 231, 0.5);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -267,25 +267,25 @@ export default function LeafletMap({
           border-radius: 50%;
           background: var(--marker-color);
           border: 3px solid white;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+          box-shadow: 0 3px 12px rgba(0,0,0,0.18);
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
-          transition: transform 0.2s;
+          transition: transform 0.2s ease;
           cursor: pointer;
         }
         .activity-marker .marker-body:hover {
-          transform: scale(1.15);
+          transform: scale(1.12);
         }
         .marker-emoji {
           font-size: 20px;
           line-height: 1;
-          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
         }
         .event-marker .marker-body {
-          border: 3px solid #FFD700;
-          box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4), 0 4px 15px rgba(0,0,0,0.2);
+          border: 3px solid #fdcb6e;
+          box-shadow: 0 3px 16px rgba(253, 203, 110, 0.35), 0 3px 12px rgba(0,0,0,0.15);
         }
         .marker-badge {
           position: absolute;
@@ -296,13 +296,13 @@ export default function LeafletMap({
           padding: 0 5px;
           border-radius: 10px;
           background: white;
-          color: #333;
+          color: #1a1a2e;
           font-size: 11px;
           font-weight: 800;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.12);
           border: 1.5px solid var(--marker-color);
         }
         .event-tag {
@@ -310,7 +310,7 @@ export default function LeafletMap({
           bottom: 6px;
           left: 50%;
           transform: translateX(-50%);
-          background: linear-gradient(135deg, #8E44AD, #6C5CE7);
+          background: #6c5ce7;
           color: white;
           font-size: 8px;
           font-weight: 800;
@@ -327,7 +327,7 @@ export default function LeafletMap({
           width: 24px;
           height: 6px;
           border-radius: 50%;
-          background: rgba(0,0,0,0.15);
+          background: rgba(0,0,0,0.1);
           filter: blur(2px);
         }
         .marker-shadow.small {
@@ -342,7 +342,7 @@ export default function LeafletMap({
           border-radius: 50%;
           background: linear-gradient(135deg, var(--user-color), color-mix(in srgb, var(--user-color) 70%, white));
           border: 3px solid white;
-          box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.15);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -352,10 +352,10 @@ export default function LeafletMap({
           position: relative;
           cursor: pointer;
           overflow: hidden;
-          transition: transform 0.2s;
+          transition: transform 0.2s ease;
         }
         .user-marker .user-marker-body:hover {
-          transform: scale(1.15);
+          transform: scale(1.12);
         }
         .user-avatar-img {
           width: 100%;
@@ -366,7 +366,7 @@ export default function LeafletMap({
         .user-initial {
           font-size: 14px;
           font-weight: 800;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
         /* ─── Presence indicators ─── */
         .presence-dot {
@@ -380,16 +380,16 @@ export default function LeafletMap({
           z-index: 3;
         }
         .presence-dot.online {
-          background: #00E676;
-          box-shadow: 0 0 8px rgba(0, 230, 118, 0.7);
+          background: #00b894;
+          box-shadow: 0 0 6px rgba(0, 184, 148, 0.6);
         }
         .presence-dot.offline {
-          background: #B0BEC5;
+          background: #d1d1db;
           box-shadow: none;
         }
         .user-offline .user-marker-body {
-          opacity: 0.55;
-          filter: saturate(0.4);
+          opacity: 0.5;
+          filter: saturate(0.35);
         }
         .user-online .user-marker-body {
           opacity: 1;
@@ -403,7 +403,7 @@ export default function LeafletMap({
           width: 44px;
           height: 44px;
           border-radius: 50%;
-          border: 2px solid rgba(0, 230, 118, 0.5);
+          border: 2px solid rgba(0, 184, 148, 0.4);
           animation: onlinePulse 2s ease-out infinite;
           z-index: 0;
         }
@@ -424,7 +424,7 @@ export default function LeafletMap({
           justify-content: center;
           font-size: 10px;
           border: 1.5px solid white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.12);
         }
 
         /* ─── HOTSPOT MARKERS ─── */
@@ -441,7 +441,7 @@ export default function LeafletMap({
           width: 70px;
           height: 70px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(255,71,87,0.3), rgba(255,71,87,0));
+          background: radial-gradient(circle, rgba(255,107,107,0.25), rgba(255,107,107,0));
           animation: hotPulse 2s ease-out infinite;
         }
         .hotspot-pulse.delay2 {
@@ -451,9 +451,9 @@ export default function LeafletMap({
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #FF6B6B, #FF4757);
+          background: #ff6b6b;
           border: 3px solid white;
-          box-shadow: 0 4px 20px rgba(255,71,87,0.5);
+          box-shadow: 0 3px 16px rgba(255,107,107,0.4);
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -461,7 +461,7 @@ export default function LeafletMap({
           color: white;
           z-index: 2;
           cursor: pointer;
-          transition: transform 0.2s;
+          transition: transform 0.2s ease;
         }
         .hotspot-core:hover {
           transform: scale(1.1);
@@ -485,7 +485,7 @@ export default function LeafletMap({
 
         /* ─── MAP GLOBAL STYLES ─── */
         .leaflet-container {
-          background: #f8f9fa;
+          background: #f8f8fa;
         }
         .leaflet-marker-icon {
           background: none !important;

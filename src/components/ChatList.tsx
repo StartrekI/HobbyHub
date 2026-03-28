@@ -61,31 +61,30 @@ export default function ChatList() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="h-full bg-gradient-to-b from-gray-50 to-gray-100/80 flex flex-col"
+      className="h-full bg-[#f8f8fa] flex flex-col"
     >
-      {/* Header */}
-      <div className="px-5 pt-5 pb-4 bg-white/90 backdrop-blur-2xl border-b border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <h3 className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">Messages</h3>
-        <div className="relative flex bg-gray-100/80 p-1 rounded-2xl">
-          {/* Sliding indicator */}
+      {/* ── Header ── */}
+      <div className="header-glass px-5 pt-5 pb-4">
+        <h3 className="font-bold text-xl text-[#1a1a2e] tracking-tight mb-4">Messages</h3>
+        <div className="relative flex bg-[#f4f4f8] p-1 rounded-xl">
           <motion.div
             layoutId="chat-tab-indicator"
-            className="absolute top-1 bottom-1 rounded-xl bg-white shadow-md shadow-gray-200/60"
+            className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm"
             style={{ width: "calc(50% - 4px)", left: tab === "groups" ? 4 : "calc(50% + 0px)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           />
           <button
             onClick={() => setTab("groups")}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors relative z-10 ${
-              tab === "groups" ? "text-gray-900" : "text-gray-400"
+            className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors relative z-10 ${
+              tab === "groups" ? "text-[#1a1a2e]" : "text-[#9e9eb0]"
             }`}
           >
             Groups
           </button>
           <button
             onClick={() => setTab("direct")}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors relative z-10 ${
-              tab === "direct" ? "text-gray-900" : "text-gray-400"
+            className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors relative z-10 ${
+              tab === "direct" ? "text-[#1a1a2e]" : "text-[#9e9eb0]"
             }`}
           >
             Direct
@@ -93,7 +92,7 @@ export default function ChatList() {
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="ml-1.5 inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-[10px] font-bold rounded-full shadow-sm shadow-red-200 animate-pulse"
+                className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-[#ff6b6b] text-white text-[10px] font-bold rounded-full"
               >
                 {dmUnreadTotal}
               </motion.span>
@@ -110,18 +109,14 @@ export default function ChatList() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="flex flex-col items-center justify-center h-full text-gray-400"
+              className="flex flex-col items-center justify-center h-full"
             >
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-5 shadow-sm"
-              >
-                <WifiOff size={36} className="text-red-300" />
-              </motion.div>
-              <p className="text-sm font-semibold text-gray-500">Failed to load chats</p>
-              <p className="text-xs text-gray-300 mt-1">Check your connection and try again</p>
-              <button onClick={() => window.location.reload()} className="mt-4 px-6 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm rounded-2xl font-semibold shadow-md shadow-violet-200 hover:shadow-lg transition-shadow">Retry</button>
+              <div className="w-14 h-14 bg-[#ffe8e8] rounded-2xl flex items-center justify-center mb-4">
+                <WifiOff size={26} className="text-[#ff6b6b]" />
+              </div>
+              <p className="text-[14px] font-semibold text-[#1a1a2e]">Failed to load chats</p>
+              <p className="text-[12px] text-[#9e9eb0] mt-1">Check your connection and try again</p>
+              <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2.5 bg-[#6c5ce7] text-white text-[13px] rounded-xl font-semibold shadow-[0_4px_12px_rgba(108,92,231,0.3)]">Retry</button>
             </motion.div>
           ) : loading ? (
             <motion.div
@@ -131,7 +126,7 @@ export default function ChatList() {
               exit={{ opacity: 0 }}
               className="flex items-center justify-center h-full"
             >
-              <div className="w-9 h-9 border-[3px] border-gray-200 border-t-violet-500 rounded-full animate-spin" />
+              <div className="w-7 h-7 border-2 border-[#e8e8ef] border-t-[#6c5ce7] rounded-full animate-spin" />
             </motion.div>
           ) : tab === "groups" ? (
             chats.length === 0 ? (
@@ -140,17 +135,13 @@ export default function ChatList() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center justify-center h-full text-gray-400"
+                className="flex flex-col items-center justify-center h-full"
               >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="w-20 h-20 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-3xl flex items-center justify-center mb-5 shadow-sm"
-                >
-                  <MessageCircle size={32} className="text-violet-400" />
-                </motion.div>
-                <p className="text-sm font-semibold text-gray-500">No group chats yet</p>
-                <p className="text-xs text-gray-300 mt-1.5">Join an activity to start chatting</p>
+                <div className="w-14 h-14 bg-[#e8e5ff] rounded-2xl flex items-center justify-center mb-4">
+                  <MessageCircle size={26} className="text-[#a29bfe]" />
+                </div>
+                <p className="text-[14px] font-semibold text-[#1a1a2e]">No group chats yet</p>
+                <p className="text-[12px] text-[#9e9eb0] mt-1">Join an activity to start chatting</p>
               </motion.div>
             ) : (
               <motion.div
@@ -158,36 +149,36 @@ export default function ChatList() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="p-3 space-y-1"
+                className="p-3 space-y-0.5"
               >
                 {chats.map((chat, idx) => (
                   <motion.div
                     key={chat.activityId}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.03 }}
                     onClick={() => openGroupChat(chat)}
-                    className="flex items-center gap-4 p-3.5 rounded-2xl cursor-pointer hover:bg-white/80 active:scale-[0.99] transition-all group"
+                    className="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer hover:bg-white active:bg-[#f4f4f8] transition-all"
                   >
                     <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl shrink-0 shadow-md"
-                      style={{ background: `linear-gradient(135deg, ${TYPE_COLORS[chat.type] || "#6C5CE7"}, ${TYPE_COLORS[chat.type] || "#6C5CE7"}99)` }}
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-lg shrink-0"
+                      style={{ background: TYPE_COLORS[chat.type] || "#6C5CE7" }}
                     >
                       {ACTIVITY_TYPES.find((t) => t.value === chat.type)?.icon || "?"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-[15px] text-gray-800 truncate pr-2">{chat.title}</h4>
+                        <h4 className="font-semibold text-[14px] text-[#1a1a2e] truncate pr-2">{chat.title}</h4>
                         {chat.lastMessage && (
-                          <span className="text-[10px] text-gray-400 shrink-0 font-medium">{formatRelativeTime(chat.lastMessage.createdAt)}</span>
+                          <span className="text-[10px] text-[#d1d1db] shrink-0 font-medium">{formatRelativeTime(chat.lastMessage.createdAt)}</span>
                         )}
                       </div>
-                      <p className="text-[13px] text-gray-400 truncate mt-0.5">
+                      <p className="text-[12px] text-[#9e9eb0] truncate mt-0.5">
                         {chat.lastMessage
                           ? `${chat.lastMessage.sender.name}: ${chat.lastMessage.text}`
                           : "No messages yet"}
                       </p>
-                      <p className="text-[10px] text-gray-300 mt-1 font-medium">{chat.participantCount} members</p>
+                      <p className="text-[10px] text-[#d1d1db] mt-0.5 font-medium">{chat.participantCount} members</p>
                     </div>
                   </motion.div>
                 ))}
@@ -200,17 +191,13 @@ export default function ChatList() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center justify-center h-full text-gray-400"
+                className="flex flex-col items-center justify-center h-full"
               >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="w-20 h-20 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl flex items-center justify-center mb-5 shadow-sm"
-                >
-                  <User size={32} className="text-emerald-400" />
-                </motion.div>
-                <p className="text-sm font-semibold text-gray-500">No direct messages</p>
-                <p className="text-xs text-gray-300 mt-1.5">Say hi to someone on the map</p>
+                <div className="w-14 h-14 bg-[#e6f9f4] rounded-2xl flex items-center justify-center mb-4">
+                  <User size={26} className="text-[#00b894]" />
+                </div>
+                <p className="text-[14px] font-semibold text-[#1a1a2e]">No direct messages</p>
+                <p className="text-[12px] text-[#9e9eb0] mt-1">Say hi to someone on the map</p>
               </motion.div>
             ) : (
               <motion.div
@@ -218,39 +205,38 @@ export default function ChatList() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="p-3 space-y-1"
+                className="p-3 space-y-0.5"
               >
                 {dms.map((dm, idx) => (
                   <motion.div
                     key={dm.partner.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.03 }}
                     onClick={() => openDm(dm)}
-                    className={`flex items-center gap-4 p-3.5 rounded-2xl cursor-pointer hover:bg-white/80 active:scale-[0.99] transition-all relative overflow-hidden ${
-                      dm.unread > 0 ? "bg-white/60" : ""
+                    className={`flex items-center gap-3.5 p-3 rounded-xl cursor-pointer hover:bg-white active:bg-[#f4f4f8] transition-all relative overflow-hidden ${
+                      dm.unread > 0 ? "bg-white border border-black/[0.03]" : ""
                     }`}
                   >
-                    {/* Unread accent bar */}
                     {dm.unread > 0 && (
-                      <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-gradient-to-b from-violet-500 to-indigo-500" />
+                      <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[#6c5ce7]" />
                     )}
                     <div className="relative shrink-0">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center text-lg font-bold overflow-hidden shadow-md shadow-emerald-100">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] text-white flex items-center justify-center text-sm font-bold overflow-hidden">
                         {dm.partner.avatar ? <img src={dm.partner.avatar} alt="" className="w-full h-full object-cover" /> : dm.partner.name.charAt(0)}
                       </div>
                       {dm.partner.online && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 border-[2.5px] border-gray-50 rounded-full shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00b894] border-2 border-[#f8f8fa] rounded-full" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h4 className={`text-[15px] truncate ${dm.unread > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-700"}`}>{dm.partner.name}</h4>
+                        <h4 className={`text-[14px] truncate ${dm.unread > 0 ? "font-bold text-[#1a1a2e]" : "font-semibold text-[#4a4a5e]"}`}>{dm.partner.name}</h4>
                         {dm.lastMessage && (
-                          <span className={`text-[10px] shrink-0 font-medium ${dm.unread > 0 ? "text-violet-500" : "text-gray-300"}`}>{formatRelativeTime(dm.lastMessage.createdAt)}</span>
+                          <span className={`text-[10px] shrink-0 font-medium ${dm.unread > 0 ? "text-[#6c5ce7]" : "text-[#d1d1db]"}`}>{formatRelativeTime(dm.lastMessage.createdAt)}</span>
                         )}
                       </div>
-                      <p className={`text-[13px] truncate mt-0.5 ${dm.unread > 0 ? "text-gray-700 font-medium" : "text-gray-400"}`}>
+                      <p className={`text-[12px] truncate mt-0.5 ${dm.unread > 0 ? "text-[#4a4a5e] font-medium" : "text-[#9e9eb0]"}`}>
                         {dm.lastMessage ? dm.lastMessage.text : "No messages"}
                       </p>
                     </div>
@@ -258,7 +244,7 @@ export default function ChatList() {
                       <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="min-w-[24px] h-[24px] px-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center shrink-0 shadow-md shadow-violet-200 animate-pulse"
+                        className="min-w-[22px] h-[22px] px-1.5 bg-[#6c5ce7] text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0"
                       >
                         {dm.unread}
                       </motion.span>

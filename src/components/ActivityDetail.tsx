@@ -37,7 +37,7 @@ export default function ActivityDetail() {
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute inset-0 bottom-[72px] bg-gray-50 z-[900] flex flex-col"
+      className="absolute inset-0 bottom-[68px] bg-[#f8f8fa] z-[900] flex flex-col"
     >
       {/* Hero Header */}
       <div className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${color}, ${color}dd, ${color}aa)` }}>
@@ -45,8 +45,8 @@ export default function ActivityDetail() {
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, white 1.5px, transparent 1.5px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)", backgroundSize: "40px 40px, 60px 60px" }} />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
         <div className="absolute top-0 left-0 right-0 flex items-center gap-3 px-4 py-3 z-10">
-          <button onClick={() => setScreen("map")} className="w-9 h-9 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/10 hover:bg-white/25 transition-colors">
-            <ArrowLeft size={20} />
+          <button onClick={() => setScreen("map")} className="w-8 h-8 bg-white/15 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 hover:bg-white/25 transition-colors">
+            <ArrowLeft size={16} />
           </button>
           <span className="flex-1" />
         </div>
@@ -73,7 +73,7 @@ export default function ActivityDetail() {
 
       <div className="flex-1 overflow-y-auto -mt-5">
         {/* Info Cards */}
-        <div className="mx-4 bg-white rounded-3xl p-5 shadow-lg shadow-gray-200/50 border border-gray-100/80">
+        <div className="mx-4 bg-white rounded-2xl p-4 shadow-md border border-black/[0.03]">
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
               <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
@@ -100,7 +100,7 @@ export default function ActivityDetail() {
         </div>
 
         {/* Participants */}
-        <div className="mx-4 mt-4 bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+        <div className="mx-4 mt-4 bg-white rounded-2xl p-4 border border-black/[0.03]">
           <h4 className="font-bold text-sm mb-4 flex items-center gap-2">Participants <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold" style={{ background: `${color}12`, color }}>{a.participants?.length || 0}</span></h4>
           <div className="space-y-2.5">
             {a.participants?.map((p, i) => (
@@ -132,27 +132,25 @@ export default function ActivityDetail() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2.5 p-4 bg-white/90 backdrop-blur-xl border-t border-gray-100/80">
+      <div className="flex gap-2 p-4 header-glass border-t-0" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleJoin}
           disabled={isJoined}
-          className={`flex-[2] py-3.5 rounded-2xl font-bold text-sm transition-all ${
+          className={`flex-[2] py-3 rounded-xl font-semibold text-[13px] transition-all ${
             isJoined
-              ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-              : "text-white shadow-lg shadow-violet-300/40"
+              ? "bg-[#e6f9f4] text-[#00b894] border border-[#00b894]/20"
+              : "bg-[#6c5ce7] text-white shadow-[0_4px_12px_rgba(108,92,231,0.3)]"
           }`}
-          style={!isJoined ? { background: "linear-gradient(135deg, #7c3aed, #6366f1)" } : undefined}
         >
-          {isJoined ? "Joined ✓" : "Join Activity"}
+          {isJoined ? "Joined" : "Join Activity"}
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={openChat}
-          className="flex-1 py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 text-violet-600 shadow-sm"
-          style={{ background: "linear-gradient(135deg, #ede9fe, #e0e7ff)" }}
+          className="flex-1 py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 text-[#6c5ce7] bg-[#e8e5ff] border border-[#6c5ce7]/10"
         >
-          <MessageCircle size={16} /> Chat
+          <MessageCircle size={15} /> Chat
         </motion.button>
       </div>
     </motion.div>
