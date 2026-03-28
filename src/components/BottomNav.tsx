@@ -1,6 +1,6 @@
 "use client";
 
-import { Map, Plus, MessageCircle, User, Compass, Calendar } from "lucide-react";
+import { Map, Plus, MessageCircle, User, Compass } from "lucide-react";
 import { useStore } from "@/store";
 import { motion } from "framer-motion";
 
@@ -8,7 +8,6 @@ const navItems = [
   { screen: "map" as const, icon: Map, label: "Map" },
   { screen: "discover" as const, icon: Compass, label: "Discover" },
   { screen: "create" as const, icon: Plus, label: "", isCreate: true },
-  { screen: "calendar" as const, icon: Calendar, label: "Calendar" },
   { screen: "chat-list" as const, icon: MessageCircle, label: "Chat" },
   { screen: "profile" as const, icon: User, label: "Profile" },
 ];

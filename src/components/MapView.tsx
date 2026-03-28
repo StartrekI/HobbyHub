@@ -8,7 +8,7 @@ import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import {
   Search, Bell, X, MapPin, Clock, Users, MessageCircle,
   Info, Flame, User, Crosshair, Flag, Ban, UserPlus,
-  Briefcase, Lightbulb, ChevronRight, Sparkles,
+  Briefcase, Lightbulb, ChevronRight, Sparkles, Calendar,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -250,6 +250,12 @@ export default function MapView() {
             <Search size={16} className="text-white/40" />
             <span className="text-white/40 text-[13px]">Search activities, people...</span>
           </div>
+          <button
+            onClick={() => setScreen("calendar")}
+            className="w-[48px] h-[48px] bg-[#1a1a2e]/90 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(26,26,46,0.2)] flex items-center justify-center pointer-events-auto hover:bg-[#1a1a2e]/95 transition-all"
+          >
+            <Calendar size={17} className="text-white/70" />
+          </button>
           <button
             onClick={() => setScreen("notifications")}
             className="relative w-[48px] h-[48px] bg-[#1a1a2e]/90 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(26,26,46,0.2)] flex items-center justify-center pointer-events-auto hover:bg-[#1a1a2e]/95 transition-all"
