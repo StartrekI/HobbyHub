@@ -71,24 +71,25 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // 3. Get last message for each conversation in a single query per partner
-  //    (use raw SQL-like approach with ordered distinct)
-  const lastMessages = await Promise.all(
-    partnerIds.map((partnerId) =>
-      prisma.directMessage.findFirst({
-        where: {
-          OR: [
-            { senderId: userId, receiverId: partnerId },
-            { senderId: partnerId, receiverId: userId },
-          ],
-        },
-        orderBy: { createdAt: "desc" },
-        select: {
-          text: true, createdAt: true,
-          sender: { select: { name: true } },
-        },
-      })
-    )
+  // 3. Get last message per conversation with a single SQL query (eliminates N+1)
+  const lastMessagesRaw: { text: string; createdAt: Date; senderId: string; receiverId: string; senderName: string }[] =
+    await prisma.$queryRaw`
+      SELECT DISTINCT ON (partner_id)
+        dm."text", dm."createdAt", dm."senderId", dm."receiverId", u."name" AS "senderName"
+      FROM (
+        SELECT *, CASE WHEN "senderId" = ${userId} THEN "receiverId" ELSE "senderId" END AS partner_id
+        FROM "DirectMessage"
+        WHERE "senderId" = ${userId} OR "receiverId" = ${userId}
+      ) dm
+      JOIN "User" u ON u.id = dm."senderId"
+      ORDER BY partner_id, dm."createdAt" DESC
+    `;
+
+  const lastMsgMap = new Map(
+    lastMessagesRaw.map((m) => {
+      const partnerId = m.senderId === userId ? m.receiverId : m.senderId;
+      return [partnerId, { text: m.text, createdAt: m.createdAt, sender: { name: m.senderName } }];
+    })
   );
 
   // Build response
@@ -96,9 +97,9 @@ export async function GET(req: NextRequest) {
   const unreadMap = new Map(unreadCounts.map((u) => [u.senderId, u._count.id]));
 
   const conversations = partnerIds
-    .map((pid, i) => ({
+    .map((pid) => ({
       partner: partnerMap.get(pid),
-      lastMessage: lastMessages[i],
+      lastMessage: lastMsgMap.get(pid) || null,
       unread: unreadMap.get(pid) || 0,
     }))
     .filter((c) => c.partner)

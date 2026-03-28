@@ -19,10 +19,19 @@ export async function GET(req: NextRequest) {
         ...locationFilter,
         ...(excludeId ? { id: { not: excludeId } } : {}),
       },
-      take: 100,
+      select: {
+        id: true, name: true, bio: true, avatar: true,
+        interests: true, lat: true, lng: true, online: true,
+        rating: true, verified: true, role: true, title: true,
+        company: true, skills: true, collegeName: true,
+        lastSeenAt: true, shareLocation: true,
+      },
+      take: 50,
     });
 
-    return NextResponse.json(users);
+    const res = NextResponse.json(users);
+    res.headers.set("Cache-Control", "private, max-age=5, stale-while-revalidate=15");
+    return res;
   } catch (error) {
     console.error("GET /api/users error:", error);
     return NextResponse.json({ error: "Failed to fetch users", details: String(error) }, { status: 500 });

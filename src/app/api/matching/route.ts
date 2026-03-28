@@ -68,11 +68,12 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Score by shared interests (in-memory, fast for small sets)
+  // Score by shared interests — O(n) per user via Set lookup
+  const interestSet = new Set(userInterests);
   const scoredUsers = nearbyUsers
     .map((u) => {
       const theirInterests: string[] = JSON.parse(u.interests || "[]");
-      const shared = userInterests.filter((i) => theirInterests.includes(i));
+      const shared = theirInterests.filter((i) => interestSet.has(i));
       return { user: u, sharedInterests: shared, score: shared.length };
     })
     .filter((s) => s.score > 0)

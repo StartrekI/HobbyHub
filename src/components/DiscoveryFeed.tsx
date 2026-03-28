@@ -79,17 +79,20 @@ export default function DiscoveryFeed() {
   const [search, setSearch] = useState("");
   const hasFetchedOnce = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const locationRef = useRef(userLocation);
+  locationRef.current = userLocation;
 
   const fetchFeed = useCallback((showSkeleton: boolean) => {
     if (!user) return;
     if (showSkeleton) setLoading(true);
     else setRefreshing(true);
 
-    fetch(`/api/discover?lat=${userLocation.lat}&lng=${userLocation.lng}&type=${filter}`)
+    const { lat, lng } = locationRef.current;
+    fetch(`/api/discover?lat=${lat}&lng=${lng}&type=${filter}`)
       .then((r) => r.json())
       .then((data) => { setFeed(data); setLoading(false); setRefreshing(false); })
       .catch(() => { setLoading(false); setRefreshing(false); });
-  }, [user, userLocation, filter]);
+  }, [user, filter]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);

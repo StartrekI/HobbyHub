@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// Combined profile endpoint: user data + profile requests + connections in one request
+const USER_SUMMARY = { id: true, name: true, avatar: true, online: true } as const;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -15,21 +16,39 @@ export async function GET(req: NextRequest) {
       prisma.user.findUnique({
         where: { id: userId },
         include: {
-          activitiesCreated: { include: { participants: true } },
-          participants: { include: { activity: { include: { creator: true } } } },
+          activitiesCreated: {
+            select: { id: true, title: true, type: true, status: true, createdAt: true, _count: { select: { participants: true } } },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+          },
+          participants: {
+            select: {
+              id: true, joinedAt: true,
+              activity: {
+                select: { id: true, title: true, type: true, status: true, createdAt: true, creator: { select: USER_SUMMARY } },
+              },
+            },
+            orderBy: { joinedAt: "desc" },
+            take: 20,
+          },
         },
       }),
       prisma.profileRequest.findMany({
         where: { requestedId: userId },
-        include: { requester: true },
+        include: { requester: { select: USER_SUMMARY } },
         orderBy: { createdAt: "desc" },
+        take: 20,
       }),
       prisma.connection.findMany({
         where: {
           OR: [{ fromUserId: userId }, { toUserId: userId }],
         },
-        include: { fromUser: true, toUser: true },
+        include: {
+          fromUser: { select: USER_SUMMARY },
+          toUser: { select: USER_SUMMARY },
+        },
         orderBy: { updatedAt: "desc" },
+        take: 50,
       }),
     ]);
 

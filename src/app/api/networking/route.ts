@@ -23,9 +23,19 @@ export async function GET(req: NextRequest) {
 
   const users = await prisma.user.findMany({
     where,
+    select: {
+      id: true, name: true, bio: true, avatar: true,
+      interests: true, lat: true, lng: true, online: true,
+      rating: true, verified: true, role: true, title: true,
+      company: true, skills: true, collegeName: true,
+      lookingFor: true, startupStage: true,
+      lastSeenAt: true,
+    },
     orderBy: { updatedAt: "desc" },
     take: 50,
   });
 
-  return NextResponse.json(users);
+  const res = NextResponse.json(users);
+  res.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
+  return res;
 }

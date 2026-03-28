@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useStore } from "@/store";
 import { getDistance, TYPE_COLORS, ACTIVITY_TYPES, INTERESTS } from "@/lib/utils";
 import type { ActivityType, UserType, HotspotType } from "@/types";
@@ -41,36 +41,13 @@ export default function MapView() {
   const [selectedHotspot, setSelectedHotspot] = useState<HotspotType | null>(null);
   const [centerTrigger, setCenterTrigger] = useState(0);
 
-  const fetchData = useCallback(async () => {
-    const { lat, lng } = userLocation;
-    const currentUserId = user?.id || "";
-    try {
-      const res = await fetch(
-        `/api/feed?lat=${lat}&lng=${lng}&radius=0.5&userId=${currentUserId}`
-      );
-      const data = await res.json();
-      if (data.activities && Array.isArray(data.activities)) {
-        setActivities(data.activities);
-        detectHotspots(data.activities);
-      }
-      if (data.users && Array.isArray(data.users)) {
-        setNearbyUsers(
-          data.users.map((u: UserType & { interests: string }) => {
-            let interests = u.interests || [];
-            try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
-            return { ...u, interests };
-          })
-        );
-      }
-      if (typeof data.unreadCount === "number") {
-        setUnreadCount(data.unreadCount);
-      }
-    } catch (e) {
-      console.error("Fetch error:", e);
-    }
-  }, [userLocation, user, setActivities, setNearbyUsers, setUnreadCount]);
+  // Use refs to avoid recreating fetchData on every GPS tick or render
+  const locationRef = useRef(userLocation);
+  const userIdRef = useRef(user?.id || "");
+  locationRef.current = userLocation;
+  userIdRef.current = user?.id || "";
 
-  const detectHotspots = (acts: ActivityType[]) => {
+  const detectHotspots = useCallback((acts: ActivityType[]) => {
     const clusters: Record<string, { activities: ActivityType[]; lat: number; lng: number }> = {};
     acts.forEach((a) => {
       const key = `${Math.round(a.lat * 200)}_${Math.round(a.lng * 200)}`;
@@ -95,8 +72,38 @@ export default function MapView() {
       }
     });
     setHotspots(hots);
-  };
+  }, [setHotspots]);
 
+  const fetchData = useCallback(async () => {
+    const { lat, lng } = locationRef.current;
+    const currentUserId = userIdRef.current;
+    try {
+      const res = await fetch(
+        `/api/feed?lat=${lat}&lng=${lng}&radius=0.5&userId=${currentUserId}`
+      );
+      const data = await res.json();
+      if (data.activities && Array.isArray(data.activities)) {
+        setActivities(data.activities);
+        detectHotspots(data.activities);
+      }
+      if (data.users && Array.isArray(data.users)) {
+        setNearbyUsers(
+          data.users.map((u: UserType & { interests: string }) => {
+            let interests = u.interests || [];
+            try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
+            return { ...u, interests };
+          })
+        );
+      }
+      if (typeof data.unreadCount === "number") {
+        setUnreadCount(data.unreadCount);
+      }
+    } catch (e) {
+      console.error("Fetch error:", e);
+    }
+  }, [setActivities, setNearbyUsers, setUnreadCount, detectHotspots]);
+
+  // Poll every 10s — stable interval that doesn't reset on GPS changes
   useEffect(() => {
     fetchData();
     const interval = setInterval(() => {

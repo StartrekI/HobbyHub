@@ -32,7 +32,8 @@ export default function NotificationsScreen() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [user, setUnreadCount]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const markRead = async (id: string) => {
     await fetch("/api/notifications", {

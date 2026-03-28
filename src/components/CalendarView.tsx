@@ -39,18 +39,21 @@ export default function CalendarView() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const hasFetched = useRef(false);
+  const locationRef = useRef(userLocation);
+  locationRef.current = userLocation;
 
   const fetchCalendar = useCallback(() => {
     if (!user) return;
     setLoading(true);
-    fetch(`/api/calendar?lat=${userLocation.lat}&lng=${userLocation.lng}&days=7`)
+    const { lat, lng } = locationRef.current;
+    fetch(`/api/calendar?lat=${lat}&lng=${lng}&days=7`)
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) setDays(data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [user, userLocation]);
+  }, [user]);
 
   useEffect(() => {
     if (!hasFetched.current) {

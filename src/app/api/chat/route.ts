@@ -35,5 +35,7 @@ export async function GET(req: NextRequest) {
     messageCount: p.activity._count.messages,
   }));
 
-  return NextResponse.json(chats);
+  const res = NextResponse.json(chats);
+  res.headers.set("Cache-Control", "private, max-age=3, stale-while-revalidate=10");
+  return res;
 }

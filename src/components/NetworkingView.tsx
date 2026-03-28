@@ -18,12 +18,16 @@ export default function NetworkingView() {
   const [search, setSearch] = useState("");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const locationRef = useRef(userLocation);
+  locationRef.current = userLocation;
+
   const fetchPeople = useCallback(() => {
     if (!user) return;
     setLoading(true);
+    const { lat, lng } = locationRef.current;
     const params = new URLSearchParams({
-      lat: String(userLocation.lat),
-      lng: String(userLocation.lng),
+      lat: String(lat),
+      lng: String(lng),
       userId: user.id,
     });
     if (roleFilter) params.set("role", roleFilter);
@@ -34,7 +38,7 @@ export default function NetworkingView() {
       .then((r) => r.json())
       .then((data) => { setPeople(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [user, userLocation, roleFilter, stageFilter, lookingForFilter]);
+  }, [user, roleFilter, stageFilter, lookingForFilter]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);

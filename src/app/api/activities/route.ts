@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+const CREATOR_SELECT = { id: true, name: true, avatar: true, rating: true } as const;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -14,30 +16,22 @@ export async function GET(req: NextRequest) {
     };
 
     const activities = await prisma.activity.findMany({
-      where: {
-        status: "active",
-        ...locationFilter,
-      },
+      where: { status: "active", ...locationFilter },
       include: {
-        creator: { select: { id: true, name: true, avatar: true, rating: true } },
+        creator: { select: CREATOR_SELECT },
         participants: {
-          include: { user: { select: { id: true, name: true, avatar: true, rating: true } } },
-          take: 20,
+          select: { id: true, userId: true, joinedAt: true, user: { select: CREATOR_SELECT } },
+          take: 6, // Only need avatars for stacking — was 20
         },
         _count: { select: { messages: true, participants: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: 40,
     });
 
-    // Auto-end old activities in background (non-blocking)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    prisma.activity.updateMany({
-      where: { status: "active", time: { lt: oneDayAgo } },
-      data: { status: "completed" },
-    }).catch(() => {});
-
-    return NextResponse.json(activities);
+    const res = NextResponse.json(activities);
+    res.headers.set("Cache-Control", "private, max-age=5, stale-while-revalidate=10");
+    return res;
   } catch (error) {
     console.error("GET /api/activities error:", error);
     return NextResponse.json({ error: "Failed to fetch activities" }, { status: 500 });
@@ -58,9 +52,9 @@ export async function POST(req: NextRequest) {
 
     const activityTime = time ? new Date(time) : new Date(Date.now() + 3600000);
 
-    // Create activity + auto-join creator in a transaction
-    await prisma.$transaction(async (tx) => {
-      await tx.activity.create({
+    // Single transaction: create activity + auto-join creator (was 4 queries, now 1 transaction)
+    const activity = await prisma.$transaction(async (tx) => {
+      const created = await tx.activity.create({
         data: {
           type, title, description: description || "",
           lat: lat || 0, lng: lng || 0, time: activityTime,
@@ -71,39 +65,29 @@ export async function POST(req: NextRequest) {
           recurrencePattern: recurrencePattern || "",
         },
       });
-    });
 
-    // Find the just-created activity (latest by this creator)
-    const activity = await prisma.activity.findFirst({
-      where: { creatorId, title, type },
-      orderBy: { createdAt: "desc" },
-      include: {
-        creator: true,
-        participants: { include: { user: true } },
-        _count: { select: { messages: true, participants: true } },
-      },
+      await tx.participant.create({
+        data: { userId: creatorId, activityId: created.id },
+      });
+
+      // Return the full object in the same transaction
+      return tx.activity.findUnique({
+        where: { id: created.id },
+        include: {
+          creator: { select: CREATOR_SELECT },
+          participants: {
+            select: { id: true, userId: true, joinedAt: true, user: { select: CREATOR_SELECT } },
+          },
+          _count: { select: { messages: true, participants: true } },
+        },
+      });
     });
 
     if (!activity) {
       return NextResponse.json({ error: "Failed to create activity" }, { status: 500 });
     }
 
-    // Auto-join creator as participant
-    await prisma.participant.create({
-      data: { userId: creatorId, activityId: activity.id },
-    }).catch(() => {});
-
-    // Re-fetch with participant included
-    const full = await prisma.activity.findUnique({
-      where: { id: activity.id },
-      include: {
-        creator: true,
-        participants: { include: { user: true } },
-        _count: { select: { messages: true, participants: true } },
-      },
-    });
-
-    // Notify nearby users in background (non-blocking, batch create)
+    // Notify nearby users in background (non-blocking)
     (async () => {
       try {
         const nearbyUsers = await prisma.user.findMany({
@@ -132,7 +116,7 @@ export async function POST(req: NextRequest) {
       }
     })();
 
-    return NextResponse.json(full, { status: 201 });
+    return NextResponse.json(activity, { status: 201 });
   } catch (error) {
     console.error("POST /api/activities error:", error);
     return NextResponse.json({ error: "Failed to create activity" }, { status: 500 });
