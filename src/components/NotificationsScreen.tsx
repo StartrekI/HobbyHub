@@ -70,13 +70,13 @@ export default function NotificationsScreen() {
       className="absolute inset-0 bottom-[68px] bg-[#f8f8fa] z-[900] flex flex-col"
     >
       {/* ── Header ── */}
-      <div className="header-glass flex items-center gap-3 px-5 py-3.5">
-        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
-          <ArrowLeft size={16} className="text-[#4a4a5e]" />
+      <div className="bg-[#1a1a2e] flex items-center gap-3 px-5 py-4">
+        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
+          <ArrowLeft size={16} className="text-white/70" />
         </button>
-        <h3 className="flex-1 font-bold text-lg text-[#1a1a2e]">Notifications</h3>
+        <h3 className="flex-1 font-extrabold text-[20px] text-white tracking-tight">Notifications</h3>
         {unreadCount > 0 && (
-          <button onClick={markAllRead} className="text-[#6c5ce7] text-[12px] font-semibold hover:text-[#5a4bd1] transition-colors">
+          <button onClick={markAllRead} className="text-[#a29bfe] text-[12px] font-semibold hover:text-white transition-colors">
             Mark all read
           </button>
         )}

@@ -164,16 +164,16 @@ export default function ChatScreen() {
       className="h-full bg-[#f8f8fa] flex flex-col"
     >
       {/* ── Header ── */}
-      <div className="header-glass flex items-center gap-3 px-4 py-3">
-        <button onClick={() => setScreen("chat-list")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
-          <ArrowLeft size={16} className="text-[#4a4a5e]" />
+      <div className="bg-[#1a1a2e] flex items-center gap-3 px-4 py-3.5">
+        <button onClick={() => setScreen("chat-list")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
+          <ArrowLeft size={16} className="text-white/70" />
         </button>
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] flex items-center justify-center text-white font-bold text-[13px] overflow-hidden shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-[#6c5ce7] flex items-center justify-center text-white font-bold text-[13px] overflow-hidden shrink-0">
           {partnerAvatar ? <img src={partnerAvatar} alt="" className="w-full h-full object-cover" /> : chatTitle.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[14px] text-[#1a1a2e] truncate">{chatTitle}</h3>
-          <p className="text-[11px] text-[#9e9eb0] font-medium">{chatSubtitle}</p>
+          <h3 className="font-bold text-[14px] text-white truncate">{chatTitle}</h3>
+          <p className="text-[11px] text-white/40 font-medium">{chatSubtitle}</p>
         </div>
       </div>
 

@@ -305,23 +305,23 @@ export default function ProfileScreen() {
       className="h-full bg-[#f8f8fa] flex flex-col">
 
       {/* Header */}
-      <div className="header-glass flex items-center gap-3 px-5 py-3">
-        <h3 className="flex-1 font-bold text-xl text-[#1a1a2e] tracking-tight">Profile</h3>
+      <div className="bg-[#1a1a2e] flex items-center gap-3 px-5 py-3.5">
+        <h3 className="flex-1 font-extrabold text-[22px] text-white tracking-tight">Profile</h3>
         {!editing ? (
           <div className="flex items-center gap-2">
             <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
-              {copied ? <CheckCircle2 size={14} className="text-[#00b894]" /> : <Share2 size={14} className="text-[#6e6e82]" />}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
+              {copied ? <CheckCircle2 size={14} className="text-[#00b894]" /> : <Share2 size={14} className="text-white/50" />}
             </motion.button>
-            <button onClick={startEdit} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#f4f4f8] text-[#4a4a5e] rounded-full text-[12px] font-semibold hover:bg-[#e8e8ef] transition-colors">
+            <button onClick={startEdit} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/[0.08] text-white/70 rounded-full text-[12px] font-semibold hover:bg-white/[0.15] transition-colors">
               <Edit3 size={12} /> Edit
             </button>
           </div>
         ) : (
           <div className="flex gap-2">
-            <button onClick={() => setEditing(false)} className="px-3.5 py-1.5 bg-[#f4f4f8] text-[#6e6e82] rounded-full text-[12px] font-semibold hover:bg-[#e8e8ef] transition-colors">Cancel</button>
+            <button onClick={() => setEditing(false)} className="px-3.5 py-1.5 bg-white/[0.08] text-white/50 rounded-full text-[12px] font-semibold hover:bg-white/[0.15] transition-colors">Cancel</button>
             <motion.button whileTap={{ scale: 0.97 }} onClick={saveProfile} disabled={saving}
-              className="px-4 py-1.5 bg-[#6c5ce7] text-white rounded-full text-[12px] font-semibold disabled:opacity-50">
+              className="px-4 py-1.5 bg-[#6c5ce7] text-white rounded-full text-[12px] font-semibold disabled:opacity-50 shadow-[0_0_12px_rgba(108,92,231,0.4)]">
               {saving ? "Saving..." : "Save"}
             </motion.button>
           </div>

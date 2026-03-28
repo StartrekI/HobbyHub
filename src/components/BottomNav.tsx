@@ -25,65 +25,65 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className="h-[68px] flex items-center bg-white/80 backdrop-blur-2xl border-t border-black/[0.04] z-[1000] pb-[env(safe-area-inset-bottom)] px-1">
-      {navItems.map((item) => {
-        const isActive = currentScreen === item.screen ||
-          (item.screen === "chat-list" && currentScreen === "chat") ||
-          (item.screen === "discover" && currentScreen === "networking");
-        const Icon = item.icon;
-        const showBadge = item.screen === "chat-list" && unreadCount > 0;
+    <div className="h-[68px] flex items-start justify-center pt-1.5 z-[1000] pb-[env(safe-area-inset-bottom)]">
+      <nav className="flex items-center bg-[#1a1a2e] rounded-[22px] mx-3 px-1.5 py-1.5 shadow-[0_8px_32px_rgba(26,26,46,0.25)] w-full max-w-[400px]">
+        {navItems.map((item) => {
+          const isActive = currentScreen === item.screen ||
+            (item.screen === "chat-list" && currentScreen === "chat") ||
+            (item.screen === "discover" && currentScreen === "networking");
+          const Icon = item.icon;
+          const showBadge = item.screen === "chat-list" && unreadCount > 0;
 
-        if (item.isCreate) {
+          if (item.isCreate) {
+            return (
+              <button
+                key={item.screen}
+                onClick={() => handleNav(item.screen)}
+                className="flex-1 flex items-center justify-center"
+              >
+                <motion.div
+                  whileTap={{ scale: 0.85, rotate: 90 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  className="w-11 h-11 rounded-2xl bg-[#6c5ce7] text-white flex items-center justify-center shadow-[0_0_20px_rgba(108,92,231,0.5)]"
+                >
+                  <Icon size={20} strokeWidth={2.5} />
+                </motion.div>
+              </button>
+            );
+          }
+
           return (
             <button
               key={item.screen}
               onClick={() => handleNav(item.screen)}
-              className="flex-1 flex items-center justify-center"
+              className="flex-1 flex flex-col items-center justify-center py-1.5 relative"
             >
               <motion.div
-                whileTap={{ scale: 0.88, rotate: 90 }}
-                transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                className="w-[46px] h-[46px] -mt-5 rounded-2xl bg-[#6c5ce7] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(108,92,231,0.45)]"
+                className={`flex flex-col items-center gap-[1px] px-3 py-1.5 rounded-xl transition-colors duration-200 ${
+                  isActive ? "bg-white/[0.12]" : ""
+                }`}
+                whileTap={{ scale: 0.9 }}
               >
-                <Icon size={22} strokeWidth={2.5} />
+                <div className="relative">
+                  <Icon
+                    size={19}
+                    strokeWidth={isActive ? 2.2 : 1.6}
+                    className={`transition-colors duration-200 ${isActive ? "text-white" : "text-white/40"}`}
+                  />
+                  {showBadge && (
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[15px] h-[15px] px-[3px] bg-[#ff6b6b] text-white text-[8px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#1a1a2e]">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[9px] font-semibold tracking-tight transition-colors duration-200 ${isActive ? "text-white" : "text-white/35"}`}>
+                  {item.label}
+                </span>
               </motion.div>
             </button>
           );
-        }
-
-        return (
-          <button
-            key={item.screen}
-            onClick={() => handleNav(item.screen)}
-            className="flex-1 flex flex-col items-center justify-center py-2 relative group"
-          >
-            <div className="relative flex flex-col items-center gap-[2px]">
-              {isActive && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute -top-2 w-5 h-[3px] bg-[#6c5ce7] rounded-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                />
-              )}
-              <div className="relative">
-                <Icon
-                  size={20}
-                  strokeWidth={isActive ? 2.2 : 1.6}
-                  className={`transition-colors duration-200 ${isActive ? "text-[#6c5ce7]" : "text-[#9e9eb0] group-hover:text-[#6e6e82]"}`}
-                />
-                {showBadge && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-[4px] bg-[#ff6b6b] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </div>
-              <span className={`text-[10px] font-medium tracking-tight transition-colors duration-200 ${isActive ? "text-[#6c5ce7]" : "text-[#9e9eb0] group-hover:text-[#6e6e82]"}`}>
-                {item.label}
-              </span>
-            </div>
-          </button>
-        );
-      })}
-    </nav>
+        })}
+      </nav>
+    </div>
   );
 }

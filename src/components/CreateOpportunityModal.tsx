@@ -128,13 +128,13 @@ export default function CreateOpportunityModal() {
       className="absolute inset-0 bottom-[68px] bg-[#f8f8fa] z-[900] flex flex-col"
     >
       {/* Header */}
-      <div className="header-glass flex items-center gap-3 px-5 py-3">
-        <button onClick={() => setScreen("create")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
-          <ChevronLeft size={16} className="text-[#4a4a5e]" />
+      <div className="bg-[#1a1a2e] flex items-center gap-3 px-5 py-3.5">
+        <button onClick={() => setScreen("create")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
+          <ChevronLeft size={16} className="text-white/70" />
         </button>
-        <h3 className="flex-1 font-bold text-[16px] text-[#1a1a2e]">Create Opportunity</h3>
-        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
-          <X size={14} className="text-[#9e9eb0]" />
+        <h3 className="flex-1 font-bold text-[16px] text-white">Create Opportunity</h3>
+        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
+          <X size={14} className="text-white/50" />
         </button>
       </div>
 

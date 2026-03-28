@@ -64,19 +64,19 @@ export default function ChatList() {
       className="h-full bg-[#f8f8fa] flex flex-col"
     >
       {/* ── Header ── */}
-      <div className="header-glass px-5 pt-5 pb-4">
-        <h3 className="font-bold text-xl text-[#1a1a2e] tracking-tight mb-4">Messages</h3>
-        <div className="relative flex bg-[#f4f4f8] p-1 rounded-xl">
+      <div className="bg-[#1a1a2e] px-5 pt-5 pb-4">
+        <h3 className="font-extrabold text-[22px] text-white tracking-tight mb-4">Messages</h3>
+        <div className="relative flex bg-white/[0.07] p-1 rounded-xl">
           <motion.div
             layoutId="chat-tab-indicator"
-            className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm"
+            className="absolute top-1 bottom-1 rounded-lg bg-[#6c5ce7] shadow-[0_0_12px_rgba(108,92,231,0.3)]"
             style={{ width: "calc(50% - 4px)", left: tab === "groups" ? 4 : "calc(50% + 0px)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           />
           <button
             onClick={() => setTab("groups")}
             className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors relative z-10 ${
-              tab === "groups" ? "text-[#1a1a2e]" : "text-[#9e9eb0]"
+              tab === "groups" ? "text-white" : "text-white/40"
             }`}
           >
             Groups
@@ -84,7 +84,7 @@ export default function ChatList() {
           <button
             onClick={() => setTab("direct")}
             className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors relative z-10 ${
-              tab === "direct" ? "text-[#1a1a2e]" : "text-[#9e9eb0]"
+              tab === "direct" ? "text-white" : "text-white/40"
             }`}
           >
             Direct
@@ -151,37 +151,42 @@ export default function ChatList() {
                 exit={{ opacity: 0 }}
                 className="p-3 space-y-0.5"
               >
-                {chats.map((chat, idx) => (
-                  <motion.div
-                    key={chat.activityId}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.03 }}
-                    onClick={() => openGroupChat(chat)}
-                    className="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer hover:bg-white active:bg-[#f4f4f8] transition-all"
-                  >
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-lg shrink-0"
-                      style={{ background: TYPE_COLORS[chat.type] || "#6C5CE7" }}
+                {chats.map((chat, idx) => {
+                  const chatColor = TYPE_COLORS[chat.type] || "#6c5ce7";
+                  return (
+                    <motion.div
+                      key={chat.activityId}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.03 }}
+                      onClick={() => openGroupChat(chat)}
+                      className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:shadow-sm active:scale-[0.98] transition-all bg-white border border-black/[0.04]"
                     >
-                      {ACTIVITY_TYPES.find((t) => t.value === chat.type)?.icon || "?"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-[14px] text-[#1a1a2e] truncate pr-2">{chat.title}</h4>
-                        {chat.lastMessage && (
-                          <span className="text-[10px] text-[#d1d1db] shrink-0 font-medium">{formatRelativeTime(chat.lastMessage.createdAt)}</span>
-                        )}
+                      <div
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-sm"
+                        style={{ background: `${chatColor}15` }}
+                      >
+                        {ACTIVITY_TYPES.find((t) => t.value === chat.type)?.icon || "?"}
                       </div>
-                      <p className="text-[12px] text-[#9e9eb0] truncate mt-0.5">
-                        {chat.lastMessage
-                          ? `${chat.lastMessage.sender.name}: ${chat.lastMessage.text}`
-                          : "No messages yet"}
-                      </p>
-                      <p className="text-[10px] text-[#d1d1db] mt-0.5 font-medium">{chat.participantCount} members</p>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-[13px] text-[#1a1a2e] truncate pr-2">{chat.title}</h4>
+                          {chat.lastMessage && (
+                            <span className="text-[9px] text-[#9e9eb0] shrink-0 font-medium">{formatRelativeTime(chat.lastMessage.createdAt)}</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#9e9eb0] truncate mt-0.5">
+                          {chat.lastMessage
+                            ? `${chat.lastMessage.sender.name}: ${chat.lastMessage.text}`
+                            : "No messages yet"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg shrink-0" style={{ background: `${chatColor}10` }}>
+                        <span className="text-[9px] font-bold" style={{ color: chatColor }}>{chat.participantCount}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             )
           ) : (

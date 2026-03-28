@@ -79,32 +79,32 @@ export default function NetworkingView() {
       className="h-full bg-[#f8f8fa] flex flex-col"
     >
       {/* ── Header ── */}
-      <div className="header-glass px-5 pt-4 pb-3">
-        <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f4f4f8] hover:bg-[#e8e8ef] transition-colors">
-            <ArrowLeft size={16} className="text-[#4a4a5e]" />
+      <div className="bg-[#1a1a2e] px-5 pt-5 pb-4">
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
+            <ArrowLeft size={16} className="text-white/70" />
           </button>
-          <h3 className="flex-1 font-bold text-xl text-[#1a1a2e] tracking-tight">Networking</h3>
+          <h3 className="flex-1 font-extrabold text-[22px] text-white tracking-tight">Networking</h3>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowFilters(!showFilters)}
-            className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showFilters ? "bg-[#e8e5ff] text-[#6c5ce7]" : "bg-[#f4f4f8] text-[#9e9eb0]"}`}
+            className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showFilters ? "bg-[#6c5ce7] text-white" : "bg-white/[0.08] text-white/50"}`}
           >
             <Filter size={16} />
             {activeFilters > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#6c5ce7] text-white text-[9px] font-bold rounded-full flex items-center justify-center">{activeFilters}</span>
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#ff6b6b] text-white text-[9px] font-bold rounded-full flex items-center justify-center">{activeFilters}</span>
             )}
           </motion.button>
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9eb0]" />
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people, roles, companies..."
-            className="w-full pl-10 pr-4 py-2.5 bg-[#f4f4f8] rounded-xl text-[13px] outline-none border border-transparent focus:bg-white focus:border-[#a29bfe] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]"
+            className="w-full pl-10 pr-4 py-2.5 bg-white/[0.07] rounded-xl text-[13px] outline-none border border-white/[0.06] focus:bg-white/[0.12] focus:border-[#a29bfe]/40 transition-all placeholder:text-white/30 text-white"
           />
         </div>
 
@@ -253,16 +253,16 @@ function FilterSection({ label, options, selected, onSelect }: {
 }) {
   return (
     <div>
-      <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">{label}</label>
+      <label className="text-[10px] font-bold text-white/30 uppercase tracking-wider">{label}</label>
       <div className="flex gap-1.5 flex-wrap mt-1.5">
         {options.map((opt) => (
           <button
             key={opt.value}
             onClick={() => onSelect(opt.value)}
-            className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 border ${
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
               selected === opt.value
-                ? "bg-[#6c5ce7] text-white border-[#6c5ce7]"
-                : "bg-white text-[#6e6e82] border-black/[0.04] hover:border-[#6c5ce7]/30"
+                ? "bg-[#6c5ce7] text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]"
+                : "bg-white/[0.07] text-white/50 hover:bg-white/[0.12]"
             }`}
           >
             {opt.label}
