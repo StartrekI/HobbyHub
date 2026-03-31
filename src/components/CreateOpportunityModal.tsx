@@ -117,7 +117,7 @@ export default function CreateOpportunityModal() {
   };
 
   const activeTab = TABS.find(t => t.value === opportunityType) || TABS[0];
-  const inputCls = "w-full px-4 py-3 bg-[#f4f4f8] border border-transparent rounded-xl text-[14px] outline-none focus:bg-white focus:border-[#a29bfe] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]";
+  const inputCls = "w-full px-4 py-3 bg-zinc-100 border border-transparent rounded-xl text-[14px] outline-none focus:bg-white focus:border-[#8e51ff]/40 focus:shadow-[0_0_0_3px_rgba(142,81,255,0.12)] transition-all placeholder:text-[#71717b]";
 
   return (
     <motion.div
@@ -128,13 +128,13 @@ export default function CreateOpportunityModal() {
       className="absolute inset-0 bottom-[68px] bg-[#f8f8fa] z-[900] flex flex-col"
     >
       {/* Header */}
-      <div className="bg-[#1a1a2e] flex items-center gap-3 px-5 py-3.5">
-        <button onClick={() => setScreen("create")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
-          <ChevronLeft size={16} className="text-white/70" />
+      <div className="bg-white border-b border-zinc-200 flex items-center gap-3 px-5 py-3.5">
+        <button onClick={() => setScreen("create")} className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors">
+          <ChevronLeft size={16} className="text-zinc-950" />
         </button>
-        <h3 className="flex-1 font-bold text-[16px] text-white">Create Opportunity</h3>
-        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
-          <X size={14} className="text-white/50" />
+        <h3 className="flex-1 font-bold text-[16px] text-zinc-950">Create Opportunity</h3>
+        <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors">
+          <X size={14} className="text-[#71717b]" />
         </button>
       </div>
 
@@ -182,27 +182,27 @@ export default function CreateOpportunityModal() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Gig Title</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Gig Title</label>
                 <input value={gigTitle} onChange={(e) => setGigTitle(e.target.value)} placeholder="e.g., Need photographer today" className={`${inputCls} mt-2`} />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Description</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Description</label>
                 <textarea value={gigDesc} onChange={(e) => setGigDesc(e.target.value)} placeholder="What do you need?" rows={3} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Budget (INR)</label>
+                  <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Budget (INR)</label>
                   <input type="number" value={gigBudget} onChange={(e) => setGigBudget(e.target.value)} placeholder="0" className={`${inputCls} mt-2`} />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Deadline</label>
+                  <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Deadline</label>
                   <input type="date" value={gigDeadline} onChange={(e) => setGigDeadline(e.target.value)} className={`${inputCls} mt-2`} />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Required Skills</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Required Skills</label>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {PROFESSIONAL_SKILLS.map((s) => (
                     <motion.button
@@ -224,17 +224,17 @@ export default function CreateOpportunityModal() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Destination</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Destination</label>
                 <input value={tripDest} onChange={(e) => setTripDest(e.target.value)} placeholder="e.g., Goa" className={`${inputCls} mt-2`} />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Description</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Description</label>
                 <textarea value={tripDesc} onChange={(e) => setTripDesc(e.target.value)} placeholder="What's the plan?" rows={2} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Trip Type</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Trip Type</label>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {TRIP_TYPES.map((t) => (
                     <motion.button
@@ -250,21 +250,21 @@ export default function CreateOpportunityModal() {
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Start Date</label>
+                  <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Start Date</label>
                   <input type="date" value={tripStart} onChange={(e) => setTripStart(e.target.value)} className={`${inputCls} mt-2`} />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">End Date</label>
+                  <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">End Date</label>
                   <input type="date" value={tripEnd} onChange={(e) => setTripEnd(e.target.value)} className={`${inputCls} mt-2`} />
                 </div>
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Budget</label>
+                  <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Budget</label>
                   <input value={tripBudget} onChange={(e) => setTripBudget(e.target.value)} placeholder="e.g., 5000-10000" className={`${inputCls} mt-2`} />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Max Buddies</label>
+                  <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Max Buddies</label>
                   <input type="number" value={tripMax} onChange={(e) => setTripMax(parseInt(e.target.value) || 4)} min={1} max={20} className={`${inputCls} mt-2`} />
                 </div>
               </div>
@@ -276,17 +276,17 @@ export default function CreateOpportunityModal() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Skill Name</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Skill Name</label>
                 <input value={skillName} onChange={(e) => setSkillName(e.target.value)} placeholder="e.g., Learn React" className={`${inputCls} mt-2`} />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Description</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Description</label>
                 <textarea value={skillDesc} onChange={(e) => setSkillDesc(e.target.value)} placeholder="What will you teach/learn?" rows={2} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">I want to</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">I want to</label>
                 <div className="flex gap-2 mt-2">
                   {["teaching", "learning"].map((t) => (
                     <motion.button
@@ -301,7 +301,7 @@ export default function CreateOpportunityModal() {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Pricing</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Pricing</label>
                 <div className="flex gap-2 mt-2">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -323,7 +323,7 @@ export default function CreateOpportunityModal() {
                 </AnimatePresence>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Schedule</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Schedule</label>
                 <input value={skillSchedule} onChange={(e) => setSkillSchedule(e.target.value)} placeholder="e.g., Weekends 10AM" className={`${inputCls} mt-2`} />
               </div>
             </div>
@@ -334,17 +334,17 @@ export default function CreateOpportunityModal() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Idea Title</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Idea Title</label>
                 <input value={ideaTitle} onChange={(e) => setIdeaTitle(e.target.value)} placeholder="e.g., AI-powered recipe app" className={`${inputCls} mt-2`} />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Description</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Description</label>
                 <textarea value={ideaDesc} onChange={(e) => setIdeaDesc(e.target.value)} placeholder="Describe your idea..." rows={3} className={`${inputCls} mt-2 resize-none`} />
               </div>
             </div>
             <div className="bg-white rounded-2xl p-4 border border-black/[0.03] space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Category</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Category</label>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {IDEA_CATEGORIES.map((c) => (
                     <motion.button
@@ -359,7 +359,7 @@ export default function CreateOpportunityModal() {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Stage</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Stage</label>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {IDEA_STAGES.map((s) => (
                     <motion.button
@@ -374,7 +374,7 @@ export default function CreateOpportunityModal() {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[#9e9eb0] uppercase tracking-wider">Looking For</label>
+                <label className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider">Looking For</label>
                 <input value={ideaLookingFor} onChange={(e) => setIdeaLookingFor(e.target.value)} placeholder="e.g., Co-founder, Developer" className={`${inputCls} mt-2`} />
               </div>
             </div>

@@ -2,7 +2,20 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Users, Zap, Locate, Briefcase, Check, ChevronRight, Shield, Sparkles } from "lucide-react";
+import {
+  Users,
+  Zap,
+  Locate,
+  Briefcase,
+  Check,
+  Shield,
+  Mail,
+  User,
+  AtSign,
+  Apple,
+  LogIn,
+  FileText,
+} from "lucide-react";
 import { useStore } from "@/store";
 import { INTERESTS, USER_ROLES, STARTUP_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
 
@@ -27,6 +40,58 @@ declare global {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* SVG icon helpers                                                    */
+/* ------------------------------------------------------------------ */
+
+const GoogleIcon = () => (
+  <svg viewBox="0 0 24 24" className="size-5">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+  </svg>
+);
+
+const FacebookIcon = () => (
+  <svg className="size-5" viewBox="0 0 24 24" fill="#1877F2">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+  </svg>
+);
+
+/* ------------------------------------------------------------------ */
+/* Social login buttons strip (shared between welcome/google-login)    */
+/* ------------------------------------------------------------------ */
+
+const SocialButtons = ({ onGoogleClick }: { onGoogleClick: () => void }) => (
+  <div className="flex justify-center items-center gap-4">
+    <button
+      onClick={onGoogleClick}
+      className="rounded-xl bg-white border border-zinc-200 flex justify-center items-center w-14 h-12 hover:bg-zinc-50 transition-colors"
+    >
+      <GoogleIcon />
+    </button>
+    <button className="rounded-xl bg-white border border-zinc-200 flex justify-center items-center w-14 h-12 hover:bg-zinc-50 transition-colors">
+      <Apple className="size-5 text-zinc-950" />
+    </button>
+    <button className="rounded-xl bg-white border border-zinc-200 flex justify-center items-center w-14 h-12 hover:bg-zinc-50 transition-colors">
+      <FacebookIcon />
+    </button>
+  </div>
+);
+
+/* ------------------------------------------------------------------ */
+/* Gradient button style                                               */
+/* ------------------------------------------------------------------ */
+
+const gradientBtnStyle = {
+  background: "linear-gradient(135deg, oklch(0.606 0.25 292.717), oklch(0.5 0.3 292.717))",
+};
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                      */
+/* ------------------------------------------------------------------ */
+
 export default function Onboarding() {
   const [step, setStep] = useState<Step>("welcome");
   const [name, setName] = useState("");
@@ -46,6 +111,7 @@ export default function Onboarding() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [onboardError, setOnboardError] = useState("");
   const [googleReady, setGoogleReady] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const { setUser, setUserLocation, setOnboarded } = useStore();
 
@@ -60,7 +126,6 @@ export default function Onboarding() {
     setLoginError("");
 
     try {
-      // Fetch user info from Google using access token
       const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -71,7 +136,6 @@ export default function Onboarding() {
         return;
       }
 
-      // Create/update user in our DB
       const userRes = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,19 +155,16 @@ export default function Onboarding() {
 
       localStorage.setItem("hobbyhub_user", JSON.stringify(data));
 
-      // Set user and go straight to map
       let interests = data.interests || [];
       let skills = data.skills || [];
       try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
       try { if (typeof skills === "string") skills = JSON.parse(skills); } catch { skills = []; }
       setUser({ ...data, interests, skills });
 
-      // Get location then finish
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            // Update user location in DB
             fetch("/api/users/ping", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -183,7 +244,6 @@ export default function Onboarding() {
         try { if (typeof interests === "string") interests = JSON.parse(interests); } catch { interests = []; }
         try { if (typeof skills === "string") skills = JSON.parse(skills); } catch { skills = []; }
         setUser({ ...data, interests, skills });
-        // Get location then go to map
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (pos) => {
@@ -210,8 +270,6 @@ export default function Onboarding() {
       setLoginLoading(false);
     }
   };
-
-  // Session restore is handled in page.tsx
 
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
@@ -282,6 +340,10 @@ export default function Onboarding() {
     }
   };
 
+  /* ---------------------------------------------------------------- */
+  /* Framer motion variants                                            */
+  /* ---------------------------------------------------------------- */
+
   const slideVariants = {
     enter: { y: 20, opacity: 0, filter: "blur(4px)" },
     center: { y: 0, opacity: 1, filter: "blur(0px)" },
@@ -290,305 +352,672 @@ export default function Onboarding() {
 
   const stagger = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+    show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
   };
 
   const fadeUp = {
     hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
+  };
+
+  /* ---------------------------------------------------------------- */
+  /* Step: WELCOME (sign-in page with hero)                            */
+  /* ---------------------------------------------------------------- */
+
+  const renderWelcome = () => (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="w-full">
+      {/* Hero section with purple overlay */}
+      <div className="relative w-full h-64 overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1758272959668-edd9114299c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODc2NDd8MHwxfHNlYXJjaHwxfHxwZW9wbGUlMjBlbmpveWluZyUyMG91dGRvb3IlMjBhY3Rpdml0aWVzJTIwdG9nZXRoZXIlMjBtdXNpYyUyMGhpa2luZyUyMGNvbW11bml0eXxlbnwxfDB8fHwxNzc0ODg2NjcxfDA&ixlib=rb-4.1.0&q=80&w=400"
+          alt="People enjoying outdoor activities together"
+          className="object-cover w-full h-full"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, oklch(0.606 0.25 292.717 / 0.75), oklch(0.606 0.25 292.717 / 0.9))",
+          }}
+        />
+        <div className="flex absolute inset-0 flex-col justify-center items-center gap-4">
+          <div className="backdrop-blur-sm rounded-full bg-white/20 border border-white/30 flex justify-center items-center w-18 h-18">
+            <div className="rounded-full bg-white/25 flex justify-center items-center w-14 h-14">
+              <Zap className="size-8 text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+          <span className="font-bold text-white text-[28px] tracking-wide">Vibe</span>
+          <span className="font-medium text-white/80 text-[13px]">
+            Connect &middot; Explore &middot; Experience
+          </span>
+        </div>
+      </div>
+
+      {/* Sign-in form */}
+      <div className="flex px-8 pt-8 pb-6 flex-col gap-6">
+        <motion.div variants={fadeUp} className="text-center flex flex-col items-center gap-2">
+          <h1 className="font-bold text-zinc-950 text-[22px]">Welcome Back!</h1>
+          <p className="leading-relaxed text-[#71717b] text-[13px]">
+            Sign in to discover what&apos;s happening around you
+          </p>
+        </motion.div>
+
+        {loginError && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600"
+          >
+            {loginError}
+          </motion.div>
+        )}
+
+        {loginLoading && (
+          <div className="flex items-center justify-center gap-3">
+            <span className="w-5 h-5 border-2 border-zinc-200 border-t-[#8e51ff] rounded-full animate-spin" />
+            <span className="text-[#71717b] text-sm">Signing in...</span>
+          </div>
+        )}
+
+        <motion.div variants={fadeUp} className="flex flex-col gap-4">
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <Mail className="size-[18px] text-[#71717b]" />
+            <input
+              type="email"
+              placeholder="Email or Username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <User className="size-[18px] text-[#71717b]" />
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+        </motion.div>
+
+        <motion.button
+          variants={fadeUp}
+          onClick={handleEmailLogin}
+          disabled={loginLoading}
+          className="font-semibold rounded-xl text-violet-50 text-[15px] py-3 w-full h-12 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+          style={gradientBtnStyle}
+        >
+          <LogIn className="size-4" />
+          Sign In
+        </motion.button>
+
+        <motion.div variants={fadeUp} className="flex items-center gap-4">
+          <div className="bg-zinc-200 flex-1 h-px" />
+          <span className="whitespace-nowrap text-[#71717b] text-xs">Or continue with</span>
+          <div className="bg-zinc-200 flex-1 h-px" />
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <SocialButtons onGoogleClick={handleGoogleClick} />
+        </motion.div>
+
+        {!GOOGLE_CLIENT_ID && !googleReady && (
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+            Google Sign-In not configured. Use email above.
+          </div>
+        )}
+
+        <motion.div variants={fadeUp} className="flex pt-2 justify-center items-center gap-1">
+          <span className="text-[#71717b] text-[13px]">Don&apos;t have an account?</span>
+          <button onClick={next} className="font-semibold text-[#8e51ff] text-[13px]">
+            Sign Up
+          </button>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /* Step: GOOGLE-LOGIN (same layout, Google-focused)                  */
+  /* ---------------------------------------------------------------- */
+
+  const renderGoogleLogin = () => (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="w-full">
+      {/* Hero section */}
+      <div className="relative w-full h-52 overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1758272959668-edd9114299c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODc2NDd8MHwxfHNlYXJjaHwxfHxwZW9wbGUlMjBlbmpveWluZyUyMG91dGRvb3IlMjBhY3Rpdml0aWVzJTIwdG9nZXRoZXIlMjBtdXNpYyUyMGhpa2luZyUyMGNvbW11bml0eXxlbnwxfDB8fHwxNzc0ODg2NjcxfDA&ixlib=rb-4.1.0&q=80&w=400"
+          alt="People enjoying outdoor activities together"
+          className="object-cover w-full h-full"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, oklch(0.606 0.25 292.717 / 0.75), oklch(0.606 0.25 292.717 / 0.9))",
+          }}
+        />
+        <div className="flex absolute inset-0 flex-col justify-center items-center gap-3">
+          <div className="backdrop-blur-sm rounded-full bg-white/20 border border-white/30 flex justify-center items-center w-16 h-16">
+            <div className="rounded-full bg-white/25 flex justify-center items-center w-12 h-12">
+              <Zap className="size-7 text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+          <span className="font-bold text-white text-2xl tracking-wide">Vibe</span>
+        </div>
+      </div>
+
+      <div className="flex px-8 pt-8 pb-6 flex-col gap-6">
+        <motion.div variants={fadeUp} className="text-center flex flex-col items-center gap-2">
+          <h1 className="font-bold text-zinc-950 text-[22px]">Welcome Back!</h1>
+          <p className="leading-relaxed text-[#71717b] text-[13px]">
+            Sign in to get started
+          </p>
+        </motion.div>
+
+        {loginError && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600"
+          >
+            {loginError}
+          </motion.div>
+        )}
+
+        {loginLoading && (
+          <div className="flex items-center justify-center gap-3">
+            <span className="w-5 h-5 border-2 border-zinc-200 border-t-[#8e51ff] rounded-full animate-spin" />
+            <span className="text-[#71717b] text-sm">Signing in...</span>
+          </div>
+        )}
+
+        {GOOGLE_CLIENT_ID && (
+          <motion.button
+            variants={fadeUp}
+            onClick={handleGoogleClick}
+            disabled={loginLoading}
+            className="w-full flex items-center justify-center gap-3 py-3.5 bg-white border border-zinc-200 text-zinc-950 rounded-xl font-semibold text-sm hover:bg-zinc-50 transition-colors disabled:opacity-50"
+          >
+            <GoogleIcon />
+            Continue with Google
+          </motion.button>
+        )}
+
+        {!GOOGLE_CLIENT_ID && !googleReady && (
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+            Google Sign-In not configured. Use email below.
+          </div>
+        )}
+
+        <motion.div variants={fadeUp} className="flex items-center gap-4">
+          <div className="bg-zinc-200 flex-1 h-px" />
+          <span className="whitespace-nowrap text-[#71717b] text-xs">or</span>
+          <div className="bg-zinc-200 flex-1 h-px" />
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="flex flex-col gap-3">
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <Mail className="size-[18px] text-[#71717b]" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <User className="size-[18px] text-[#71717b]" />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+          <button
+            onClick={handleEmailLogin}
+            disabled={loginLoading}
+            className="w-full py-3 rounded-xl font-semibold text-violet-50 text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            style={gradientBtnStyle}
+          >
+            Continue with Email
+          </button>
+        </motion.div>
+
+        <motion.p variants={fadeUp} className="text-[#71717b] text-xs text-center">
+          By continuing, you agree to our Terms of Service
+        </motion.p>
+      </div>
+    </motion.div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /* Step: PROFILE (profile-setup design)                              */
+  /* ---------------------------------------------------------------- */
+
+  const renderProfile = () => (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="w-full">
+      <div className="flex px-6 pt-12 pb-8 flex-col items-center gap-6">
+        {/* Vibe logo */}
+        <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
+          <div className="shadow-lg rounded-full bg-[#8e51ff] flex justify-center items-center w-16 h-16">
+            <Zap className="size-8 text-violet-50" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-zinc-950 text-2xl leading-8 tracking-tight">Vibe</span>
+          <span className="text-[#71717b] text-sm leading-5">Connect through what you love</span>
+        </motion.div>
+
+        {/* Avatar preview */}
+        <motion.div variants={fadeUp}>
+          {avatar ? (
+            <div className="relative w-20 h-20 mx-auto">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#8e51ff] to-[#6c3ce7] p-[3px]">
+                <img src={avatar} alt="avatar" className="w-full h-full rounded-full object-cover" />
+              </div>
+            </div>
+          ) : (
+            <div className="relative w-20 h-20 mx-auto">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#8e51ff] to-[#6c3ce7] p-[3px]">
+                <div className="w-full h-full rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-bold text-[#8e51ff]">
+                  {name?.[0]?.toUpperCase() || "?"}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Form heading */}
+        <motion.div variants={fadeUp} className="flex flex-col gap-4 w-full">
+          <h2 className="font-bold text-zinc-950 text-xl leading-7">Your Profile</h2>
+
+          <div className="flex flex-col gap-3 w-full">
+            <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+              <User className="size-4 text-[#71717b]" />
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="bg-transparent outline-none text-zinc-950 text-sm leading-5 flex-1 placeholder:text-zinc-400"
+              />
+            </div>
+            <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+              <Mail className="size-4 text-[#71717b]" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-transparent outline-none text-zinc-950 text-sm leading-5 flex-1 placeholder:text-zinc-400"
+              />
+            </div>
+            <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-start gap-2">
+              <FileText className="size-4 text-[#71717b] mt-0.5" />
+              <textarea
+                placeholder="Short bio (optional)"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={2}
+                className="bg-transparent outline-none text-zinc-950 text-sm leading-5 flex-1 placeholder:text-zinc-400 resize-none"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.button
+          variants={fadeUp}
+          onClick={next}
+          className="font-semibold rounded-xl text-violet-50 text-sm leading-5 py-3 w-full h-12 hover:opacity-90 transition-opacity"
+          style={gradientBtnStyle}
+        >
+          Continue
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /* Step: PROFESSIONAL                                                */
+  /* ---------------------------------------------------------------- */
+
+  const renderProfessional = () => (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="w-full max-h-[100vh] overflow-y-auto">
+      <div className="flex px-6 pt-12 pb-8 flex-col items-center gap-5">
+        {/* Vibe logo */}
+        <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
+          <div className="shadow-lg rounded-full bg-[#8e51ff] flex justify-center items-center w-14 h-14">
+            <Zap className="size-7 text-violet-50" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-zinc-950 text-xl leading-7 tracking-tight">Vibe</span>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="text-center">
+          <h2 className="font-bold text-zinc-950 text-xl leading-7">Professional Info</h2>
+          <p className="text-[#71717b] text-sm mt-1">Optional -- helps you network better</p>
+        </motion.div>
+
+        {/* Your Role */}
+        <motion.div variants={fadeUp} className="w-full">
+          <span className="font-semibold text-zinc-950 text-sm leading-5 mb-2 block">Your Role</span>
+          <div className="flex flex-wrap gap-2">
+            {USER_ROLES.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setRole(r.value)}
+                className={`font-medium rounded-full text-xs leading-4 flex px-3 py-1.5 items-center gap-1.5 transition-all ${
+                  role === r.value
+                    ? "bg-[#8e51ff] text-violet-50"
+                    : "bg-zinc-100 text-zinc-900 border border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Startup Stage */}
+        {role && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="w-full"
+          >
+            <span className="font-semibold text-zinc-950 text-sm leading-5 mb-2 block">Startup Stage</span>
+            <div className="flex flex-wrap gap-2">
+              {STARTUP_STAGES.map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => setStartupStage(s.value)}
+                  className={`font-medium rounded-full text-xs leading-4 flex px-3 py-1.5 items-center gap-1.5 transition-all ${
+                    startupStage === s.value
+                      ? "bg-[#8e51ff] text-violet-50"
+                      : "bg-zinc-100 text-zinc-900 border border-zinc-200 hover:border-zinc-300"
+                  }`}
+                >
+                  <span>{s.icon}</span>
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Company & Title */}
+        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3 w-full">
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <Briefcase className="size-4 text-[#71717b]" />
+            <input
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Company"
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <AtSign className="size-4 text-[#71717b]" />
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title"
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+        </motion.div>
+
+        {/* Looking for */}
+        <motion.div variants={fadeUp} className="w-full">
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <Users className="size-4 text-[#71717b]" />
+            <input
+              value={lookingFor}
+              onChange={(e) => setLookingFor(e.target.value)}
+              placeholder="Looking for... (cofounder, hiring, etc.)"
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+        </motion.div>
+
+        {/* Skills */}
+        <motion.div variants={fadeUp} className="w-full">
+          <span className="font-semibold text-zinc-950 text-sm leading-5 mb-2 block">Skills</span>
+          <div className="flex flex-wrap gap-1.5">
+            {PROFESSIONAL_SKILLS.map((s) => (
+              <button
+                key={s}
+                onClick={() => toggleSkill(s)}
+                className={`font-medium rounded-full text-xs leading-4 px-3 py-1.5 transition-all ${
+                  skills.includes(s)
+                    ? "bg-[#8e51ff] text-violet-50"
+                    : "bg-zinc-100 text-zinc-900 border border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* College */}
+        <motion.div variants={fadeUp} className="grid grid-cols-[1fr_5rem] gap-3 w-full">
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center gap-2">
+            <input
+              value={collegeName}
+              onChange={(e) => setCollegeName(e.target.value)}
+              placeholder="College (optional)"
+              className="bg-transparent outline-none text-zinc-950 text-sm flex-1 placeholder:text-zinc-400"
+            />
+          </div>
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 flex px-4 py-3 items-center">
+            <input
+              value={graduationYear}
+              onChange={(e) => setGraduationYear(e.target.value)}
+              placeholder="Year"
+              type="number"
+              className="bg-transparent outline-none text-zinc-950 text-sm w-full placeholder:text-zinc-400"
+            />
+          </div>
+        </motion.div>
+
+        <motion.button
+          variants={fadeUp}
+          onClick={next}
+          className="font-semibold rounded-xl text-violet-50 text-sm leading-5 py-3 w-full h-12 hover:opacity-90 transition-opacity"
+          style={gradientBtnStyle}
+        >
+          Continue
+        </motion.button>
+        <motion.button
+          variants={fadeUp}
+          onClick={next}
+          className="text-[#71717b] text-sm hover:text-zinc-950 transition-colors"
+        >
+          Skip for now
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /* Step: INTERESTS (profile-setup pill design)                       */
+  /* ---------------------------------------------------------------- */
+
+  const renderInterests = () => (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="w-full">
+      <div className="flex px-6 pt-12 pb-8 flex-col items-center gap-6">
+        {/* Vibe logo */}
+        <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
+          <div className="shadow-lg rounded-full bg-[#8e51ff] flex justify-center items-center w-16 h-16">
+            <Zap className="size-8 text-violet-50" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-zinc-950 text-2xl leading-8 tracking-tight">Vibe</span>
+          <span className="text-[#71717b] text-sm leading-5">Connect through what you love</span>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="w-full">
+          <h2 className="font-bold text-zinc-950 text-xl leading-7 mb-1">Select Your Interests</h2>
+          <p className="text-[#71717b] text-sm mb-4">Pick at least 3 hobbies</p>
+
+          <div className="flex flex-wrap gap-2">
+            {INTERESTS.map((interest) => {
+              const selected = selectedInterests.includes(interest.id);
+              return (
+                <button
+                  key={interest.id}
+                  onClick={() => toggleInterest(interest.id)}
+                  className={`font-medium rounded-full text-xs leading-4 flex px-3 py-1.5 items-center gap-1.5 transition-all ${
+                    selected
+                      ? "bg-[#8e51ff] text-violet-50"
+                      : "bg-zinc-100 text-zinc-900 border border-zinc-200 hover:border-zinc-300"
+                  }`}
+                >
+                  <span className="text-sm">{interest.icon}</span>
+                  <span>{interest.label}</span>
+                  {selected && <Check className="size-3 ml-0.5" strokeWidth={3} />}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Terms checkbox */}
+        <motion.div variants={fadeUp} className="flex items-start gap-2 w-full">
+          <button
+            onClick={() => setAgreedToTerms(!agreedToTerms)}
+            className={`rounded-sm border-2 flex mt-0.5 justify-center items-center w-4 h-4 shrink-0 transition-colors ${
+              agreedToTerms
+                ? "bg-[#8e51ff] border-[#8e51ff]"
+                : "bg-white border-zinc-300"
+            }`}
+          >
+            {agreedToTerms && <Check className="size-2.5 text-violet-50" strokeWidth={3} />}
+          </button>
+          <span className="text-[#71717b] text-xs leading-4">
+            I agree to the{" "}
+            <span className="font-medium text-[#8e51ff]">Terms of Service</span>{" "}
+            and{" "}
+            <span className="font-medium text-[#8e51ff]">Privacy Policy</span>
+          </span>
+        </motion.div>
+
+        <motion.button
+          variants={fadeUp}
+          onClick={next}
+          disabled={selectedInterests.length < 3}
+          className="shadow-lg font-semibold rounded-xl text-violet-50 text-sm leading-5 py-3 w-full h-12 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          style={gradientBtnStyle}
+        >
+          Continue
+          <span className="ml-2 text-xs font-normal opacity-70">({selectedInterests.length} selected)</span>
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /* Step: LOCATION                                                    */
+  /* ---------------------------------------------------------------- */
+
+  const renderLocation = () => (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="w-full">
+      <div className="flex px-6 pt-12 pb-8 flex-col items-center gap-6">
+        {/* Vibe logo */}
+        <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
+          <div className="shadow-lg rounded-full bg-[#8e51ff] flex justify-center items-center w-16 h-16">
+            <Zap className="size-8 text-violet-50" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-zinc-950 text-2xl leading-8 tracking-tight">Vibe</span>
+        </motion.div>
+
+        {/* Location pulse animation */}
+        <motion.div variants={fadeUp} className="relative w-28 h-28 mx-auto">
+          <div className="absolute inset-0 rounded-full bg-[#8e51ff]/10 animate-ping" style={{ animationDuration: "2.5s" }} />
+          <div className="absolute inset-2 rounded-full bg-[#8e51ff]/10" />
+          <motion.div
+            animate={{ scale: [1, 1.08, 1] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+            className="relative w-full h-full rounded-full bg-[#8e51ff]/10 border border-[#8e51ff]/20 flex items-center justify-center"
+          >
+            <Locate size={44} className="text-[#8e51ff]" />
+          </motion.div>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="text-center">
+          <h2 className="font-bold text-zinc-950 text-xl leading-7 mb-2">Enable Location</h2>
+          <p className="text-[#71717b] text-sm max-w-xs mx-auto mb-3">
+            Discover nearby activities and connect with people around you
+          </p>
+          <div className="flex items-center justify-center gap-2 text-[#71717b] text-xs">
+            <Shield size={12} /> <span>Your location is only shared while you are active</span>
+          </div>
+        </motion.div>
+
+        {onboardError && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 w-full"
+          >
+            {onboardError}
+          </motion.div>
+        )}
+
+        <motion.button
+          variants={fadeUp}
+          onClick={requestLocation}
+          className="shadow-lg font-semibold rounded-xl text-violet-50 text-sm leading-5 py-3 w-full h-12 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+          style={gradientBtnStyle}
+        >
+          <Locate size={18} /> Allow Location Access
+        </motion.button>
+
+        <motion.button
+          variants={fadeUp}
+          onClick={() => finishOnboarding(0, 0)}
+          className="w-full py-3 bg-zinc-100 border border-zinc-200 text-[#71717b] rounded-xl text-sm hover:text-zinc-950 hover:border-zinc-300 transition-all"
+        >
+          Use default location
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /* Render                                                            */
+  /* ---------------------------------------------------------------- */
+
+  const renderStep = () => {
+    switch (step) {
+      case "welcome": return renderWelcome();
+      case "google-login": return renderGoogleLogin();
+      case "profile": return renderProfile();
+      case "professional": return renderProfessional();
+      case "interests": return renderInterests();
+      case "location": return renderLocation();
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-[#13132b] flex items-center justify-center z-50 overflow-hidden">
-      {/* Subtle ambient glow */}
-      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#6c5ce7]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-[#a29bfe]/8 rounded-full blur-3xl pointer-events-none" />
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          className="w-full max-w-md px-6 text-white text-center relative z-10"
-        >
-          {step === "welcome" && (
-            <motion.div variants={stagger} initial="hidden" animate="show">
-              <motion.div variants={fadeUp} className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] flex items-center justify-center shadow-lg shadow-[#6c5ce7]/25">
-                <Sparkles size={36} className="text-white" />
-              </motion.div>
-              <motion.h1 variants={fadeUp} className="text-5xl font-extrabold mb-3 bg-gradient-to-r from-white via-[#e8e5ff] to-[#a29bfe] bg-clip-text text-transparent">
-                HobbyHub
-              </motion.h1>
-              <motion.p variants={fadeUp} className="text-[#9e9eb0] mb-10 text-base">
-                Turn your city into a live map of human activity
-              </motion.p>
-              <motion.div variants={fadeUp} className="space-y-2.5 mb-10 text-left">
-                {[
-                  { icon: MapPin, text: "Discover activities nearby", color: "from-[#6c5ce7]/15 to-transparent" },
-                  { icon: Users, text: "Meet people with similar hobbies", color: "from-[#a29bfe]/15 to-transparent" },
-                  { icon: Zap, text: "Join spontaneous plans instantly", color: "from-[#6c5ce7]/12 to-transparent" },
-                  { icon: Briefcase, text: "Network with founders & freelancers", color: "from-[#a29bfe]/12 to-transparent" },
-                ].map(({ icon: Icon, text, color }, i) => (
-                  <motion.div
-                    key={text}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + i * 0.1, duration: 0.4 }}
-                    className={`flex items-center gap-3.5 bg-gradient-to-r ${color} border border-white/[0.06] rounded-xl px-4 py-3.5`}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center shrink-0">
-                      <Icon size={16} className="text-[#a29bfe]" />
-                    </div>
-                    <span className="text-sm text-[#d1d1db]">{text}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-              <motion.button variants={fadeUp} onClick={next}
-                className="w-full py-4 bg-[#6c5ce7] text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-[#6c5ce7]/25 flex items-center justify-center gap-2">
-                Get Started <ChevronRight size={20} />
-              </motion.button>
-            </motion.div>
-          )}
-
-          {step === "google-login" && (
-            <motion.div variants={stagger} initial="hidden" animate="show">
-              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Welcome back</motion.h2>
-              <motion.p variants={fadeUp} className="text-[#9e9eb0] mb-8">Sign in to get started</motion.p>
-
-              {loginError && (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  className="mb-5 p-3.5 bg-[#ff6b6b]/10 border border-[#ff6b6b]/20 rounded-xl text-sm text-[#ff6b6b]">
-                  {loginError}
-                </motion.div>
-              )}
-
-              {loginLoading && (
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <span className="w-5 h-5 border-2 border-white/[0.08] border-t-[#a29bfe] rounded-full animate-spin" />
-                  <span className="text-[#9e9eb0]">Signing in...</span>
-                </div>
-              )}
-
-              {GOOGLE_CLIENT_ID && (
-                <motion.button variants={fadeUp} onClick={handleGoogleClick} disabled={loginLoading}
-                  className="w-full flex items-center justify-center gap-3 py-3.5 bg-white text-[#1a1a2e] rounded-2xl font-semibold text-base hover:scale-[1.02] hover:shadow-xl transition-all shadow-lg disabled:opacity-50 mb-3">
-                  <svg width="20" height="20" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                  </svg>
-                  Continue with Google
-                </motion.button>
-              )}
-
-              {!GOOGLE_CLIENT_ID && !googleReady && (
-                <div className="mb-3 p-3 bg-[#fdcb6e]/10 border border-[#fdcb6e]/20 rounded-xl text-xs text-[#fdcb6e]">
-                  Google Sign-In not configured. Use email below.
-                </div>
-              )}
-
-              <motion.div variants={fadeUp} className="flex items-center gap-4 my-5">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-                <span className="text-[#6e6e82] text-xs uppercase tracking-wider">or</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-              </motion.div>
-
-              <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 space-y-3">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email"
-                  className="w-full bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-4 py-3 outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
-                  className="w-full bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-4 py-3 outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                <button onClick={handleEmailLogin} disabled={loginLoading}
-                  className="w-full py-3.5 bg-[#6c5ce7] text-white rounded-xl font-semibold hover:scale-[1.02] transition-all disabled:opacity-50">
-                  Continue with Email
-                </button>
-              </motion.div>
-
-              <motion.p variants={fadeUp} className="text-[#4a4a5e] text-xs mt-5">
-                By continuing, you agree to our Terms of Service
-              </motion.p>
-            </motion.div>
-          )}
-
-          {step === "profile" && (
-            <motion.div variants={stagger} initial="hidden" animate="show">
-              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Your Profile</motion.h2>
-              <motion.p variants={fadeUp} className="text-[#9e9eb0] mb-8">Tell us about yourself</motion.p>
-              <motion.div variants={fadeUp} className="mb-8">
-                {avatar ? (
-                  <div className="relative w-24 h-24 mx-auto">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] p-[3px]">
-                      <img src={avatar} alt="avatar" className="w-full h-full rounded-full object-cover" />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative w-24 h-24 mx-auto">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] p-[3px]">
-                      <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-3xl font-bold text-[#a29bfe]">
-                        {name?.[0]?.toUpperCase() || "?"}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-              <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 space-y-3 mb-6">
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
-                  className="w-full bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-4 py-3 outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Short bio (optional)" rows={2}
-                  className="w-full bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-4 py-3 outline-none placeholder-[#6e6e82] text-white resize-none transition-colors" />
-              </motion.div>
-              <motion.button variants={fadeUp} onClick={next}
-                className="w-full py-4 bg-[#6c5ce7] text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-[#6c5ce7]/20">
-                Continue
-              </motion.button>
-            </motion.div>
-          )}
-
-          {step === "professional" && (
-            <motion.div variants={stagger} initial="hidden" animate="show" className="max-h-[75vh] overflow-y-auto scrollbar-none">
-              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Professional Info</motion.h2>
-              <motion.p variants={fadeUp} className="text-[#9e9eb0] mb-6">Optional -- helps you network better</motion.p>
-
-              <div className="space-y-5 text-left">
-                <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
-                  <label className="text-xs font-semibold text-[#9e9eb0] uppercase tracking-wider mb-2.5 block">Your Role</label>
-                  <div className="flex flex-wrap gap-2">
-                    {USER_ROLES.map((r) => (
-                      <button key={r.value} onClick={() => setRole(r.value)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs transition-all ${role === r.value ? "bg-[#6c5ce7] text-white font-semibold shadow-md shadow-[#6c5ce7]/30" : "bg-white/[0.06] border border-white/[0.08] text-[#d1d1db] hover:border-white/[0.15]"}`}>
-                        {r.icon} {r.label}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {role && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-                    className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
-                    <label className="text-xs font-semibold text-[#9e9eb0] uppercase tracking-wider mb-2.5 block">Startup Stage</label>
-                    <div className="flex flex-wrap gap-2">
-                      {STARTUP_STAGES.map((s) => (
-                        <button key={s.value} onClick={() => setStartupStage(s.value)}
-                          className={`px-3.5 py-1.5 rounded-full text-xs transition-all ${startupStage === s.value ? "bg-[#6c5ce7] text-white font-semibold shadow-md shadow-[#6c5ce7]/30" : "bg-white/[0.06] border border-white/[0.08] text-[#d1d1db] hover:border-white/[0.15]"}`}>
-                          {s.icon} {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
-                  <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company"
-                    className="bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                  <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title"
-                    className="bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                </motion.div>
-
-                <motion.input variants={fadeUp} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} placeholder="Looking for... (cofounder, hiring, etc.)"
-                  className="w-full bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-[#6e6e82] text-white transition-colors" />
-
-                <motion.div variants={fadeUp} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
-                  <label className="text-xs font-semibold text-[#9e9eb0] uppercase tracking-wider mb-2.5 block">Skills</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {PROFESSIONAL_SKILLS.map((s) => (
-                      <button key={s} onClick={() => toggleSkill(s)}
-                        className={`px-2.5 py-1 rounded-full text-[11px] transition-all ${skills.includes(s) ? "bg-[#6c5ce7] text-white font-semibold" : "bg-white/[0.06] border border-white/[0.08] text-[#9e9eb0] hover:border-white/[0.15]"}`}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                <motion.div variants={fadeUp} className="grid grid-cols-[1fr_5rem] gap-3">
-                  <input value={collegeName} onChange={(e) => setCollegeName(e.target.value)} placeholder="College (optional)"
-                    className="bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                  <input value={graduationYear} onChange={(e) => setGraduationYear(e.target.value)} placeholder="Year" type="number"
-                    className="bg-white/[0.06] border border-white/[0.08] focus:border-[#a29bfe]/50 rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder-[#6e6e82] text-white transition-colors" />
-                </motion.div>
-              </div>
-
-              <motion.button variants={fadeUp} onClick={next}
-                className="w-full py-4 bg-[#6c5ce7] text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-[#6c5ce7]/20 mt-6">
-                Continue
-              </motion.button>
-              <motion.button variants={fadeUp} onClick={next} className="text-[#6e6e82] text-sm hover:text-[#d1d1db] transition-colors mt-3 block mx-auto">
-                Skip for now
-              </motion.button>
-            </motion.div>
-          )}
-
-          {step === "interests" && (
-            <motion.div variants={stagger} initial="hidden" animate="show">
-              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-1.5">Pick Your Interests</motion.h2>
-              <motion.p variants={fadeUp} className="text-[#9e9eb0] mb-6">Select at least 3 hobbies</motion.p>
-              <motion.div variants={fadeUp} className="grid grid-cols-2 gap-2 mb-8">
-                {INTERESTS.map((interest) => {
-                  const selected = selectedInterests.includes(interest.id);
-                  return (
-                    <button key={interest.id} onClick={() => toggleInterest(interest.id)}
-                      className={`relative px-3 py-2.5 rounded-xl text-sm text-left transition-all ${
-                        selected
-                          ? "bg-[#6c5ce7]/20 border-[#6c5ce7]/50 border text-white font-medium"
-                          : "bg-white/[0.04] border border-white/[0.06] text-[#d1d1db] hover:border-white/[0.15]"
-                      }`}>
-                      <span>{interest.icon} {interest.label}</span>
-                      {selected && (
-                        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                          className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#6c5ce7] rounded-full flex items-center justify-center">
-                          <Check size={10} className="text-white" />
-                        </motion.span>
-                      )}
-                    </button>
-                  );
-                })}
-              </motion.div>
-              <motion.button variants={fadeUp} onClick={next} disabled={selectedInterests.length < 3}
-                className="w-full py-4 bg-[#6c5ce7] text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-[#6c5ce7]/20 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed">
-                Continue
-                <span className="ml-2 text-sm font-normal opacity-70">({selectedInterests.length} selected)</span>
-              </motion.button>
-            </motion.div>
-          )}
-
-          {step === "location" && (
-            <motion.div variants={stagger} initial="hidden" animate="show">
-              <motion.div variants={fadeUp} className="relative w-28 h-28 mx-auto mb-8">
-                <div className="absolute inset-0 rounded-full bg-[#6c5ce7]/10 animate-ping" style={{ animationDuration: "2.5s" }} />
-                <div className="absolute inset-2 rounded-full bg-[#6c5ce7]/10" />
-                <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                  className="relative w-full h-full rounded-full bg-gradient-to-br from-[#6c5ce7]/20 to-[#a29bfe]/20 border border-[#6c5ce7]/20 flex items-center justify-center">
-                  <Locate size={44} className="text-[#a29bfe]" />
-                </motion.div>
-              </motion.div>
-              <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-2">Enable Location</motion.h2>
-              <motion.p variants={fadeUp} className="text-[#9e9eb0] mb-4 max-w-xs mx-auto">
-                Discover nearby activities and connect with people around you
-              </motion.p>
-              <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 text-[#6e6e82] text-xs mb-8">
-                <Shield size={12} /> <span>Your location is only shared while you are active</span>
-              </motion.div>
-              {onboardError && (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  className="mb-5 p-3.5 bg-[#ff6b6b]/10 border border-[#ff6b6b]/20 rounded-xl text-sm text-[#ff6b6b]">
-                  {onboardError}
-                </motion.div>
-              )}
-              <motion.button variants={fadeUp} onClick={requestLocation}
-                className="w-full py-4 bg-[#6c5ce7] text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-all shadow-lg shadow-[#6c5ce7]/20 mb-3 flex items-center justify-center gap-2">
-                <Locate size={18} /> Allow Location Access
-              </motion.button>
-              <motion.button variants={fadeUp} onClick={() => finishOnboarding(0, 0)}
-                className="w-full py-3 bg-white/[0.04] border border-white/[0.06] text-[#9e9eb0] rounded-2xl text-sm hover:text-[#d1d1db] hover:border-white/[0.15] transition-all">
-                Use default location
-              </motion.button>
-            </motion.div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+    <div className="fixed inset-0 bg-white flex items-start justify-center z-50 overflow-y-auto">
+      <div className="w-full max-w-md min-h-screen">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="w-full"
+          >
+            {renderStep()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

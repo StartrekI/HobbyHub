@@ -3,7 +3,7 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "@/store";
 import { AnimatePresence, motion } from "framer-motion";
-import { MapPin } from "lucide-react";
+import { Zap } from "lucide-react";
 import { getSocket } from "@/lib/socket-client";
 import Onboarding from "@/components/Onboarding";
 import MapView from "@/components/MapView";
@@ -161,15 +161,15 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-violet-700 via-indigo-500 to-purple-500">
+      <div className="h-full w-full flex items-center justify-center bg-[linear-gradient(135deg,oklch(0.55_0.28_290),oklch(0.50_0.30_305),oklch(0.55_0.28_275))]">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="text-center text-white flex flex-col items-center"
         >
-          <div className="splash-glow splash-float w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-5">
-            <MapPin className="w-10 h-10 text-white" strokeWidth={2.25} />
+          <div className="w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-5 animate-pulse">
+            <Zap className="w-10 h-10 text-white" strokeWidth={2.25} />
           </div>
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
@@ -177,7 +177,7 @@ export default function Home() {
             transition={{ delay: 0.2, duration: 0.4 }}
             className="text-3xl font-bold tracking-tight"
           >
-            HobbyHub
+            Vibe
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -185,7 +185,7 @@ export default function Home() {
             transition={{ delay: 0.45, duration: 0.4 }}
             className="text-sm mt-2 font-medium text-white/70"
           >
-            Discover hobbies near you
+            Find your people
           </motion.p>
         </motion.div>
       </div>
@@ -196,35 +196,32 @@ export default function Home() {
     return <Onboarding />;
   }
 
-  // Screens that overlay on top of the map
-  const mapOverlayScreens = ["map", "create", "notifications", "activity-detail", "create-opportunity"];
-  const showMap = mapOverlayScreens.includes(currentScreen);
-
   return (
-    <div className="h-full w-full max-w-[430px] mx-auto flex flex-col relative border-x border-gray-200 bg-gray-50">
+    <div className="h-full w-full max-w-[430px] mx-auto flex flex-col relative bg-white">
       <div className="flex-1 relative overflow-hidden">
-        {showMap ? (
-          <>
-            <MapView />
-            <AnimatePresence mode="wait">
-              {currentScreen === "create" && <CreateActivity key="create" />}
-              {currentScreen === "notifications" && <NotificationsScreen key="notifications" />}
-              {currentScreen === "activity-detail" && <ActivityDetail key="activity-detail" />}
-              {currentScreen === "create-opportunity" && <CreateOpportunityModal key="create-opportunity" />}
-            </AnimatePresence>
-          </>
-        ) : (
-          <Suspense fallback={<div className="h-full bg-[#f5f5f7]" />}>
-            <AnimatePresence mode="wait">
-              {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
-              {currentScreen === "calendar" && <CalendarView key="calendar" />}
-              {currentScreen === "chat-list" && <ChatList key="chat-list" />}
-              {currentScreen === "chat" && <ChatScreen key="chat" />}
-              {currentScreen === "profile" && <ProfileScreen key="profile" />}
-              {currentScreen === "networking" && <NetworkingView key="networking" />}
-            </AnimatePresence>
-          </Suspense>
-        )}
+        <Suspense fallback={<div className="h-full bg-white" />}>
+          <AnimatePresence mode="wait">
+            {currentScreen === "discover" && <DiscoveryFeed key="discover" />}
+            {(currentScreen === "feed" || currentScreen === "networking") && (
+              <NetworkingView key="feed" />
+            )}
+            {currentScreen === "create" && <CreateActivity key="create" />}
+            {currentScreen === "chat-list" && <ChatList key="chat-list" />}
+            {currentScreen === "chat" && <ChatScreen key="chat" />}
+            {currentScreen === "profile" && <ProfileScreen key="profile" />}
+            {currentScreen === "map" && <MapView key="map" />}
+            {currentScreen === "calendar" && <CalendarView key="calendar" />}
+            {currentScreen === "notifications" && (
+              <NotificationsScreen key="notifications" />
+            )}
+            {currentScreen === "activity-detail" && (
+              <ActivityDetail key="activity-detail" />
+            )}
+            {currentScreen === "create-opportunity" && (
+              <CreateOpportunityModal key="create-opportunity" />
+            )}
+          </AnimatePresence>
+        </Suspense>
       </div>
       <BottomNav />
     </div>

@@ -11,10 +11,10 @@ export default function ActivityDetail() {
   if (!selectedActivity) return null;
 
   const a = selectedActivity;
-  const color = TYPE_COLORS[a.type] || "#6C5CE7";
+  const color = TYPE_COLORS[a.type] || "#8e51ff";
   const dist = getDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
   const isJoined = a.participants?.some((p) => p.userId === user?.id);
-  const emoji = ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon || "⭐";
+  const emoji = ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon || "\u2B50";
 
   const handleJoin = async () => {
     if (!user || isJoined) return;
@@ -52,7 +52,7 @@ export default function ActivityDetail() {
         </div>
         <div className="relative z-[1] px-5 pt-16 pb-10 text-white">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl border border-white/10 shadow-lg">
+            <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl border border-white/10 shadow-lg">
               {emoji}
             </div>
             <div className="flex-1">
@@ -73,53 +73,53 @@ export default function ActivityDetail() {
 
       <div className="flex-1 overflow-y-auto -mt-5">
         {/* Info Cards */}
-        <div className="mx-4 bg-white rounded-2xl p-4 shadow-md border border-black/[0.03]">
+        <div className="mx-4 bg-white rounded-xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-zinc-100">
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
+            <div className="text-center p-3.5 rounded-xl bg-zinc-50">
               <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
                 <MapPin size={16} style={{ color }} />
               </div>
-              <p className="text-xs font-bold text-gray-800">{dist}</p>
-              <p className="text-[10px] text-gray-400 font-medium">Distance</p>
+              <p className="text-xs font-bold text-zinc-950">{dist}</p>
+              <p className="text-[10px] text-[#71717b] font-medium">Distance</p>
             </div>
-            <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
+            <div className="text-center p-3.5 rounded-xl bg-zinc-50">
               <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
                 <Clock size={16} style={{ color }} />
               </div>
-              <p className="text-xs font-bold text-gray-800">{new Date(a.time).toLocaleDateString([], { month: "short", day: "numeric" })}</p>
-              <p className="text-[10px] text-gray-400 font-medium">{new Date(a.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+              <p className="text-xs font-bold text-zinc-950">{new Date(a.time).toLocaleDateString([], { month: "short", day: "numeric" })}</p>
+              <p className="text-[10px] text-[#71717b] font-medium">{new Date(a.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
             </div>
-            <div className="text-center p-3.5 rounded-2xl" style={{ background: `${color}08` }}>
+            <div className="text-center p-3.5 rounded-xl bg-zinc-50">
               <div className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center" style={{ background: `${color}15` }}>
                 <Users size={16} style={{ color }} />
               </div>
-              <p className="text-xs font-bold text-gray-800">{a.participants?.length || 0}/{a.playersNeeded}</p>
-              <p className="text-[10px] text-gray-400 font-medium">Joined</p>
+              <p className="text-xs font-bold text-zinc-950">{a.participants?.length || 0}/{a.playersNeeded}</p>
+              <p className="text-[10px] text-[#71717b] font-medium">Joined</p>
             </div>
           </div>
         </div>
 
         {/* Participants */}
-        <div className="mx-4 mt-4 bg-white rounded-2xl p-4 border border-black/[0.03]">
-          <h4 className="font-bold text-sm mb-4 flex items-center gap-2">Participants <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold" style={{ background: `${color}12`, color }}>{a.participants?.length || 0}</span></h4>
+        <div className="mx-4 mt-4 bg-white rounded-xl p-4 border border-zinc-100">
+          <h4 className="font-bold text-sm text-zinc-950 mb-4 flex items-center gap-2">Participants <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold" style={{ background: `${color}12`, color }}>{a.participants?.length || 0}</span></h4>
           <div className="space-y-2.5">
             {a.participants?.map((p, i) => (
-              <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-gray-50/80 transition-colors">
+              <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-50 transition-colors">
                 <div className="p-[2px] rounded-[14px]" style={{ background: `linear-gradient(135deg, ${color}, ${color}88)` }}>
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold overflow-hidden bg-gray-100"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold overflow-hidden bg-zinc-100"
                     style={{ background: p.user.avatar ? undefined : `linear-gradient(135deg, ${color}, ${color}cc)` }}
                   >
                     {p.user.avatar ? <img src={p.user.avatar} alt="" className="w-full h-full object-cover" /> : p.user.name.charAt(0)}
                   </div>
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm flex items-center gap-2">
+                  <p className="font-semibold text-sm text-zinc-950 flex items-center gap-2">
                     {p.user.name}
                     {i === 0 && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-lg border border-amber-100/60">Host</span>}
                     {p.userId === user?.id && <span className="px-2 py-0.5 bg-violet-50 text-violet-600 text-[10px] font-bold rounded-lg border border-violet-100/60">You</span>}
                   </p>
-                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                  <p className="text-xs text-[#71717b] flex items-center gap-1">
                     <Star size={10} className="text-amber-400" /> {p.user.rating || 4.5}
                   </p>
                 </div>
@@ -132,7 +132,7 @@ export default function ActivityDetail() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2 p-4 header-glass border-t-0" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
+      <div className="flex gap-2 p-4 bg-white border-t border-zinc-100">
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleJoin}
@@ -140,7 +140,7 @@ export default function ActivityDetail() {
           className={`flex-[2] py-3 rounded-xl font-semibold text-[13px] transition-all ${
             isJoined
               ? "bg-[#e6f9f4] text-[#00b894] border border-[#00b894]/20"
-              : "bg-[#6c5ce7] text-white shadow-[0_4px_12px_rgba(108,92,231,0.3)]"
+              : "bg-[#8e51ff] text-white shadow-[0_4px_16px_rgba(142,81,255,0.35)]"
           }`}
         >
           {isJoined ? "Joined" : "Join Activity"}
@@ -148,7 +148,7 @@ export default function ActivityDetail() {
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={openChat}
-          className="flex-1 py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 text-[#6c5ce7] bg-[#e8e5ff] border border-[#6c5ce7]/10"
+          className="flex-1 py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 text-[#8e51ff] bg-[#8e51ff]/10 border border-[#8e51ff]/15"
         >
           <MessageCircle size={15} /> Chat
         </motion.button>

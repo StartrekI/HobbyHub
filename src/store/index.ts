@@ -11,6 +11,7 @@ type Screen =
   | "activity-detail"
   | "discover"
   | "networking"
+  | "feed"
   | "create-opportunity"
   | "calendar";
 
@@ -82,7 +83,7 @@ export const useStore = create<AppState>((set) => ({
   userLocation: { lat: 0, lng: 0 },
   setUserLocation: (userLocation) => set({ userLocation }),
 
-  currentScreen: "map",
+  currentScreen: "discover",
   setScreen: (currentScreen) => set({ currentScreen }),
 
   activities: [],

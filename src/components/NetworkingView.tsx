@@ -2,20 +2,79 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Search, Filter, MessageCircle, UserPlus, Briefcase, X } from "lucide-react";
+import {
+  BadgeCheck,
+  Bell,
+  Briefcase,
+  Calendar,
+  ChevronRight,
+  Coffee,
+  Heart,
+  MapPin,
+  MessageCircle,
+  MoreHorizontal,
+  Music,
+  Search,
+  Share2,
+  Trophy,
+  UserPlus,
+  Users,
+  Zap,
+} from "lucide-react";
 import { useStore } from "@/store";
-import { getDistance, USER_ROLES, STARTUP_STAGES, LOOKING_FOR_OPTIONS } from "@/lib/utils";
-import type { UserType } from "@/types";
+import {
+  getDistance,
+  formatRelativeTime,
+  USER_ROLES,
+  STARTUP_STAGES,
+  LOOKING_FOR_OPTIONS,
+  FEED_TYPE_COLORS,
+} from "@/lib/utils";
+import type { UserType, FeedItem } from "@/types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+const FEED_CATEGORY_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "activity", label: "Sports" },
+  { value: "event", label: "Events" },
+  { value: "gig", label: "Gigs" },
+  { value: "trip", label: "Hangouts" },
+  { value: "skill", label: "Music" },
+];
+
+const TYPE_LABELS: Record<string, string> = {
+  activity: "Activity",
+  gig: "Gig",
+  skill: "Skill Exchange",
+  trip: "Trip",
+  idea: "Idea",
+  event: "Event",
+};
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function NetworkingView() {
-  const { user, userLocation, setScreen, setCurrentChatId } = useStore();
+  const { user, userLocation, setScreen, setCurrentChatId, nearbyUsers } =
+    useStore();
   const [people, setPeople] = useState<UserType[]>([]);
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [showSearch, setShowSearch] = useState(false);
   const [roleFilter, setRoleFilter] = useState("");
   const [stageFilter, setStageFilter] = useState("");
   const [lookingForFilter, setLookingForFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const locationRef = useRef(userLocation);
@@ -36,9 +95,28 @@ export default function NetworkingView() {
 
     fetch(`/api/networking?${params}`)
       .then((r) => r.json())
-      .then((data) => { setPeople(data); setLoading(false); })
+      .then((data) => {
+        setPeople(data);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [user, roleFilter, stageFilter, lookingForFilter]);
+
+  // Fetch feed items for the feed tab
+  const fetchFeed = useCallback(() => {
+    if (!user) return;
+    setFeedLoading(true);
+    const { lat, lng } = locationRef.current;
+    fetch(
+      `/api/discover?lat=${lat}&lng=${lng}&type=${categoryFilter === "all" ? "" : categoryFilter}`,
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        setFeedItems(data);
+        setFeedLoading(false);
+      })
+      .catch(() => setFeedLoading(false));
+  }, [user, categoryFilter]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -46,229 +124,403 @@ export default function NetworkingView() {
     return () => clearTimeout(debounceRef.current);
   }, [fetchPeople]);
 
+  useEffect(() => {
+    fetchFeed();
+  }, [fetchFeed]);
+
   const filtered = search
-    ? people.filter((p) =>
-        (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (p.role || "").toLowerCase().includes(search.toLowerCase()) ||
-        (p.company || "").toLowerCase().includes(search.toLowerCase())
+    ? feedItems.filter(
+        (item) =>
+          (item.title || "").toLowerCase().includes(search.toLowerCase()) ||
+          (item.description || "")
+            .toLowerCase()
+            .includes(search.toLowerCase()),
       )
-    : people;
+    : feedItems;
 
   const sendHi = (personId: string) => {
     if (!user) return;
     fetch("/api/dm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ senderId: user.id, receiverId: personId, text: "Hey! Let's connect 🤝" }),
+      body: JSON.stringify({
+        senderId: user.id,
+        receiverId: personId,
+        text: "Hey! Let's connect \uD83E\uDD1D",
+      }),
     }).then(() => {
       setCurrentChatId(`dm:${personId}`);
       setScreen("chat");
     });
   };
 
-  const roleInfo = (r: string) => USER_ROLES.find((x) => x.value === r);
-  const stageInfo = (s: string) => STARTUP_STAGES.find((x) => x.value === s);
-  const activeFilters = [roleFilter, stageFilter, lookingForFilter].filter(Boolean).length;
-
   return (
-    <motion.div
-      initial={{ y: "100%" }}
-      animate={{ y: 0 }}
-      exit={{ y: "100%" }}
-      transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="h-full bg-[#f8f8fa] flex flex-col"
-    >
-      {/* ── Header ── */}
-      <div className="bg-[#1a1a2e] px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => setScreen("map")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
-            <ArrowLeft size={16} className="text-white/70" />
-          </button>
-          <h3 className="flex-1 font-extrabold text-[22px] text-white tracking-tight">Networking</h3>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowFilters(!showFilters)}
-            className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showFilters ? "bg-[#6c5ce7] text-white" : "bg-white/[0.08] text-white/50"}`}
-          >
-            <Filter size={16} />
-            {activeFilters > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#ff6b6b] text-white text-[9px] font-bold rounded-full flex items-center justify-center">{activeFilters}</span>
-            )}
-          </motion.button>
+    <div className="h-full bg-white flex flex-col">
+      <div className="overflow-y-auto pb-20 flex-1">
+        {/* ── Header ── */}
+        <div className="flex px-6 pt-6 pb-2 justify-between items-center">
+          <div className="flex flex-col gap-1">
+            <span className="text-[#71717b] text-sm leading-5">
+              {getGreeting()} {"\uD83D\uDC4B"}
+            </span>
+            <h1 className="font-bold text-xl leading-7 text-zinc-950">
+              Your Feed
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Bell className="size-5 text-zinc-950" />
+              <div className="rounded-full bg-[#e7000b] absolute -right-1 -top-1 w-2 h-2" />
+            </div>
+            <button onClick={() => setShowSearch(!showSearch)}>
+              <Search className="size-5 text-zinc-950" />
+            </button>
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search people, roles, companies..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white/[0.07] rounded-xl text-[13px] outline-none border border-white/[0.06] focus:bg-white/[0.12] focus:border-[#a29bfe]/40 transition-all placeholder:text-white/30 text-white"
-          />
-        </div>
-
-        {/* Filters */}
+        {/* ── Collapsible search ── */}
         <AnimatePresence>
-          {showFilters && (
+          {showSearch && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mt-3 space-y-3 overflow-hidden"
+              className="overflow-hidden px-6"
             >
-              <FilterSection label="Role" options={[{ value: "", label: "All" }, ...USER_ROLES.map(r => ({ value: r.value, label: `${r.icon} ${r.label}` }))]} selected={roleFilter} onSelect={setRoleFilter} />
-              <FilterSection label="Stage" options={[{ value: "", label: "All" }, ...STARTUP_STAGES.map(s => ({ value: s.value, label: `${s.icon} ${s.label}` }))]} selected={stageFilter} onSelect={setStageFilter} />
-              <FilterSection label="Looking For" options={[{ value: "", label: "All" }, ...LOOKING_FOR_OPTIONS.map(l => ({ value: l.value, label: l.label }))]} selected={lookingForFilter} onSelect={setLookingForFilter} />
+              <div className="relative pb-2">
+                <Search className="top-1/2 -translate-y-1/2 size-4 text-[#71717b] absolute left-3 -mt-1" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search feed..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-zinc-100 rounded-xl text-sm outline-none border border-black/5 focus:border-[#8e51ff]/40 transition-all placeholder:text-zinc-400 text-zinc-950"
+                  autoFocus
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
-      {/* ── People list ── */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-7 h-7 border-2 border-[#e8e8ef] border-t-[#6c5ce7] rounded-full animate-spin" />
+        {/* ── Category filter badges ── */}
+        <div className="px-6 py-4">
+          <div
+            className="overflow-x-auto flex gap-2"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {FEED_CATEGORY_FILTERS.map((f) => {
+              const active = categoryFilter === f.value;
+              return (
+                <Badge
+                  key={f.value}
+                  variant={active ? "default" : "outline"}
+                  className={`whitespace-nowrap font-medium rounded-full text-xs leading-4 px-4 py-1.5 cursor-pointer transition-all ${
+                    active
+                      ? "bg-[#8e51ff] text-violet-50 hover:bg-[#7a3ef0]"
+                      : ""
+                  }`}
+                  onClick={() => setCategoryFilter(f.value)}
+                >
+                  {f.label}
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Feed cards ── */}
+        {feedLoading ? (
+          <div className="px-6 space-y-4">
+            {[0, 1, 2].map((i) => (
+              <SkeletonFeedCard key={i} />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-14 h-14 bg-[#f4f4f8] rounded-2xl flex items-center justify-center mb-4">
-              <Briefcase size={26} className="text-[#d1d1db]" />
+          <div className="flex flex-col items-center justify-center py-20 px-6">
+            <div className="w-14 h-14 bg-zinc-100 rounded-2xl flex items-center justify-center mb-4">
+              <Search size={26} className="text-zinc-400" />
             </div>
-            <p className="text-[14px] font-semibold text-[#1a1a2e]">No professionals nearby</p>
-            <p className="text-[12px] text-[#9e9eb0] mt-1">Try expanding your filters</p>
+            <p className="text-sm font-semibold text-zinc-950">
+              No posts yet
+            </p>
+            <p className="text-xs text-[#71717b] mt-1">
+              Try expanding your filters or check back later
+            </p>
           </div>
         ) : (
-          filtered.map((person, idx) => {
-            const dist = getDistance(userLocation.lat, userLocation.lng, person.lat, person.lng);
-            const role = roleInfo(person.role);
-            const stage = stageInfo(person.startupStage);
-            let personSkills: string[] = [];
-            try {
-              personSkills = typeof person.skills === "string"
-                ? JSON.parse(person.skills || "[]")
-                : (person.skills || []);
-            } catch { personSkills = []; }
-
-            return (
-              <motion.div
-                key={person.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.03 }}
-                className="bg-white rounded-2xl p-4 border border-black/[0.03] hover:shadow-md transition-shadow duration-300"
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6c5ce7] to-[#a29bfe] flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-                      {person.avatar ? (
-                        <img src={person.avatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{person.name.charAt(0)}</span>
-                      )}
-                    </div>
-                    {person.online && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00b894] border-2 border-white rounded-full" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="font-bold text-[14px] text-[#1a1a2e]">{person.name}</h4>
-                      {person.online && <span className="text-[10px] text-[#00b894] font-semibold bg-[#e6f9f4] px-1.5 py-0.5 rounded-md">Online</span>}
-                    </div>
-                    {(person.title || person.company) && (
-                      <p className="text-[12px] text-[#9e9eb0] mt-0.5">
-                        {person.title}{person.title && person.company ? " at " : ""}<span className="text-[#6e6e82]">{person.company}</span>
-                      </p>
-                    )}
-                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                      {role && (
-                        <span className="px-2 py-0.5 bg-[#e8e5ff] text-[#6c5ce7] text-[10px] font-semibold rounded-md">
-                          {role.icon} {role.label}
-                        </span>
-                      )}
-                      {stage && (
-                        <span className="px-2 py-0.5 bg-[#e8f4ff] text-[#74b9ff] text-[10px] font-semibold rounded-md">
-                          {stage.icon} {stage.label}
-                        </span>
-                      )}
-                      <span className="badge">{dist}</span>
-                    </div>
-                    {person.lookingFor && (
-                      <p className="text-[11px] text-[#00b894] font-semibold mt-2 bg-[#e6f9f4] inline-block px-2 py-0.5 rounded-md">
-                        Looking for: {person.lookingFor}
-                      </p>
-                    )}
-                    {personSkills.length > 0 && (
-                      <div className="flex gap-1.5 flex-wrap mt-2">
-                        {personSkills.slice(0, 4).map((s) => (
-                          <span key={s} className="px-2 py-0.5 bg-[#f4f4f8] text-[#6e6e82] text-[10px] font-medium rounded-md">{s}</span>
-                        ))}
-                        {personSkills.length > 4 && (
-                          <span className="text-[10px] text-[#9e9eb0] font-medium self-center">+{personSkills.length - 4}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 mt-3.5 pt-3.5 border-t border-black/[0.04]">
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => sendHi(person.id)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#6c5ce7] text-white text-[12px] font-semibold rounded-xl shadow-[0_4px_12px_rgba(108,92,231,0.3)]"
-                  >
-                    <MessageCircle size={13} /> Say Hi
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => {
-                      fetch("/api/connections", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ fromUserId: user?.id, toUserId: person.id }),
-                      });
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[#6c5ce7] text-[12px] font-semibold rounded-xl border border-[#6c5ce7]/20 bg-[#e8e5ff]/50 hover:bg-[#e8e5ff] transition-colors"
-                  >
-                    <UserPlus size={13} /> Connect
-                  </motion.button>
-                </div>
-              </motion.div>
-            );
-          })
+          <div className="space-y-4">
+            {filtered.map((item, idx) => (
+              <FeedCard
+                key={item.id}
+                item={item}
+                idx={idx}
+                userLocation={userLocation}
+              />
+            ))}
+          </div>
         )}
+
+        {/* ── Nearby Connections section ── */}
+        {!loading && people.length > 0 && (
+          <div className="px-6 pb-4 pt-4">
+            <Card className="border-black/5 border border-solid p-0 gap-0 overflow-hidden">
+              <div className="flex px-4 pt-4 pb-2 items-center gap-2">
+                <div className="rounded-full bg-[#8e51ff]/10 flex justify-center items-center w-9 h-9">
+                  <Users className="size-4 text-[#8e51ff]" />
+                </div>
+                <div className="flex-1">
+                  <span className="font-semibold text-sm leading-5 text-zinc-950">
+                    {"\uD83D\uDD17"} Nearby Connections
+                  </span>
+                  <span className="block text-[#71717b] text-xs leading-4">
+                    {people.length} people near you share your interests
+                  </span>
+                </div>
+                <ChevronRight className="size-5 text-[#71717b]" />
+              </div>
+              <div
+                className="flex px-4 pb-4 gap-2 overflow-x-auto"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {people.slice(0, 3).map((person) => (
+                  <NearbyPersonCard
+                    key={person.id}
+                    person={person}
+                    userLocation={userLocation}
+                    onSendHi={sendHi}
+                  />
+                ))}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        <div className="h-4" />
       </div>
+    </div>
+  );
+}
+
+/* ─── Feed Card ─── */
+function FeedCard({
+  item,
+  idx,
+  userLocation,
+}: {
+  item: FeedItem;
+  idx: number;
+  userLocation: { lat: number; lng: number };
+}) {
+  const dist = getDistance(
+    userLocation.lat,
+    userLocation.lng,
+    item.lat,
+    item.lng,
+  );
+  const data = item.data as unknown as Record<string, unknown>;
+  const participantCount =
+    (data?._count as Record<string, number>)?.participants ?? 0;
+  const color = FEED_TYPE_COLORS[item.feedType] || "#8e51ff";
+
+  // Deterministic engagement counts derived from item id
+  const hash = item.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const likeCount = (hash % 40) + 5;
+  const commentCount = (hash % 15) + 1;
+  const shareCount = (hash % 10) + 1;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(idx * 0.04, 0.3), duration: 0.25 }}
+      className="px-6"
+    >
+      <Card className="border-black/5 border border-solid p-0 gap-0 overflow-hidden">
+        {/* Creator header */}
+        <div className="flex px-4 pt-4 pb-2 items-center gap-2">
+          <Avatar className="w-9 h-9">
+            {item.creator?.avatar ? (
+              <img
+                src={item.creator.avatar}
+                alt={item.creator.name}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <AvatarFallback className="font-semibold bg-[#8e51ff]/10 text-[#8e51ff] text-xs">
+                {item.creator?.name?.charAt(0) || "?"}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-sm leading-5 text-zinc-950">
+                {item.creator?.name || "Anonymous"}
+              </span>
+              {item.creator?.verified && (
+                <BadgeCheck className="size-3.5 text-[#8e51ff]" />
+              )}
+            </div>
+            <div className="text-[#71717b] text-xs leading-4 flex items-center gap-1">
+              <MapPin className="size-3" />
+              <span>
+                {dist} {"\u00B7"} {formatRelativeTime(item.createdAt)}
+              </span>
+            </div>
+          </div>
+          <MoreHorizontal className="size-5 text-[#71717b]" />
+        </div>
+
+        {/* Activity image area */}
+        <div className="relative">
+          <div
+            className="w-full h-48"
+            style={{
+              background: `linear-gradient(135deg, ${color}66, ${color})`,
+            }}
+          />
+          {/* Type badge overlay */}
+          <div className="font-semibold rounded-full bg-[#8e51ff]/90 text-violet-50 text-xs leading-4 flex absolute left-2 top-2 px-2.5 py-1 items-center gap-1">
+            <Zap className="size-3" />
+            <span>{TYPE_LABELS[item.feedType] || item.feedType}</span>
+          </div>
+          {/* Spots indicator */}
+          {participantCount > 0 && (
+            <div className="font-medium rounded-full bg-zinc-950/60 text-white text-xs leading-4 absolute right-2 bottom-2 px-2 py-0.5">
+              {participantCount} joined
+            </div>
+          )}
+        </div>
+
+        {/* Content area */}
+        <div className="flex px-4 pt-2 pb-4 flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold text-sm leading-5 text-zinc-950">
+              {item.title}
+            </span>
+            {item.description && (
+              <span className="text-[#71717b] text-xs leading-4 line-clamp-2">
+                {item.description}
+              </span>
+            )}
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="secondary"
+              className="font-normal rounded-full text-xs leading-4 px-2 py-0.5"
+            >
+              {TYPE_LABELS[item.feedType] || item.feedType}
+            </Badge>
+            {item.feedType === "gig" && !!(data as Record<string, unknown>)?.budget && (
+              <Badge className="font-normal rounded-full bg-amber-100 text-amber-700 text-xs leading-4 border-amber-200 border-0 border-solid px-2 py-0.5">
+                ${String((data as Record<string, unknown>).budget)}/hr
+              </Badge>
+            )}
+            <Badge
+              variant="secondary"
+              className="font-normal rounded-full text-xs leading-4 px-2 py-0.5"
+            >
+              {dist}
+            </Badge>
+          </div>
+
+          <Separator />
+
+          {/* Action buttons */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1 cursor-pointer">
+                <Heart className="size-4 text-[#71717b]" />
+                <span className="text-[#71717b] text-xs leading-4">
+                  {likeCount}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 cursor-pointer">
+                <MessageCircle className="size-4 text-[#71717b]" />
+                <span className="text-[#71717b] text-xs leading-4">
+                  {commentCount}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 cursor-pointer">
+                <Share2 className="size-4 text-[#71717b]" />
+                <span className="text-[#71717b] text-xs leading-4">
+                  {shareCount}
+                </span>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              className="rounded-full bg-[#8e51ff] text-violet-50 text-xs leading-4 px-4 h-8"
+            >
+              <UserPlus className="size-3 mr-1" />
+              Join
+            </Button>
+          </div>
+        </div>
+      </Card>
     </motion.div>
   );
 }
 
-function FilterSection({ label, options, selected, onSelect }: {
-  label: string;
-  options: { value: string; label: string }[];
-  selected: string;
-  onSelect: (v: string) => void;
+/* ─── Nearby Person Card (inside Nearby Connections) ─── */
+function NearbyPersonCard({
+  person,
+  userLocation,
+  onSendHi,
+}: {
+  person: UserType;
+  userLocation: { lat: number; lng: number };
+  onSendHi: (id: string) => void;
 }) {
+  const interest = person.interests?.[0] || person.role || "";
+
   return (
-    <div>
-      <label className="text-[10px] font-bold text-white/30 uppercase tracking-wider">{label}</label>
-      <div className="flex gap-1.5 flex-wrap mt-1.5">
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => onSelect(opt.value)}
-            className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
-              selected === opt.value
-                ? "bg-[#6c5ce7] text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]"
-                : "bg-white/[0.07] text-white/50 hover:bg-white/[0.12]"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+    <div className="rounded-xl bg-zinc-100 flex p-2 flex-col items-center flex-1 gap-1.5 min-w-[80px] cursor-pointer">
+      <Avatar className="w-10 h-10">
+        {person.avatar ? (
+          <img
+            src={person.avatar}
+            alt={person.name}
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          <AvatarFallback className="font-semibold bg-[#8e51ff]/10 text-[#8e51ff] text-xs">
+            {person.name.charAt(0)}
+          </AvatarFallback>
+        )}
+      </Avatar>
+      <span className="font-medium text-xs leading-4 text-zinc-950">
+        {person.name.split(" ")[0]}
+      </span>
+      {interest && (
+        <span className="text-[#71717b] text-xs leading-4">{interest}</span>
+      )}
+    </div>
+  );
+}
+
+/* ─── Skeleton Feed Card ─── */
+function SkeletonFeedCard() {
+  return (
+    <div className="px-6">
+      <Card className="border-black/5 border border-solid p-0 gap-0 overflow-hidden">
+        <div className="flex px-4 pt-4 pb-2 items-center gap-2">
+          <div className="w-9 h-9 rounded-full bg-zinc-100 animate-pulse" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-4 w-24 bg-zinc-100 rounded animate-pulse" />
+            <div className="h-3 w-32 bg-zinc-100 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="h-48 bg-zinc-100 animate-pulse" />
+        <div className="p-4 space-y-2">
+          <div className="h-4 w-3/4 bg-zinc-100 rounded animate-pulse" />
+          <div className="h-3 w-full bg-zinc-100 rounded animate-pulse" />
+          <div className="flex gap-2 mt-2">
+            <div className="h-5 w-16 bg-zinc-100 rounded-full animate-pulse" />
+            <div className="h-5 w-20 bg-zinc-100 rounded-full animate-pulse" />
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

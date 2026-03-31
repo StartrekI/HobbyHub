@@ -3,10 +3,14 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  User, Star, Camera, Check, X, Shield, GraduationCap, Users,
-  LogOut, ChevronRight, Edit3, MapPin, Zap, Trophy, Target,
-  Clock, TrendingUp, Share2, Copy, CheckCircle2, Eye, EyeOff,
+  User, Star, Camera, Check, X, GraduationCap, Users,
+  LogOut, ChevronRight, MapPin, Zap, Trophy, Target,
+  Clock, TrendingUp, Share2, CheckCircle2, Eye, EyeOff,
+  ArrowLeft, Settings, Pencil, Calendar,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useStore } from "@/store";
 import { INTERESTS, TYPE_COLORS, ACTIVITY_TYPES, USER_ROLES, STARTUP_STAGES, PROFESSIONAL_SKILLS } from "@/lib/utils";
 
@@ -53,36 +57,38 @@ function ProfileCompletion({ user, profile, connections }: {
   if (pct === 100) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-black/[0.03] p-4 overflow-hidden">
-      <div className="flex items-center justify-between mb-2.5">
-        <div>
-          <h4 className="font-bold text-[13px] text-[#1a1a2e]">Complete your profile</h4>
-          <p className="text-[11px] text-[#9e9eb0] mt-0.5">Get discovered by more people</p>
-        </div>
-        <div className="w-12 h-12 flex items-center justify-center">
-          <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
-            <circle cx="18" cy="18" r="14" fill="none" stroke="#f5f5f7" strokeWidth="3" />
-            <motion.circle
-              cx="18" cy="18" r="14" fill="none" stroke="#111" strokeWidth="3"
-              strokeDasharray={`${pct * 0.879} 100`}
-              initial={{ strokeDasharray: "0 100" }}
-              animate={{ strokeDasharray: `${pct * 0.879} 100` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="absolute text-[11px] font-bold text-[#1a1a2e]">{pct}%</span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-1">
-        {checks.filter((c) => !c.done).slice(0, 4).map((c) => (
-          <div key={c.label} className="flex items-center gap-1.5 px-2 py-1 bg-[#f4f4f8] rounded-lg">
-            <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 shrink-0" />
-            <span className="text-[10px] text-[#6e6e82] font-medium truncate">{c.label}</span>
+    <Card className="border-0 p-4 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="flex items-center justify-between mb-2.5">
+          <div>
+            <h4 className="font-bold text-sm text-zinc-950">Complete your profile</h4>
+            <p className="text-xs text-[#71717b] mt-0.5">Get discovered by more people</p>
           </div>
-        ))}
-      </div>
-    </div>
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="#f4f4f5" strokeWidth="3" />
+              <motion.circle
+                cx="18" cy="18" r="14" fill="none" stroke="#8e51ff" strokeWidth="3"
+                strokeDasharray={`${pct * 0.879} 100`}
+                initial={{ strokeDasharray: "0 100" }}
+                animate={{ strokeDasharray: `${pct * 0.879} 100` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="absolute text-[11px] font-bold text-zinc-950">{pct}%</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-1">
+          {checks.filter((c) => !c.done).slice(0, 4).map((c) => (
+            <div key={c.label} className="flex items-center gap-1.5 px-2 py-1 bg-zinc-100 rounded-lg">
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-300 shrink-0" />
+              <span className="text-[10px] text-[#71717b] font-medium truncate">{c.label}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -108,36 +114,38 @@ function AchievementBadges({ user, profile, connections }: {
   const locked = badges.filter((b) => !b.earned);
 
   return (
-    <div className="bg-white rounded-2xl border border-black/[0.03] p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-bold text-[13px] text-[#1a1a2e]">Achievements</h4>
-        <span className="text-[11px] text-[#9e9eb0] font-medium">{earned.length}/{badges.length} earned</span>
-      </div>
-      <div className="flex gap-2 flex-wrap">
-        {earned.map((b) => (
-          <motion.div
-            key={b.label}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="flex flex-col items-center gap-1 group cursor-default"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center text-xl shadow-sm">
-              {b.icon}
+    <Card className="border-0 p-4">
+      <CardContent className="p-0">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-semibold text-sm text-zinc-950">Achievements</h4>
+          <span className="text-xs text-[#71717b] font-medium">{earned.length}/{badges.length} earned</span>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {earned.map((b) => (
+            <motion.div
+              key={b.label}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 25 }}
+              className="flex flex-col items-center gap-1 cursor-default"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center text-xl">
+                {b.icon}
+              </div>
+              <span className="text-[9px] font-bold text-zinc-950">{b.label}</span>
+            </motion.div>
+          ))}
+          {locked.slice(0, 3 - Math.min(earned.length, 3)).map((b) => (
+            <div key={b.label} className="flex flex-col items-center gap-1 opacity-30">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center text-xl grayscale">
+                {b.icon}
+              </div>
+              <span className="text-[9px] font-bold text-[#71717b]">{b.label}</span>
             </div>
-            <span className="text-[9px] font-bold text-[#2d2d3f]">{b.label}</span>
-          </motion.div>
-        ))}
-        {locked.slice(0, 3 - Math.min(earned.length, 3)).map((b) => (
-          <div key={b.label} className="flex flex-col items-center gap-1 opacity-30">
-            <div className="w-12 h-12 rounded-2xl bg-[#f4f4f8] flex items-center justify-center text-xl grayscale">
-              {b.icon}
-            </div>
-            <span className="text-[9px] font-bold text-[#9e9eb0]">{b.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -298,292 +306,392 @@ export default function ProfileScreen() {
   const stageInfo = STARTUP_STAGES.find((s) => s.value === user.startupStage);
   const availInfo = AVAILABILITY_OPTIONS.find((a) => a.value === availability)!;
 
-  const inputCls = "w-full px-4 py-2.5 bg-[#f4f4f8] rounded-xl text-[14px] outline-none border border-transparent focus:bg-white focus:border-[#a29bfe] focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]";
+  const inputCls = "w-full px-4 py-2.5 bg-zinc-100 rounded-xl text-sm outline-none border border-transparent focus:bg-white focus:border-[#8e51ff] focus:shadow-[0_0_0_3px_rgba(142,81,255,0.12)] transition-all placeholder:text-[#71717b]";
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="h-full bg-[#f8f8fa] flex flex-col">
-
-      {/* Header */}
-      <div className="bg-[#1a1a2e] flex items-center gap-3 px-5 py-3.5">
-        <h3 className="flex-1 font-extrabold text-[22px] text-white tracking-tight">Profile</h3>
-        {!editing ? (
-          <div className="flex items-center gap-2">
-            <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
-              {copied ? <CheckCircle2 size={14} className="text-[#00b894]" /> : <Share2 size={14} className="text-white/50" />}
-            </motion.button>
-            <button onClick={startEdit} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/[0.08] text-white/70 rounded-full text-[12px] font-semibold hover:bg-white/[0.15] transition-colors">
-              <Edit3 size={12} /> Edit
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <button onClick={() => setEditing(false)} className="px-3.5 py-1.5 bg-white/[0.08] text-white/50 rounded-full text-[12px] font-semibold hover:bg-white/[0.15] transition-colors">Cancel</button>
-            <motion.button whileTap={{ scale: 0.97 }} onClick={saveProfile} disabled={saving}
-              className="px-4 py-1.5 bg-[#6c5ce7] text-white rounded-full text-[12px] font-semibold disabled:opacity-50 shadow-[0_0_12px_rgba(108,92,231,0.4)]">
-              {saving ? "Saving..." : "Save"}
-            </motion.button>
-          </div>
-        )}
-      </div>
-
-      {saveError && (
-        <div className="mx-4 mt-3 p-3 bg-[#ffe8e8] border border-[#ff6b6b]/20 rounded-xl text-[#ff6b6b] text-[13px]">{saveError}</div>
-      )}
+      className="h-full bg-white flex flex-col">
 
       <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           {editing ? (
-            <motion.div key="edit" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 space-y-3">
-              {/* Avatar */}
-              <div className="flex justify-center pt-2 pb-1">
-                <div onClick={() => fileInputRef.current?.click()} className="relative w-24 h-24 rounded-full cursor-pointer group">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-[#6e6e82] overflow-hidden ring-4 ring-white shadow-lg">
-                    {avatarPreview ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" /> : <User size={36} />}
-                  </div>
-                  <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera size={20} className="text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center shadow-md">
-                    <Camera size={12} className="text-white" />
-                  </div>
-                </div>
-                <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
+            <motion.div key="edit" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {/* Edit Mode Header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4">
+                <button onClick={() => setEditing(false)} className="text-sm text-[#71717b] font-medium">Cancel</button>
+                <span className="font-semibold text-zinc-950 text-lg">Edit Profile</span>
+                <motion.button whileTap={{ scale: 0.97 }} onClick={saveProfile} disabled={saving}
+                  className="text-sm text-[#8e51ff] font-semibold disabled:opacity-50">
+                  {saving ? "Saving..." : "Save"}
+                </motion.button>
               </div>
 
-              {/* Basic Info */}
-              <div className="bg-white rounded-2xl border border-black/[0.03] p-4 space-y-3">
-                <h4 className="font-bold text-[11px] text-[#9e9eb0] uppercase tracking-wider">Basic Info</h4>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">Name</label>
-                  <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputCls} />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">Bio</label>
-                  <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1.5">Skill Level</label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {SKILL_LEVELS.map((level) => (
-                      <button key={level} onClick={() => setEditSkill(level)}
-                        className={`py-2 rounded-lg text-[11px] font-semibold capitalize transition-all ${editSkill === level ? "bg-[#1a1a2e] text-white" : "bg-[#f4f4f8] text-[#6e6e82]"}`}>
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {saveError && (
+                <div className="mx-6 mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-500 text-sm">{saveError}</div>
+              )}
 
-              {/* Professional */}
-              <div className="bg-white rounded-2xl border border-black/[0.03] p-4 space-y-3">
-                <h4 className="font-bold text-[11px] text-[#9e9eb0] uppercase tracking-wider">Professional</h4>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1.5">Role</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {USER_ROLES.map((r) => (
-                      <button key={r.value} onClick={() => setEditRole(r.value)}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${editRole === r.value ? "bg-[#1a1a2e] text-white" : "bg-[#f4f4f8] text-[#6e6e82]"}`}>
-                        {r.icon} {r.label}
-                      </button>
-                    ))}
+              <div className="px-6 space-y-4 pb-8">
+                {/* Avatar */}
+                <div className="flex justify-center pt-2 pb-1">
+                  <div onClick={() => fileInputRef.current?.click()} className="relative w-24 h-24 rounded-full cursor-pointer group">
+                    <div className="w-full h-full rounded-full bg-zinc-200 flex items-center justify-center text-[#71717b] overflow-hidden ring-4 ring-white shadow-lg">
+                      {avatarPreview ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" /> : <User size={36} />}
+                    </div>
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera size={20} className="text-white" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#8e51ff] rounded-full flex items-center justify-center shadow-md">
+                      <Camera size={12} className="text-white" />
+                    </div>
                   </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1.5">Stage</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {STARTUP_STAGES.map((s) => (
-                      <button key={s.value} onClick={() => setEditStage(s.value)}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${editStage === s.value ? "bg-[#1a1a2e] text-white" : "bg-[#f4f4f8] text-[#6e6e82]"}`}>
-                        {s.icon} {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">Company</label>
-                    <input value={editCompany} onChange={(e) => setEditCompany(e.target.value)} className={inputCls} />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">Title</label>
-                    <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputCls} />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">Looking For</label>
-                  <input value={editLookingFor} onChange={(e) => setEditLookingFor(e.target.value)} placeholder="cofounder, hiring, mentor..." className={inputCls} />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1.5">Skills</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {PROFESSIONAL_SKILLS.map((s) => (
-                      <button key={s} onClick={() => setEditSkills((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${editSkills.includes(s) ? "bg-[#1a1a2e] text-white" : "bg-[#f4f4f8] text-[#6e6e82]"}`}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2">
-                    <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">College</label>
-                    <input value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className={inputCls} />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#6e6e82] mb-1">Year</label>
-                    <input type="number" value={editGradYear} onChange={(e) => setEditGradYear(e.target.value)} className={inputCls} />
-                  </div>
-                </div>
-              </div>
 
-              {/* Interests */}
-              <div className="bg-white rounded-2xl border border-black/[0.03] p-4 space-y-3">
-                <h4 className="font-bold text-[11px] text-[#9e9eb0] uppercase tracking-wider">Interests</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {INTERESTS.map((interest) => (
-                    <button key={interest.id}
-                      onClick={() => setEditInterests((prev) => prev.includes(interest.id) ? prev.filter((i) => i !== interest.id) : [...prev, interest.id])}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${editInterests.includes(interest.id) ? "bg-[#1a1a2e] text-white" : "bg-[#f4f4f8] text-[#6e6e82]"}`}>
-                      {interest.icon} {interest.label}
-                    </button>
-                  ))}
-                </div>
+                {/* Basic Info */}
+                <Card className="border-0 bg-zinc-50 p-4">
+                  <CardContent className="p-0 space-y-3">
+                    <h4 className="font-bold text-xs text-[#71717b] uppercase tracking-wider">Basic Info</h4>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1">Name</label>
+                      <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputCls} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1">Bio</label>
+                      <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1.5">Skill Level</label>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {SKILL_LEVELS.map((level) => (
+                          <button key={level} onClick={() => setEditSkill(level)}
+                            className={`py-2 rounded-lg text-xs font-semibold capitalize transition-all ${editSkill === level ? "bg-[#8e51ff] text-white" : "bg-zinc-100 text-[#71717b]"}`}>
+                            {level}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Professional */}
+                <Card className="border-0 bg-zinc-50 p-4">
+                  <CardContent className="p-0 space-y-3">
+                    <h4 className="font-bold text-xs text-[#71717b] uppercase tracking-wider">Professional</h4>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1.5">Role</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {USER_ROLES.map((r) => (
+                          <button key={r.value} onClick={() => setEditRole(r.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${editRole === r.value ? "bg-[#8e51ff] text-white" : "bg-zinc-100 text-[#71717b]"}`}>
+                            {r.icon} {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1.5">Stage</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {STARTUP_STAGES.map((s) => (
+                          <button key={s.value} onClick={() => setEditStage(s.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${editStage === s.value ? "bg-[#8e51ff] text-white" : "bg-zinc-100 text-[#71717b]"}`}>
+                            {s.icon} {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-[#71717b] mb-1">Company</label>
+                        <input value={editCompany} onChange={(e) => setEditCompany(e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#71717b] mb-1">Title</label>
+                        <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputCls} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1">Looking For</label>
+                      <input value={editLookingFor} onChange={(e) => setEditLookingFor(e.target.value)} placeholder="cofounder, hiring, mentor..." className={inputCls} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#71717b] mb-1.5">Skills</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {PROFESSIONAL_SKILLS.map((s) => (
+                          <button key={s} onClick={() => setEditSkills((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${editSkills.includes(s) ? "bg-[#8e51ff] text-white" : "bg-zinc-100 text-[#71717b]"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2">
+                        <label className="block text-xs font-semibold text-[#71717b] mb-1">College</label>
+                        <input value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#71717b] mb-1">Year</label>
+                        <input type="number" value={editGradYear} onChange={(e) => setEditGradYear(e.target.value)} className={inputCls} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Interests */}
+                <Card className="border-0 bg-zinc-50 p-4">
+                  <CardContent className="p-0 space-y-3">
+                    <h4 className="font-bold text-xs text-[#71717b] uppercase tracking-wider">Interests</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {INTERESTS.map((interest) => (
+                        <button key={interest.id}
+                          onClick={() => setEditInterests((prev) => prev.includes(interest.id) ? prev.filter((i) => i !== interest.id) : [...prev, interest.id])}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${editInterests.includes(interest.id) ? "bg-[#8e51ff] text-white" : "bg-zinc-100 text-[#71717b]"}`}>
+                          {interest.icon} {interest.label}
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="h-4" />
             </motion.div>
           ) : (
             <motion.div key="view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
-              {/* ── Hero Card ── */}
-              <div className="p-4">
-                <div className="bg-white rounded-2xl border border-black/[0.03] overflow-hidden border border-black/[0.03]">
-                  {/* Top banner gradient */}
-                  <div className="h-20 bg-gradient-to-br from-[#6c5ce7] via-[#a29bfe] to-[#74b9ff] relative">
-                    <div className="absolute inset-0 opacity-10"
-                      style={{ backgroundImage: "radial-gradient(circle at 20% 80%, white 0%, transparent 60%), radial-gradient(circle at 80% 20%, white 0%, transparent 60%)" }} />
-                  </div>
-
-                  <div className="flex flex-col items-center -mt-11 pb-5 px-5">
-                    <div className="relative mb-3">
-                      <div className="w-[76px] h-[76px] rounded-full bg-gradient-to-br from-[#e8e8ef] to-[#d1d1db] flex items-center justify-center text-[#9e9eb0] overflow-hidden ring-[3px] ring-white shadow-lg">
-                        {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={30} />}
-                      </div>
-                      {user.verified && (
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#6c5ce7] rounded-full flex items-center justify-center ring-2 ring-white">
-                          <Check size={9} className="text-white" strokeWidth={3} />
-                        </div>
-                      )}
-                      <div className="absolute -top-0.5 -left-0.5 w-3.5 h-3.5 rounded-full border-2 border-white"
-                        style={{ background: availInfo.color }} />
-                    </div>
-
-                    <h2 className="text-[20px] font-bold text-[#1a1a2e] tracking-tight">{user.name}</h2>
-
-                    {(user.title || user.company) && (
-                      <p className="text-[13px] text-[#9e9eb0] mt-0.5">
-                        {user.title}{user.title && user.company ? " · " : ""}<span className="font-semibold text-[#6e6e82]">{user.company}</span>
-                      </p>
-                    )}
-
-                    {user.bio && (
-                      <p className="text-[13px] text-[#9e9eb0] mt-2 text-center leading-relaxed max-w-[280px]">{user.bio}</p>
-                    )}
-
-                    <div className="flex gap-1.5 mt-3">
-                      {AVAILABILITY_OPTIONS.map((opt) => (
-                        <motion.button key={opt.value} whileTap={{ scale: 0.95 }}
-                          onClick={() => setAvailability(opt.value)}
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border ${
-                            availability === opt.value
-                              ? `${opt.bg} ${opt.text} border-current/10`
-                              : "bg-[#f4f4f8] text-[#9e9eb0] border-transparent"
-                          }`}>
-                          {opt.label}
-                        </motion.button>
-                      ))}
-                    </div>
-
-                    {(roleInfo || stageInfo || user.lookingFor) && (
-                      <div className="flex flex-wrap gap-1.5 mt-2.5 justify-center">
-                        {roleInfo && (
-                          <span className="px-2.5 py-1 bg-[#f4f4f8] text-[#4a4a5e] text-[11px] font-semibold rounded-full">
-                            {roleInfo.icon} {roleInfo.label}
-                          </span>
-                        )}
-                        {stageInfo && (
-                          <span className="px-2.5 py-1 bg-[#f4f4f8] text-[#4a4a5e] text-[11px] font-semibold rounded-full">
-                            {stageInfo.icon} {stageInfo.label}
-                          </span>
-                        )}
-                        {user.lookingFor && (
-                          <span className="px-2.5 py-1 bg-[#e6f9f4] text-[#00b894] text-[11px] font-semibold rounded-full">
-                            Looking for: {user.lookingFor}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {user.collegeName && (
-                      <p className="text-[11px] text-[#9e9eb0] mt-2 flex items-center gap-1 font-medium">
-                        <GraduationCap size={11} /> {user.collegeName}
-                        {user.graduationYear ? ` '${String(user.graduationYear).slice(-2)}` : ""}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="grid grid-cols-4 border-t border-black/[0.04] divide-x divide-black/[0.04]">
-                    {[
-                      { value: profile?.activitiesCreated?.length || 0, label: "Created", icon: Zap },
-                      { value: profile?.participants?.length || 0, label: "Joined", icon: Target },
-                      { value: typeof user.rating === "number" ? user.rating.toFixed(1) : "—", label: "Rating", icon: Star },
-                      { value: connections.length, label: "Network", icon: Users },
-                    ].map((stat) => (
-                      <div key={stat.label} className="py-3.5 text-center">
-                        <motion.span
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="block text-[17px] font-bold text-[#1a1a2e]"
-                        >{stat.value}</motion.span>
-                        <span className="text-[10px] text-[#9e9eb0] font-medium">{stat.label}</span>
-                      </div>
-                    ))}
+              {/* Banner Image */}
+              <div className="relative w-full h-40 overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-[#8e51ff] via-[#a78bfa] to-[#6d28d9]" />
+                <div className="bg-[#8e51ff]/30 absolute inset-0" />
+                <div className="flex absolute inset-x-4 top-4 justify-between items-center">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setScreen("map")}
+                    className="rounded-full bg-white/80 flex justify-center items-center w-8 h-8"
+                  >
+                    <ArrowLeft className="size-4 text-zinc-950" />
+                  </motion.button>
+                  <div className="flex items-center gap-2">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      className="rounded-full bg-white/80 flex justify-center items-center w-8 h-8"
+                    >
+                      <Settings className="size-4 text-zinc-950" />
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleShare}
+                      className="rounded-full bg-white/80 flex justify-center items-center w-8 h-8"
+                    >
+                      {copied ? <CheckCircle2 className="size-4 text-emerald-600" /> : <Share2 className="size-4 text-zinc-950" />}
+                    </motion.button>
                   </div>
                 </div>
               </div>
 
-              <div className="px-4 space-y-2 pb-6">
+              {/* Profile photo + Edit button */}
+              <div className="relative z-10 -mt-14 px-6">
+                <div className="flex justify-between items-end">
+                  <div className="shadow-lg rounded-full border-white border-4 border-solid w-24 h-24 overflow-hidden">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt="Profile photo" className="object-cover w-full h-full" />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center">
+                        <User size={36} className="text-[#71717b]" />
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    onClick={startEdit}
+                    className="font-medium rounded-full bg-[#8e51ff] text-violet-50 text-sm leading-5 px-4 h-9 hover:bg-[#7c3aed]"
+                  >
+                    <Pencil className="size-3.5 mr-1.5" />
+                    Edit Profile
+                  </Button>
+                </div>
+
+                {/* Name + verified badge */}
+                <div className="flex mt-4 flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-zinc-950 text-lg leading-7">{user.name}</span>
+                    {user.verified && (
+                      <div className="rounded-full bg-[#8e51ff] flex justify-center items-center w-5 h-5">
+                        <Check className="size-3 text-violet-50" />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[#71717b] text-sm leading-5">@{user.name?.toLowerCase().replace(/\s+/g, "")}</span>
+
+                  {user.bio && (
+                    <p className="text-zinc-950 text-sm leading-5 mt-1">{user.bio}</p>
+                  )}
+
+                  {/* Location + join date */}
+                  <div className="flex mt-2 items-center gap-4">
+                    <div className="text-[#71717b] text-sm leading-5 flex items-center gap-1">
+                      <MapPin className="size-3.5" />
+                      <span>{user.collegeName || "Nearby"}</span>
+                    </div>
+                    <div className="text-[#71717b] text-sm leading-5 flex items-center gap-1">
+                      <Calendar className="size-3.5" />
+                      <span>Member</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                <div className="flex mt-4 items-center gap-6">
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-zinc-950 text-lg leading-7">{connections.length}</span>
+                    <span className="text-[#71717b] text-xs leading-4">Connections</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-zinc-950 text-lg leading-7">{profile?.participants?.length || 0}</span>
+                    <span className="text-[#71717b] text-xs leading-4">Activities</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-zinc-950 text-lg leading-7">{profile?.activitiesCreated?.length || 0}</span>
+                    <span className="text-[#71717b] text-xs leading-4">Created</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-zinc-950 text-lg leading-7">{typeof user.rating === "number" ? user.rating.toFixed(1) : "---"}</span>
+                    <span className="text-[#71717b] text-xs leading-4">Rating</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interest badges */}
+              {interests.length > 0 && (
+                <div className="mt-6 px-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {interests.map((i: string) => {
+                      const interest = INTERESTS.find((x) => x.id === i);
+                      return interest ? (
+                        <span key={i} className="font-medium rounded-full bg-[#8e51ff]/10 text-[#8e51ff] text-xs leading-4 px-3 py-1.5">
+                          {interest.icon} {interest.label}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Availability */}
+              <div className="mt-4 px-6">
+                <div className="flex gap-1.5">
+                  {AVAILABILITY_OPTIONS.map((opt) => (
+                    <motion.button key={opt.value} whileTap={{ scale: 0.95 }}
+                      onClick={() => setAvailability(opt.value)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                        availability === opt.value
+                          ? `${opt.bg} ${opt.text} border-current/10`
+                          : "bg-zinc-100 text-[#71717b] border-transparent"
+                      }`}>
+                      {opt.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Professional info badges */}
+              {(roleInfo || stageInfo || user.lookingFor) && (
+                <div className="mt-3 px-6">
+                  <div className="flex flex-wrap gap-1.5">
+                    {roleInfo && (
+                      <span className="px-3 py-1.5 bg-zinc-100 text-zinc-950 text-xs font-semibold rounded-full">
+                        {roleInfo.icon} {roleInfo.label}
+                      </span>
+                    )}
+                    {stageInfo && (
+                      <span className="px-3 py-1.5 bg-zinc-100 text-zinc-950 text-xs font-semibold rounded-full">
+                        {stageInfo.icon} {stageInfo.label}
+                      </span>
+                    )}
+                    {user.lookingFor && (
+                      <span className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full">
+                        Looking for: {user.lookingFor}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {user.collegeName && (
+                <p className="text-xs text-[#71717b] mt-2 px-6 flex items-center gap-1 font-medium">
+                  <GraduationCap size={12} /> {user.collegeName}
+                  {user.graduationYear ? ` '${String(user.graduationYear).slice(-2)}` : ""}
+                </p>
+              )}
+
+              {/* Activity Stats Card */}
+              <div className="mt-6 px-6">
+                <Card className="bg-zinc-100/50 border-0 p-4">
+                  <CardContent className="p-0 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-zinc-950 text-sm leading-5">Activity Stats</span>
+                      <span className="text-[#71717b] text-xs leading-4">This Month</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="rounded-lg bg-white flex p-2 flex-col items-center gap-1">
+                        <div className="rounded-full bg-green-100 flex justify-center items-center w-8 h-8">
+                          <Trophy className="size-4 text-green-600" />
+                        </div>
+                        <span className="font-bold text-zinc-950 text-base leading-6">{profile?.participants?.length || 0}</span>
+                        <span className="text-[#71717b] text-[10px]">Attended</span>
+                      </div>
+                      <div className="rounded-lg bg-white flex p-2 flex-col items-center gap-1">
+                        <div className="rounded-full bg-amber-100 flex justify-center items-center w-8 h-8">
+                          <Star className="size-4 text-amber-600" />
+                        </div>
+                        <span className="font-bold text-zinc-950 text-base leading-6">{typeof user.rating === "number" ? user.rating.toFixed(1) : "---"}</span>
+                        <span className="text-[#71717b] text-[10px]">Rating</span>
+                      </div>
+                      <div className="rounded-lg bg-white flex p-2 flex-col items-center gap-1">
+                        <div className="rounded-full bg-blue-100 flex justify-center items-center w-8 h-8">
+                          <Users className="size-4 text-blue-600" />
+                        </div>
+                        <span className="font-bold text-zinc-950 text-base leading-6">{connections.length}</span>
+                        <span className="text-[#71717b] text-[10px]">Connects</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {saveError && (
+                <div className="mx-6 mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-500 text-sm">{saveError}</div>
+              )}
+
+              <div className="px-6 mt-6 space-y-4 pb-6">
 
                 {/* Profile Completion */}
                 <ProfileCompletion user={user} profile={profile} connections={connections} />
 
                 {/* Connection Requests */}
                 {pendingRequests.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-black/[0.03] p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <h4 className="font-bold text-[13px] text-[#1a1a2e]">Requests</h4>
-                      <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] text-center">{pendingRequests.length}</span>
-                    </div>
-                    <div className="space-y-2">
-                      {pendingRequests.map((req) => (
-                        <div key={req.id} className="flex items-center gap-3 p-2.5 bg-[#f4f4f8] rounded-xl">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 text-[#6e6e82] flex items-center justify-center font-bold text-sm overflow-hidden">
-                            {req.requester.avatar ? <img src={req.requester.avatar} alt="" className="w-full h-full object-cover" /> : req.requester.name.charAt(0)}
+                  <Card className="border-0 p-4">
+                    <CardContent className="p-0">
+                      <div className="flex items-center gap-2 mb-3">
+                        <h4 className="font-semibold text-sm text-zinc-950">Requests</h4>
+                        <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] text-center">{pendingRequests.length}</span>
+                      </div>
+                      <div className="space-y-2">
+                        {pendingRequests.map((req) => (
+                          <div key={req.id} className="flex items-center gap-3 p-2.5 bg-zinc-50 rounded-xl">
+                            <div className="w-10 h-10 rounded-full bg-zinc-200 text-[#71717b] flex items-center justify-center font-bold text-sm overflow-hidden">
+                              {req.requester.avatar ? <img src={req.requester.avatar} alt="" className="w-full h-full object-cover" /> : req.requester.name.charAt(0)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm truncate text-zinc-950">{req.requester.name}</p>
+                              <p className="text-xs text-[#71717b]">wants to connect</p>
+                            </div>
+                            <div className="flex gap-1.5">
+                              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "accepted")} className="w-8 h-8 bg-[#8e51ff] text-white rounded-full flex items-center justify-center"><Check size={13} /></motion.button>
+                              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "rejected")} className="w-8 h-8 bg-zinc-200 text-[#71717b] rounded-full flex items-center justify-center"><X size={13} /></motion.button>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[13px] truncate text-[#1a1a2e]">{req.requester.name}</p>
-                            <p className="text-[11px] text-[#9e9eb0]">wants to connect</p>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "accepted")} className="w-8 h-8 bg-[#1a1a2e] text-white rounded-full flex items-center justify-center"><Check size={13} /></motion.button>
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleRequest(req.id, "rejected")} className="w-8 h-8 bg-gray-200 text-[#6e6e82] rounded-full flex items-center justify-center"><X size={13} /></motion.button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {/* Achievements */}
@@ -591,178 +699,174 @@ export default function ProfileScreen() {
 
                 {/* Network connections preview */}
                 {connections.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-black/[0.03] p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-bold text-[13px] text-[#1a1a2e]">Network</h4>
-                      <span className="text-[11px] text-[#6c5ce7] font-semibold">{connections.length} connections</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {connections.slice(0, 8).map((c, i) => (
-                        <motion.div key={i}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.04 }}
-                          className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-white flex items-center justify-center text-[11px] font-bold text-[#4a4a5e] -ml-1 first:ml-0 shadow-sm"
-                        >
-                          {c.partner.name.charAt(0)}
-                        </motion.div>
-                      ))}
-                      {connections.length > 8 && (
-                        <div className="w-9 h-9 rounded-full bg-[#f4f4f8] border-2 border-white flex items-center justify-center text-[10px] font-bold text-[#6e6e82] -ml-1 shadow-sm">
-                          +{connections.length - 8}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <Card className="border-0 p-4">
+                    <CardContent className="p-0">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-sm text-zinc-950">Network</h4>
+                        <span className="text-xs text-[#8e51ff] font-semibold">{connections.length} connections</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {connections.slice(0, 8).map((c, i) => (
+                          <motion.div key={i}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            className="w-9 h-9 rounded-full bg-zinc-200 border-2 border-white flex items-center justify-center text-[11px] font-bold text-zinc-950 -ml-1 first:ml-0 shadow-sm"
+                          >
+                            {c.partner.name.charAt(0)}
+                          </motion.div>
+                        ))}
+                        {connections.length > 8 && (
+                          <div className="w-9 h-9 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-[#71717b] -ml-1 shadow-sm">
+                            +{connections.length - 8}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {/* Skills */}
                 {userSkills.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-black/[0.03] p-4">
-                    <h4 className="font-bold text-[13px] text-[#1a1a2e] mb-2.5">Skills</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {userSkills.map((s) => (
-                        <span key={s} className="px-3 py-1.5 bg-[#f4f4f8] text-[#2d2d3f] text-[11px] font-semibold rounded-full">{s}</span>
-                      ))}
-                    </div>
-                  </div>
+                  <Card className="border-0 p-4">
+                    <CardContent className="p-0">
+                      <h4 className="font-semibold text-sm text-zinc-950 mb-2.5">Skills</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {userSkills.map((s) => (
+                          <span key={s} className="px-3 py-1.5 bg-zinc-100 text-zinc-950 text-xs font-semibold rounded-full">{s}</span>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
 
-                {/* Interests */}
-                {interests.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-black/[0.03] p-4">
-                    <h4 className="font-bold text-[13px] text-[#1a1a2e] mb-2.5">Interests</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {interests.map((i: string) => {
-                        const interest = INTERESTS.find((x) => x.id === i);
-                        return interest ? (
-                          <span key={i} className="px-3 py-1.5 bg-[#f4f4f8] text-[#4a4a5e] text-[11px] font-semibold rounded-full">
-                            {interest.icon} {interest.label}
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
+                {/* Recent Activity - tabbed */}
+                <div>
+                  <div className="flex mb-4 justify-between items-center">
+                    <span className="font-semibold text-zinc-950 text-sm leading-5">Recent Activity</span>
+                    <span className="font-medium text-[#8e51ff] text-xs leading-4">See All</span>
                   </div>
-                )}
 
-                {/* Activity History — tabbed */}
-                <div className="bg-white rounded-2xl border border-black/[0.03] overflow-hidden">
                   {/* Tab bar */}
-                  <div className="flex border-b border-black/[0.04]">
+                  <div className="flex gap-2 mb-4">
                     {[
                       { key: "joined" as const, label: "Joined", count: profile?.participants?.length || 0, icon: TrendingUp },
                       { key: "created" as const, label: "Created", count: profile?.activitiesCreated?.length || 0, icon: Zap },
                     ].map((tab) => (
                       <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[12px] font-semibold transition-colors relative ${
-                          activeTab === tab.key ? "text-[#1a1a2e]" : "text-[#9e9eb0]"
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                          activeTab === tab.key ? "bg-[#8e51ff] text-white" : "bg-zinc-100 text-[#71717b]"
                         }`}>
                         <tab.icon size={13} />
                         {tab.label}
                         {tab.count > 0 && (
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                            activeTab === tab.key ? "bg-[#1a1a2e] text-white" : "bg-[#f4f4f8] text-[#9e9eb0]"
+                            activeTab === tab.key ? "bg-white/20 text-white" : "bg-zinc-200 text-[#71717b]"
                           }`}>{tab.count}</span>
-                        )}
-                        {activeTab === tab.key && (
-                          <motion.div layoutId="actTab" className="absolute bottom-0 left-4 right-4 h-0.5 bg-gray-900 rounded-full" />
                         )}
                       </button>
                     ))}
                   </div>
 
-                  <div className="p-3">
-                    <AnimatePresence mode="wait">
-                      {activeTab === "joined" ? (
-                        <motion.div key="joined" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                          {profile?.participants && profile.participants.length > 0 ? (
-                            <div className="space-y-1">
-                              {profile.participants.slice(0, 6).map((p) => (
-                                <div key={p.activity.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#f4f4f8] transition-colors cursor-pointer">
-                                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm shrink-0"
-                                    style={{ background: `${TYPE_COLORS[p.activity.type]}12`, color: TYPE_COLORS[p.activity.type] }}>
+                  <AnimatePresence mode="wait">
+                    {activeTab === "joined" ? (
+                      <motion.div key="joined" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
+                        {profile?.participants && profile.participants.length > 0 ? (
+                          profile.participants.slice(0, 6).map((p) => (
+                            <Card key={p.activity.id} className="border-zinc-200 border-0 p-4">
+                              <CardContent className="p-0">
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-sm"
+                                    style={{ background: `${TYPE_COLORS[p.activity.type]}20`, color: TYPE_COLORS[p.activity.type] }}>
                                     {ACTIVITY_TYPES.find((t) => t.value === p.activity.type)?.icon}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-[13px] text-[#1a1a2e] truncate">{p.activity.title}</p>
-                                    <p className="text-[11px] text-[#9e9eb0]">by {p.activity.creator.name}</p>
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-semibold text-zinc-950 text-sm leading-5 truncate">{p.activity.title}</span>
+                                    </div>
+                                    <span className="text-[#71717b] text-xs leading-4">by {p.activity.creator.name}</span>
                                   </div>
-                                  <ChevronRight size={14} className="text-[#d1d1db] shrink-0" />
+                                  <ChevronRight size={14} className="text-[#71717b] shrink-0 mt-1" />
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <EmptyState icon={<Clock size={20} className="text-[#d1d1db]" />} text="No activities joined yet" sub="Explore the map to get started" />
-                          )}
-                        </motion.div>
-                      ) : (
-                        <motion.div key="created" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                          {profile?.activitiesCreated && profile.activitiesCreated.length > 0 ? (
-                            <div className="space-y-1">
-                              {profile.activitiesCreated.slice(0, 6).map((a) => (
-                                <div key={a.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#f4f4f8] transition-colors cursor-pointer">
-                                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm shrink-0"
-                                    style={{ background: `${TYPE_COLORS[a.type]}12`, color: TYPE_COLORS[a.type] }}>
+                              </CardContent>
+                            </Card>
+                          ))
+                        ) : (
+                          <EmptyState icon={<Clock size={20} className="text-zinc-300" />} text="No activities joined yet" sub="Explore the map to get started" />
+                        )}
+                      </motion.div>
+                    ) : (
+                      <motion.div key="created" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
+                        {profile?.activitiesCreated && profile.activitiesCreated.length > 0 ? (
+                          profile.activitiesCreated.slice(0, 6).map((a) => (
+                            <Card key={a.id} className="border-zinc-200 border-0 p-4">
+                              <CardContent className="p-0">
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-sm"
+                                    style={{ background: `${TYPE_COLORS[a.type]}20`, color: TYPE_COLORS[a.type] }}>
                                     {ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-[13px] text-[#1a1a2e] truncate">{a.title}</p>
-                                    <p className="text-[11px] text-[#9e9eb0] capitalize">{a.type}</p>
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-semibold text-zinc-950 text-sm leading-5 truncate">{a.title}</span>
+                                    </div>
+                                    <span className="text-[#71717b] text-xs leading-4 capitalize">{a.type}</span>
                                   </div>
-                                  <ChevronRight size={14} className="text-[#d1d1db] shrink-0" />
+                                  <ChevronRight size={14} className="text-[#71717b] shrink-0 mt-1" />
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <EmptyState icon={<Zap size={20} className="text-[#d1d1db]" />} text="No activities created" sub="Tap + to create your first one" />
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                              </CardContent>
+                            </Card>
+                          ))
+                        ) : (
+                          <EmptyState icon={<Zap size={20} className="text-zinc-300" />} text="No activities created" sub="Tap + to create your first one" />
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Settings */}
-                <div className="bg-white rounded-2xl border border-black/[0.03] p-4">
-                  <h4 className="font-bold text-[13px] text-[#1a1a2e] mb-3">Settings</h4>
-                  <div className="space-y-3">
-                    {/* Location sharing toggle */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${locationSharing ? "bg-emerald-50 text-emerald-600" : "bg-[#f4f4f8] text-[#9e9eb0]"}`}>
-                          {locationSharing ? <Eye size={15} /> : <EyeOff size={15} />}
+                <Card className="border-0 p-4">
+                  <CardContent className="p-0">
+                    <h4 className="font-semibold text-sm text-zinc-950 mb-3">Settings</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${locationSharing ? "bg-emerald-50 text-emerald-600" : "bg-zinc-100 text-[#71717b]"}`}>
+                            {locationSharing ? <Eye size={15} /> : <EyeOff size={15} />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-zinc-950">Location Status</p>
+                            <p className="text-xs text-[#71717b]">{locationSharing ? "Others can see you on the map" : "You are hidden from the map"}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[13px] font-semibold text-[#1a1a2e]">Location Status</p>
-                          <p className="text-[11px] text-[#9e9eb0]">{locationSharing ? "Others can see you on the map" : "You are hidden from the map"}</p>
-                        </div>
+                        <button
+                          onClick={async () => {
+                            const newVal = !locationSharing;
+                            setLocationSharing(newVal);
+                            if (user) {
+                              await fetch(`/api/users/${user.id}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ shareLocation: newVal }),
+                              });
+                              const updated = { ...user, shareLocation: newVal };
+                              setUser(updated);
+                              localStorage.setItem("hobbyhub_user", JSON.stringify(updated));
+                            }
+                          }}
+                          className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${locationSharing ? "bg-emerald-500" : "bg-zinc-300"}`}
+                        >
+                          <motion.div
+                            animate={{ x: locationSharing ? 20 : 2 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                          />
+                        </button>
                       </div>
-                      <button
-                        onClick={async () => {
-                          const newVal = !locationSharing;
-                          setLocationSharing(newVal);
-                          if (user) {
-                            await fetch(`/api/users/${user.id}`, {
-                              method: "PATCH",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ shareLocation: newVal }),
-                            });
-                            const updated = { ...user, shareLocation: newVal };
-                            setUser(updated);
-                            localStorage.setItem("hobbyhub_user", JSON.stringify(updated));
-                          }
-                        }}
-                        className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${locationSharing ? "bg-emerald-500" : "bg-gray-300"}`}
-                      >
-                        <motion.div
-                          animate={{ x: locationSharing ? 20 : 2 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
-                        />
-                      </button>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
 
                 {/* Seed demo data */}
                 <button
@@ -773,14 +877,14 @@ export default function ProfileScreen() {
                     setSeeding(false);
                     setScreen("map");
                   }}
-                  className="w-full py-2.5 text-[#a29bfe] font-medium text-[12px] flex items-center justify-center gap-1.5 hover:text-violet-600 transition-colors"
+                  className="w-full py-2.5 text-[#8e51ff] font-medium text-xs flex items-center justify-center gap-1.5 hover:text-[#7c3aed] transition-colors"
                 >
-                  {seeding ? "Loading demo data..." : "✨ Load Demo Data Nearby"}
+                  {seeding ? "Loading demo data..." : "Load Demo Data Nearby"}
                 </button>
 
                 {/* Logout */}
                 <button onClick={logout}
-                  className="w-full py-3 text-[#9e9eb0] font-medium text-[12px] flex items-center justify-center gap-1.5 hover:text-red-400 transition-colors">
+                  className="w-full py-3 text-[#71717b] font-medium text-xs flex items-center justify-center gap-1.5 hover:text-red-400 transition-colors">
                   <LogOut size={13} /> Sign out
                 </button>
                 <div className="h-2" />
@@ -796,9 +900,9 @@ export default function ProfileScreen() {
 function EmptyState({ icon, text, sub }: { icon: React.ReactNode; text: string; sub: string }) {
   return (
     <div className="text-center py-7">
-      <div className="w-12 h-12 bg-[#f4f4f8] rounded-2xl flex items-center justify-center mx-auto mb-2">{icon}</div>
-      <p className="text-[12px] text-[#6e6e82] font-semibold">{text}</p>
-      <p className="text-[11px] text-[#d1d1db] mt-0.5">{sub}</p>
+      <div className="w-12 h-12 bg-zinc-100 rounded-2xl flex items-center justify-center mx-auto mb-2">{icon}</div>
+      <p className="text-xs text-[#71717b] font-semibold">{text}</p>
+      <p className="text-xs text-zinc-300 mt-0.5">{sub}</p>
     </div>
   );
 }

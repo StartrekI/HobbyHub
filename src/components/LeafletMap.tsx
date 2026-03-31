@@ -50,8 +50,8 @@ export default function LeafletMap({
     // Radius circle showing nearby area
     radiusRef.current = L.circle([userLocation.lat, userLocation.lng], {
       radius: 1500,
-      color: "#6c5ce7",
-      fillColor: "#6c5ce7",
+      color: "#8e51ff",
+      fillColor: "#8e51ff",
       fillOpacity: 0.04,
       weight: 1.5,
       dashArray: "8 6",
@@ -119,7 +119,7 @@ export default function LeafletMap({
 
     // ─── ACTIVITY MARKERS ───
     activities.forEach((a) => {
-      const color = TYPE_COLORS[a.type] || "#6c5ce7";
+      const color = TYPE_COLORS[a.type] || "#8e51ff";
       const emoji = ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon || "⭐";
       const pCount = a.participants?.length || a._count?.participants || 0;
       const isEvent = a.isEvent;
@@ -155,7 +155,7 @@ export default function LeafletMap({
 
       // Color based on role
       let bgColor = "#00B894";
-      if (u.role === "founder") bgColor = "#6c5ce7";
+      if (u.role === "founder") bgColor = "#8e51ff";
       else if (u.role === "developer") bgColor = "#0984E3";
       else if (u.role === "designer") bgColor = "#FD79A8";
       else if (u.role === "investor") bgColor = "#FDCB6E";
@@ -243,7 +243,7 @@ export default function LeafletMap({
           width: 22px;
           height: 22px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+          background: linear-gradient(135deg, #8e51ff, #b388ff);
           border: 3px solid white;
           box-shadow: 0 2px 10px rgba(108, 92, 231, 0.5);
           display: flex;
@@ -296,7 +296,7 @@ export default function LeafletMap({
           padding: 0 5px;
           border-radius: 10px;
           background: white;
-          color: #1a1a2e;
+          color: #18181b;
           font-size: 11px;
           font-weight: 800;
           display: flex;
@@ -310,7 +310,7 @@ export default function LeafletMap({
           bottom: 6px;
           left: 50%;
           transform: translateX(-50%);
-          background: #6c5ce7;
+          background: #8e51ff;
           color: white;
           font-size: 8px;
           font-weight: 800;

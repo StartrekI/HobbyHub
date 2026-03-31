@@ -164,16 +164,16 @@ export default function ChatScreen() {
       className="h-full bg-[#f8f8fa] flex flex-col"
     >
       {/* ── Header ── */}
-      <div className="bg-[#1a1a2e] flex items-center gap-3 px-4 py-3.5">
-        <button onClick={() => setScreen("chat-list")} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.15] transition-colors">
-          <ArrowLeft size={16} className="text-white/70" />
+      <div className="bg-white flex items-center gap-3 px-4 py-3.5 border-b border-zinc-100">
+        <button onClick={() => setScreen("chat-list")} className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-50 hover:bg-zinc-100 transition-colors">
+          <ArrowLeft size={16} className="text-zinc-950" />
         </button>
-        <div className="w-10 h-10 rounded-xl bg-[#6c5ce7] flex items-center justify-center text-white font-bold text-[13px] overflow-hidden shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-[#8e51ff] flex items-center justify-center text-white font-bold text-[13px] overflow-hidden shrink-0">
           {partnerAvatar ? <img src={partnerAvatar} alt="" className="w-full h-full object-cover" /> : chatTitle.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[14px] text-white truncate">{chatTitle}</h3>
-          <p className="text-[11px] text-white/40 font-medium">{chatSubtitle}</p>
+          <h3 className="font-bold text-[14px] text-zinc-950 truncate">{chatTitle}</h3>
+          <p className="text-[11px] text-[#71717b] font-medium">{chatSubtitle}</p>
         </div>
       </div>
 
@@ -182,18 +182,18 @@ export default function ChatScreen() {
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-7 h-7 mx-auto mb-3 border-2 border-[#e8e8ef] border-t-[#6c5ce7] rounded-full animate-spin" />
-              <p className="text-[#9e9eb0] text-[13px]">Loading messages...</p>
+              <div className="w-7 h-7 mx-auto mb-3 border-2 border-zinc-200 border-t-[#8e51ff] rounded-full animate-spin" />
+              <p className="text-[#71717b] text-[13px]">Loading messages...</p>
             </div>
           </div>
         ) : allMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-14 h-14 mx-auto mb-4 bg-[#e8e5ff] rounded-2xl flex items-center justify-center">
-                <Send size={24} className="text-[#a29bfe]" />
+              <div className="w-14 h-14 mx-auto mb-4 bg-[#8e51ff]/10 rounded-xl flex items-center justify-center">
+                <Send size={24} className="text-[#8e51ff]" />
               </div>
-              <p className="text-[14px] font-semibold text-[#1a1a2e]">No messages yet</p>
-              <p className="text-[12px] text-[#9e9eb0] mt-1">Say something to start the conversation</p>
+              <p className="text-[14px] font-semibold text-zinc-950">No messages yet</p>
+              <p className="text-[12px] text-[#71717b] mt-1">Say something to start the conversation</p>
             </div>
           </div>
         ) : (
@@ -202,7 +202,7 @@ export default function ChatScreen() {
               <div key={group.date}>
                 <div className="flex items-center justify-center my-4 gap-3">
                   <div className="flex-1 h-px bg-black/[0.04]" />
-                  <span className="px-3 py-0.5 bg-white text-[#9e9eb0] text-[10px] font-semibold rounded-full border border-black/[0.04]">{group.date}</span>
+                  <span className="px-3 py-0.5 bg-white text-[#71717b] text-[10px] font-semibold rounded-full border border-zinc-100">{group.date}</span>
                   <div className="flex-1 h-px bg-black/[0.04]" />
                 </div>
                 {group.messages.map((msg: MessageType | DmMessage, idx) => {
@@ -221,20 +221,20 @@ export default function ChatScreen() {
                     >
                       <div className="max-w-[78%]">
                         {!isSelf && !isDm && !isConsecutive && (
-                          <p className="text-[11px] font-semibold mb-1 ml-1 text-[#6c5ce7]">
+                          <p className="text-[11px] font-semibold mb-1 ml-1 text-[#8e51ff]">
                             {msg.sender?.name}
                           </p>
                         )}
                         <div
                           className={`px-3.5 py-2.5 text-[14px] leading-relaxed ${
                             isSelf
-                              ? `bg-[#6c5ce7] text-white ${isConsecutive ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-br-md"}`
-                              : `bg-white text-[#1a1a2e] border border-black/[0.04] ${isConsecutive ? "rounded-2xl rounded-tl-md" : "rounded-2xl rounded-bl-md"}`
+                              ? `bg-[#8e51ff] text-white ${isConsecutive ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-br-md"}`
+                              : `bg-zinc-100 text-zinc-950 ${isConsecutive ? "rounded-2xl rounded-tl-md" : "rounded-2xl rounded-bl-md"}`
                           }`}
                         >
                           {msg.text}
                           <div className="flex items-center gap-1 mt-1 justify-end">
-                            <span className={`text-[10px] ${isSelf ? "text-white/50" : "text-[#d1d1db]"}`}>
+                            <span className={`text-[10px] ${isSelf ? "text-white/50" : "text-[#71717b]"}`}>
                               {formatTime(msg.createdAt)}
                             </span>
                             {isSelf && (
@@ -254,14 +254,14 @@ export default function ChatScreen() {
       </div>
 
       {/* ── Input ── */}
-      <div className="p-3 header-glass border-t-0" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
+      <div className="p-3 bg-white border-t border-zinc-100">
         <div className="flex items-center gap-2">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2.5 bg-[#f4f4f8] rounded-xl text-[14px] outline-none border border-transparent focus:border-[#a29bfe] focus:bg-white focus:shadow-[0_0_0_3px_rgba(108,92,231,0.12)] transition-all placeholder:text-[#9e9eb0]"
+            className="flex-1 px-4 py-2.5 bg-zinc-50 rounded-xl text-[14px] outline-none border border-zinc-100 focus:border-[#8e51ff] focus:bg-white focus:shadow-[0_0_0_3px_rgba(142,81,255,0.12)] transition-all placeholder:text-[#71717b] text-zinc-950"
           />
           <motion.button
             whileTap={{ scale: 0.9 }}
@@ -269,8 +269,8 @@ export default function ChatScreen() {
             disabled={!input.trim()}
             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
               input.trim()
-                ? "bg-[#6c5ce7] text-white shadow-[0_4px_12px_rgba(108,92,231,0.3)]"
-                : "bg-[#f4f4f8] text-[#d1d1db]"
+                ? "bg-[#8e51ff] text-white shadow-[0_4px_12px_rgba(142,81,255,0.3)]"
+                : "bg-zinc-50 text-zinc-300 border border-zinc-100"
             }`}
           >
             <Send size={16} />

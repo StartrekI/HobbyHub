@@ -9,6 +9,7 @@ import {
   Search, Bell, X, MapPin, Clock, Users, MessageCircle,
   Info, Flame, User, Crosshair, Flag, Ban, UserPlus,
   Briefcase, Lightbulb, ChevronRight, Sparkles, Calendar,
+  SlidersHorizontal,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -153,7 +154,7 @@ export default function MapView() {
     await fetch("/api/dm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ senderId: user.id, receiverId: targetUser.id, text: "Hi! 👋" }),
+      body: JSON.stringify({ senderId: user.id, receiverId: targetUser.id, text: "Hi! \u{1F44B}" }),
     });
     dismissSheet();
     setCurrentChatId(`dm:${targetUser.id}`);
@@ -245,27 +246,30 @@ export default function MapView() {
         <div className="flex gap-2">
           <div
             onClick={() => setSearchOpen(true)}
-            className="flex-1 flex items-center gap-3 bg-[#1a1a2e]/90 backdrop-blur-xl rounded-2xl px-4 py-3.5 shadow-[0_4px_20px_rgba(26,26,46,0.2)] pointer-events-auto cursor-pointer hover:bg-[#1a1a2e]/95 transition-all"
+            className="flex-1 flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.08)] pointer-events-auto cursor-pointer hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-all"
           >
-            <Search size={16} className="text-white/40" />
-            <span className="text-white/40 text-[13px]">Search activities, people...</span>
+            <Search size={16} className="text-[#71717b]" />
+            <span className="text-[#71717b] text-[13px]">Search activities, people...</span>
+            <span className="ml-auto">
+              <SlidersHorizontal size={16} className="text-[#71717b]" />
+            </span>
           </div>
           <button
             onClick={() => setScreen("calendar")}
-            className="w-[48px] h-[48px] bg-[#1a1a2e]/90 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(26,26,46,0.2)] flex items-center justify-center pointer-events-auto hover:bg-[#1a1a2e]/95 transition-all"
+            className="w-[48px] h-[48px] bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] flex items-center justify-center pointer-events-auto hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-all"
           >
-            <Calendar size={17} className="text-white/70" />
+            <Calendar size={17} className="text-zinc-950" />
           </button>
           <button
             onClick={() => setScreen("notifications")}
-            className="relative w-[48px] h-[48px] bg-[#1a1a2e]/90 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(26,26,46,0.2)] flex items-center justify-center pointer-events-auto hover:bg-[#1a1a2e]/95 transition-all"
+            className="relative w-[48px] h-[48px] bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] flex items-center justify-center pointer-events-auto hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-all"
           >
-            <Bell size={17} className="text-white/70" />
+            <Bell size={17} className="text-zinc-950" />
             {unreadCount > 0 && (
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#ff6b6b] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[#1a1a2e]"
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#ff6b6b] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white"
               >
                 {unreadCount > 9 ? "9+" : unreadCount}
               </motion.span>
@@ -289,12 +293,12 @@ export default function MapView() {
                 onClick={() => setMapFilter(f.key)}
                 className={`px-3.5 py-[6px] rounded-full text-[11px] font-semibold whitespace-nowrap transition-all duration-200 ${
                   active
-                    ? "bg-[#6c5ce7] text-white shadow-[0_0_12px_rgba(108,92,231,0.4)]"
-                    : "bg-[#1a1a2e]/70 backdrop-blur-md text-white/50 hover:bg-[#1a1a2e]/85"
+                    ? "bg-[#8e51ff] text-violet-50 shadow-[0_2px_10px_rgba(142,81,255,0.35)]"
+                    : "bg-white text-zinc-950 shadow-[0_1px_6px_rgba(0,0,0,0.08)]"
                 }`}
               >
                 {f.label}
-                {count > 0 && <span className={`ml-1 ${active ? "text-white/70" : "text-white/30"}`}>{count}</span>}
+                {count > 0 && <span className={`ml-1 ${active ? "text-violet-200" : "text-[#71717b]"}`}>{count}</span>}
               </motion.button>
             );
           })}
@@ -304,18 +308,18 @@ export default function MapView() {
       {/* ── Live Stats Pill ── */}
       {(activities.length > 0 || nearbyUsers.length > 0) && (
         <div className="absolute top-[108px] left-3 z-[490]">
-          <div className="bg-[#1a1a2e]/80 backdrop-blur-xl rounded-full px-3 py-1.5 shadow-[0_2px_12px_rgba(26,26,46,0.15)] flex items-center gap-2.5 text-[10px] font-semibold">
-            <span className="flex items-center gap-1 text-[#a29bfe]">
-              <span className="w-[5px] h-[5px] rounded-full bg-[#6c5ce7] animate-pulse" />
+          <div className="bg-white rounded-full px-3 py-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.08)] flex items-center gap-2.5 text-[10px] font-semibold">
+            <span className="flex items-center gap-1 text-[#8e51ff]">
+              <span className="w-[5px] h-[5px] rounded-full bg-[#8e51ff] animate-pulse" />
               {activities.length} active
             </span>
-            <span className="w-px h-2.5 bg-white/10" />
+            <span className="w-px h-2.5 bg-zinc-200" />
             <span className="flex items-center gap-1 text-[#00b894]">
               <span className="w-[5px] h-[5px] rounded-full bg-[#00b894]" />
               {onlineUsers.length} online
             </span>
-            <span className="w-px h-2.5 bg-white/10" />
-            <span className="flex items-center gap-1 text-white/40">
+            <span className="w-px h-2.5 bg-zinc-200" />
+            <span className="flex items-center gap-1 text-[#71717b]">
               {nearbyUsers.filter(u => u.id !== user?.id).length} nearby
             </span>
           </div>
@@ -343,21 +347,21 @@ export default function MapView() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setCenterTrigger((c) => c + 1)}
-          className="w-11 h-11 bg-[#1a1a2e]/80 backdrop-blur-xl rounded-2xl shadow-[0_4px_16px_rgba(26,26,46,0.2)] flex items-center justify-center text-white/70 hover:bg-[#1a1a2e]/90 transition-all"
+          className="w-11 h-11 bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.1)] flex items-center justify-center text-zinc-950 hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)] transition-all"
         >
           <Crosshair size={17} />
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setScreen("networking")}
-          className="w-12 h-12 bg-[#00b894] rounded-2xl shadow-[0_4px_20px_rgba(0,184,148,0.4)] flex items-center justify-center text-white transition-shadow hover:shadow-[0_6px_24px_rgba(0,184,148,0.5)]"
+          className="w-12 h-12 bg-[#00b894] rounded-xl shadow-[0_4px_20px_rgba(0,184,148,0.4)] flex items-center justify-center text-white transition-shadow hover:shadow-[0_6px_24px_rgba(0,184,148,0.5)]"
         >
           <Briefcase size={18} />
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => { setOpportunityType("gig"); setScreen("create-opportunity"); }}
-          className="w-11 h-11 bg-[#fdcb6e] rounded-2xl shadow-[0_4px_20px_rgba(253,203,110,0.4)] flex items-center justify-center text-[#1a1a2e] transition-shadow hover:shadow-[0_6px_24px_rgba(253,203,110,0.5)]"
+          className="w-11 h-11 bg-[#fdcb6e] rounded-xl shadow-[0_4px_20px_rgba(253,203,110,0.4)] flex items-center justify-center text-zinc-950 transition-shadow hover:shadow-[0_6px_24px_rgba(253,203,110,0.5)]"
         >
           <Lightbulb size={16} />
         </motion.button>
@@ -371,10 +375,10 @@ export default function MapView() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-[#13132b] z-[2000]"
+            className="fixed inset-0 bg-white z-[2000]"
           >
-            <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.06]">
-              <button onClick={() => { setSearchOpen(false); setSearchQuery(""); }} className="text-white/40 hover:text-white/70 transition-colors">
+            <div className="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(""); }} className="text-[#71717b] hover:text-zinc-950 transition-colors">
                 <X size={20} />
               </button>
               <input
@@ -382,27 +386,27 @@ export default function MapView() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search activities, people, hobbies..."
-                className="flex-1 text-[15px] outline-none bg-transparent text-white placeholder:text-white/30"
+                className="flex-1 text-[15px] outline-none bg-transparent text-zinc-950 placeholder:text-[#71717b]"
               />
             </div>
             <div className="p-4 overflow-y-auto h-[calc(100%-58px)]">
               {!searchResults ? (
                 <div className="text-center py-20">
-                  <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Search size={24} className="text-white/20" />
+                  <div className="w-14 h-14 bg-zinc-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Search size={24} className="text-[#71717b]" />
                   </div>
-                  <p className="text-white/30 text-[13px]">Try &quot;badminton&quot;, &quot;cycling&quot;, or a name</p>
+                  <p className="text-[#71717b] text-[13px]">Try &quot;badminton&quot;, &quot;cycling&quot;, or a name</p>
                 </div>
               ) : (
                 <div className="space-y-1">
                   {searchResults.activities.length > 0 && (
-                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider px-2 pt-2 pb-1">Activities</p>
+                    <p className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider px-2 pt-2 pb-1">Activities</p>
                   )}
                   {searchResults.activities.map((a) => (
                     <div
                       key={a.id}
                       onClick={() => { handleActivityClick(a); setSearchOpen(false); setSearchQuery(""); }}
-                      className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.05] cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-50 cursor-pointer transition-colors"
                     >
                       <div
                         className="w-10 h-10 rounded-xl flex items-center justify-center text-base"
@@ -411,38 +415,38 @@ export default function MapView() {
                         {ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon || "?"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[13px] text-white truncate">{a.title}</p>
-                        <p className="text-[11px] text-white/40">
+                        <p className="font-semibold text-[13px] text-zinc-950 truncate">{a.title}</p>
+                        <p className="text-[11px] text-[#71717b]">
                           {a.participants?.length || 0}/{a.playersNeeded} joined
                         </p>
                       </div>
-                      <ChevronRight size={14} className="text-white/20" />
+                      <ChevronRight size={14} className="text-zinc-300" />
                     </div>
                   ))}
                   {searchResults.users.length > 0 && (
-                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider px-2 pt-4 pb-1">People</p>
+                    <p className="text-[10px] font-bold text-[#71717b] uppercase tracking-wider px-2 pt-4 pb-1">People</p>
                   )}
                   {searchResults.users.map((u) => (
-                    <div key={u.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.05] cursor-pointer transition-colors"
+                    <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-50 cursor-pointer transition-colors"
                       onClick={() => { handleUserClick(u); setSearchOpen(false); setSearchQuery(""); }}>
-                      <div className="w-10 h-10 rounded-xl bg-[#6c5ce7] text-white flex items-center justify-center font-bold text-[13px] overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-[#8e51ff] text-white flex items-center justify-center font-bold text-[13px] overflow-hidden">
                         {u.avatar ? <img src={u.avatar} alt="" className="w-full h-full object-cover" /> : u.name.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[13px] text-white">{u.name}</p>
-                        <p className="text-[11px] text-white/40">
+                        <p className="font-semibold text-[13px] text-zinc-950">{u.name}</p>
+                        <p className="text-[11px] text-[#71717b]">
                           {u.online ? "Online" : "Offline"} &bull; {u.interests.slice(0, 2).join(", ")}
                         </p>
                       </div>
-                      <ChevronRight size={14} className="text-white/20" />
+                      <ChevronRight size={14} className="text-zinc-300" />
                     </div>
                   ))}
                   {searchResults.activities.length === 0 && searchResults.users.length === 0 && (
                     <div className="text-center py-20">
-                      <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Sparkles size={24} className="text-white/20" />
+                      <div className="w-14 h-14 bg-zinc-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <Sparkles size={24} className="text-[#71717b]" />
                       </div>
-                      <p className="text-white/30 text-[13px]">No results found</p>
+                      <p className="text-[#71717b] text-[13px]">No results found</p>
                     </div>
                   )}
                 </div>
@@ -479,11 +483,11 @@ export default function MapView() {
             onDragEnd={(_, info) => {
               if (info.offset.y > 100 || info.velocity.y > 300) dismissSheet();
             }}
-            className="absolute bottom-[68px] left-0 right-0 z-[800] bg-[#1a1a2e] rounded-t-[28px] shadow-[0_-12px_50px_rgba(0,0,0,0.25)] max-h-[55vh] overflow-hidden"
+            className="absolute bottom-[68px] left-0 right-0 z-[800] bg-white rounded-t-[28px] shadow-[0_-12px_50px_rgba(0,0,0,0.12)] max-h-[55vh] overflow-hidden border-t border-zinc-100"
           >
             {/* Drag handle */}
             <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
-              <div className="w-8 h-1 rounded-full bg-white/15" />
+              <div className="w-8 h-1 rounded-full bg-zinc-200" />
             </div>
 
             <div className="overflow-y-auto max-h-[calc(55vh-24px)] px-5 pb-6">
@@ -492,42 +496,42 @@ export default function MapView() {
                 <div>
                   <div className="flex items-start gap-3.5 mb-4">
                     <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0"
                       style={{ background: `${TYPE_COLORS[selectedActivity.type]}20` }}
                     >
                       {ACTIVITY_TYPES.find((t) => t.value === selectedActivity.type)?.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-[16px] leading-tight text-white">{selectedActivity.title}</h3>
-                      <p className="text-[13px] text-white/40 mt-0.5">by {selectedActivity.creator?.name}</p>
+                      <h3 className="font-bold text-[16px] leading-tight text-zinc-950">{selectedActivity.title}</h3>
+                      <p className="text-[13px] text-[#71717b] mt-0.5">by {selectedActivity.creator?.name}</p>
                     </div>
                   </div>
 
                   {selectedActivity.description && (
-                    <p className="text-[13px] text-white/50 mb-4 leading-relaxed">{selectedActivity.description}</p>
+                    <p className="text-[13px] text-[#71717b] mb-4 leading-relaxed">{selectedActivity.description}</p>
                   )}
 
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/[0.07] rounded-lg text-[11px] font-medium text-white/60">
-                      <MapPin size={11} className="text-[#a29bfe]" />{getDistance(userLocation.lat, userLocation.lng, selectedActivity.lat, selectedActivity.lng)}
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 rounded-lg text-[11px] font-medium text-[#71717b] border border-zinc-100">
+                      <MapPin size={11} className="text-[#8e51ff]" />{getDistance(userLocation.lat, userLocation.lng, selectedActivity.lat, selectedActivity.lng)}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/[0.07] rounded-lg text-[11px] font-medium text-white/60">
-                      <Clock size={11} className="text-[#a29bfe]" />{new Date(selectedActivity.time).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 rounded-lg text-[11px] font-medium text-[#71717b] border border-zinc-100">
+                      <Clock size={11} className="text-[#8e51ff]" />{new Date(selectedActivity.time).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/[0.07] rounded-lg text-[11px] font-medium text-white/60">
-                      <Users size={11} className="text-[#a29bfe]" />{selectedActivity.participants?.length || 0}/{selectedActivity.playersNeeded}
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-50 rounded-lg text-[11px] font-medium text-[#71717b] border border-zinc-100">
+                      <Users size={11} className="text-[#8e51ff]" />{selectedActivity.participants?.length || 0}/{selectedActivity.playersNeeded}
                     </span>
                   </div>
 
                   {selectedActivity.participants && selectedActivity.participants.length > 0 && (
                     <div className="flex -space-x-2 mb-5">
                       {selectedActivity.participants.slice(0, 6).map((p) => (
-                        <div key={p.id} className="w-8 h-8 rounded-full bg-[#6c5ce7] border-2 border-[#1a1a2e] flex items-center justify-center text-[10px] text-white font-bold overflow-hidden">
+                        <div key={p.id} className="w-8 h-8 rounded-full bg-[#8e51ff] border-2 border-white flex items-center justify-center text-[10px] text-white font-bold overflow-hidden">
                           {p.user.avatar ? <img src={p.user.avatar} alt="" className="w-full h-full object-cover" /> : p.user.name.charAt(0)}
                         </div>
                       ))}
                       {selectedActivity.participants.length > 6 && (
-                        <div className="w-8 h-8 rounded-full bg-white/[0.08] border-2 border-[#1a1a2e] flex items-center justify-center text-[10px] text-white/50 font-bold">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[10px] text-[#71717b] font-bold">
                           +{selectedActivity.participants.length - 6}
                         </div>
                       )}
@@ -541,8 +545,8 @@ export default function MapView() {
                       disabled={selectedActivity.participants?.some((p) => p.userId === user?.id)}
                       className={`flex-1 py-3 rounded-xl font-semibold text-[13px] transition-all ${
                         selectedActivity.participants?.some((p) => p.userId === user?.id)
-                          ? "bg-[#00b894]/15 text-[#00b894]"
-                          : "bg-[#6c5ce7] text-white shadow-[0_0_20px_rgba(108,92,231,0.4)]"
+                          ? "bg-[#e6f9f4] text-[#00b894] border border-[#00b894]/20"
+                          : "bg-[#8e51ff] text-white shadow-[0_4px_16px_rgba(142,81,255,0.35)]"
                       }`}
                     >
                       {selectedActivity.participants?.some((p) => p.userId === user?.id) ? "Joined" : "Join Activity"}
@@ -550,9 +554,9 @@ export default function MapView() {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => { dismissSheet(); setScreen("activity-detail"); }}
-                      className="w-12 py-3 bg-white/[0.07] rounded-xl flex items-center justify-center hover:bg-white/[0.12] transition-all"
+                      className="w-12 py-3 bg-zinc-50 rounded-xl flex items-center justify-center hover:bg-zinc-100 transition-all border border-zinc-100"
                     >
-                      <Info size={16} className="text-white/40" />
+                      <Info size={16} className="text-[#71717b]" />
                     </motion.button>
                   </div>
                 </div>
@@ -563,21 +567,21 @@ export default function MapView() {
                 <div>
                   <div className="flex items-center gap-3.5 mb-4">
                     <div className="relative">
-                      <div className="w-13 h-13 rounded-2xl bg-[#6c5ce7] flex items-center justify-center text-white text-lg font-bold overflow-hidden">
+                      <div className="w-13 h-13 rounded-xl bg-[#8e51ff] flex items-center justify-center text-white text-lg font-bold overflow-hidden">
                         {selectedUser.avatar ? <img src={selectedUser.avatar} alt="" className="w-full h-full object-cover" /> : <User size={22} />}
                       </div>
                       {selectedUser.online && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00b894] border-2 border-[#1a1a2e] rounded-full" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00b894] border-2 border-white rounded-full" />
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-[16px] text-white">{selectedUser.name}</h3>
+                        <h3 className="font-bold text-[16px] text-zinc-950">{selectedUser.name}</h3>
                         {selectedUser.verified && (
-                          <span className="w-4 h-4 bg-[#6c5ce7] rounded-full flex items-center justify-center text-white text-[8px] font-bold">✓</span>
+                          <span className="w-4 h-4 bg-[#8e51ff] rounded-full flex items-center justify-center text-white text-[8px] font-bold">&#10003;</span>
                         )}
                       </div>
-                      <p className="text-[13px] text-white/40">
+                      <p className="text-[13px] text-[#71717b]">
                         {selectedUser.online ? (
                           <span className="text-[#00b894] font-medium">Online now</span>
                         ) : (
@@ -590,7 +594,7 @@ export default function MapView() {
                   </div>
 
                   {selectedUser.bio && (
-                    <p className="text-[13px] text-white/50 mb-3 leading-relaxed">{selectedUser.bio}</p>
+                    <p className="text-[13px] text-[#71717b] mb-3 leading-relaxed">{selectedUser.bio}</p>
                   )}
 
                   <div className="flex flex-wrap gap-1.5 mb-3">
@@ -598,7 +602,7 @@ export default function MapView() {
                       const interest = INTERESTS.find((x) => x.id === i);
                       return interest ? (
                         <span key={i} className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
-                          sharedInterests.includes(i) ? "bg-[#6c5ce7]/20 text-[#a29bfe]" : "bg-white/[0.07] text-white/50"
+                          sharedInterests.includes(i) ? "bg-[#8e51ff]/10 text-[#8e51ff]" : "bg-zinc-50 text-[#71717b] border border-zinc-100"
                         }`}>
                           {interest.icon} {interest.label}
                         </span>
@@ -607,7 +611,7 @@ export default function MapView() {
                   </div>
 
                   {sharedInterests.length > 0 && (
-                    <p className="text-[11px] text-[#a29bfe] mb-4 font-semibold flex items-center gap-1">
+                    <p className="text-[11px] text-[#8e51ff] mb-4 font-semibold flex items-center gap-1">
                       <Sparkles size={11} /> {sharedInterests.length} shared interest{sharedInterests.length > 1 ? "s" : ""}
                     </p>
                   )}
@@ -616,29 +620,29 @@ export default function MapView() {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => handleSendDM(selectedUser)}
-                      className="flex-1 py-3 bg-[#6c5ce7] text-white rounded-xl font-semibold text-[13px] flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(108,92,231,0.4)]"
+                      className="flex-1 py-3 bg-[#8e51ff] text-white rounded-xl font-semibold text-[13px] flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(142,81,255,0.35)]"
                     >
                       <MessageCircle size={15} /> Say Hi
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => handleProfileRequest(selectedUser.id)}
-                      className="w-12 py-3 bg-white/[0.07] rounded-xl flex items-center justify-center hover:bg-white/[0.12] transition-all"
+                      className="w-12 py-3 bg-zinc-50 rounded-xl flex items-center justify-center hover:bg-zinc-100 transition-all border border-zinc-100"
                     >
-                      <UserPlus size={16} className="text-white/40" />
+                      <UserPlus size={16} className="text-[#71717b]" />
                     </motion.button>
                   </div>
 
-                  <div className="flex gap-2 pt-2.5 border-t border-white/[0.06]">
+                  <div className="flex gap-2 pt-2.5 border-t border-zinc-100">
                     <button
                       onClick={() => handleReport(selectedUser.id)}
-                      className="flex-1 py-2 text-[11px] text-white/30 flex items-center justify-center gap-1 hover:text-[#ff6b6b] transition-colors rounded-lg hover:bg-[#ff6b6b]/10"
+                      className="flex-1 py-2 text-[11px] text-[#71717b] flex items-center justify-center gap-1 hover:text-[#ff6b6b] transition-colors rounded-lg hover:bg-red-50"
                     >
                       <Flag size={11} /> Report
                     </button>
                     <button
                       onClick={() => handleBlock(selectedUser.id)}
-                      className="flex-1 py-2 text-[11px] text-white/30 flex items-center justify-center gap-1 hover:text-[#ff6b6b] transition-colors rounded-lg hover:bg-[#ff6b6b]/10"
+                      className="flex-1 py-2 text-[11px] text-[#71717b] flex items-center justify-center gap-1 hover:text-[#ff6b6b] transition-colors rounded-lg hover:bg-red-50"
                     >
                       <Ban size={11} /> Block
                     </button>
@@ -650,12 +654,12 @@ export default function MapView() {
               {selectedHotspot && (
                 <div>
                   <div className="flex items-center gap-3.5 mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-[#ff6b6b] flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#ff6b6b] flex items-center justify-center text-white">
                       <Flame size={22} />
                     </div>
                     <div>
-                      <h3 className="font-bold text-[16px] capitalize text-white">{selectedHotspot.label} Hotspot</h3>
-                      <p className="text-[13px] text-white/40">{selectedHotspot.count} people active</p>
+                      <h3 className="font-bold text-[16px] capitalize text-zinc-950">{selectedHotspot.label} Hotspot</h3>
+                      <p className="text-[13px] text-[#71717b]">{selectedHotspot.count} people active</p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -663,7 +667,7 @@ export default function MapView() {
                       <div
                         key={a.id}
                         onClick={() => handleActivityClick(a)}
-                        className="flex items-center gap-3 p-3 bg-white/[0.05] rounded-xl cursor-pointer hover:bg-white/[0.08] transition-colors"
+                        className="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl cursor-pointer hover:bg-zinc-100 transition-colors border border-zinc-100"
                       >
                         <div
                           className="w-9 h-9 rounded-lg flex items-center justify-center text-sm"
@@ -672,10 +676,10 @@ export default function MapView() {
                           {ACTIVITY_TYPES.find((t) => t.value === a.type)?.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-[13px] text-white truncate">{a.title}</p>
-                          <p className="text-[11px] text-white/40">{a.participants?.length || 0}/{a.playersNeeded} joined</p>
+                          <p className="font-semibold text-[13px] text-zinc-950 truncate">{a.title}</p>
+                          <p className="text-[11px] text-[#71717b]">{a.participants?.length || 0}/{a.playersNeeded} joined</p>
                         </div>
-                        <ChevronRight size={14} className="text-white/20" />
+                        <ChevronRight size={14} className="text-zinc-300" />
                       </div>
                     ))}
                   </div>
