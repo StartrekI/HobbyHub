@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useStore } from "@/store";
+const LeafletMap = lazy(() => import("@/components/LeafletMap"));
 import { getDistance, formatRelativeTime, FEED_TYPE_COLORS } from "@/lib/utils";
 import type { FeedItem } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -322,11 +323,17 @@ export default function DiscoveryFeed() {
               </div>
             )}
 
-            {/* ── Activities for You ── */}
-            <div className="px-6 pt-6">
+            {/* ── Nearby Activities (Map Preview) ── */}
+            <NearbyMapPreview
+              activityCount={filtered.length}
+              userLocation={userLocation}
+            />
+
+            {/* ── Popular This Week ── */}
+            <div className="px-6 pt-2">
               <div className="flex mb-2 justify-between items-center">
                 <h2 className="font-semibold text-base leading-6 text-zinc-950">
-                  Activities for You
+                  Popular This Week
                 </h2>
                 <span className="font-medium text-[#8e51ff] text-xs leading-4 cursor-pointer">
                   See all
@@ -532,6 +539,87 @@ function ActivityCard({
         </CardContent>
       </Card>
     </motion.div>
+  );
+}
+
+/* ─── Nearby Activities Map Preview ─── */
+function NearbyMapPreview({
+  activityCount,
+  userLocation,
+}: {
+  activityCount: number;
+  userLocation: { lat: number; lng: number };
+}) {
+  const setScreen = useStore((s) => s.setScreen);
+  const activities = useStore((s) => s.activities);
+  const nearbyUsers = useStore((s) => s.nearbyUsers);
+  const hotspots = useStore((s) => s.hotspots);
+  const hasLocation = userLocation.lat !== 0 || userLocation.lng !== 0;
+
+  return (
+    <div className="px-6 pt-6">
+      <div className="flex mb-2 justify-between items-center">
+        <h2 className="font-semibold text-base leading-6 text-zinc-950">
+          Nearby Activities
+        </h2>
+        <button
+          onClick={() => setScreen("map")}
+          className="font-medium text-[#8e51ff] text-xs leading-4 cursor-pointer flex items-center gap-1"
+        >
+          Map view
+          <ChevronRight className="size-3" />
+        </button>
+      </div>
+      <button
+        onClick={() => setScreen("map")}
+        className="relative rounded-2xl w-full h-40 overflow-hidden mb-4 block"
+      >
+        {/* Live mini-map */}
+        {hasLocation ? (
+          <Suspense
+            fallback={
+              <div className="w-full h-full bg-zinc-100 animate-pulse" />
+            }
+          >
+            <LeafletMap
+              userLocation={userLocation}
+              activities={activities}
+              users={nearbyUsers}
+              hotspots={hotspots}
+              onActivityClick={() => {}}
+              onUserClick={() => {}}
+              onHotspotClick={() => {}}
+            />
+          </Suspense>
+        ) : (
+          <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
+            <MapPin className="size-8 text-zinc-300" />
+          </div>
+        )}
+
+        {/* Purple tint overlay */}
+        <div className="bg-[#8e51ff]/5 absolute inset-0 pointer-events-none" />
+
+        {/* Info card overlay */}
+        <div className="shadow-lg rounded-xl bg-white flex absolute left-4 top-4 p-2 items-center gap-2 pointer-events-none">
+          <div className="rounded-lg bg-[#8e51ff]/10 flex justify-center items-center w-8 h-8">
+            <MapPin className="size-4 text-[#8e51ff]" />
+          </div>
+          <div className="text-left">
+            <p className="font-semibold text-[10px] text-zinc-950">
+              {activityCount} {activityCount === 1 ? "activity" : "activities"}
+            </p>
+            <p className="text-[#71717b] text-[9px]">nearby</p>
+          </div>
+        </div>
+
+        {/* Decorative colored dots */}
+        <div className="shadow-md rounded-full bg-[#8e51ff] border-white border-2 border-solid absolute right-12 top-6 w-3 h-3 pointer-events-none" />
+        <div className="shadow-md rounded-full bg-green-500 border-white border-2 border-solid absolute right-20 top-12 w-3 h-3 pointer-events-none" />
+        <div className="shadow-md rounded-full bg-amber-500 border-white border-2 border-solid absolute left-20 bottom-10 w-3 h-3 pointer-events-none" />
+        <div className="shadow-md rounded-full bg-rose-500 border-white border-2 border-solid absolute right-8 bottom-16 w-3 h-3 pointer-events-none" />
+      </button>
+    </div>
   );
 }
 
